@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crestron Interface</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #782F40;
+            overflow: hidden;
+            height: 100vh;
+            width: 100vw;
+        }
+        
+        .interface {
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            background-color: #782F40;
+        }
+        
+        /* Header - Top row */
+        .header {
+            height: 15vh;
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            align-items: center;
+            padding: 0 50px;
+            background-color: #782F40;
+        }
+        
+        .fsu-logo {
+            color: white;
+            font-weight: bold;
+            font-size: 16px;
+        }
+        
+        .building-name {
+            color: white;
+            font-weight: bold;
+            font-size: 36px;
+            text-align: center;
+            justify-self: center;
+        }
+        
+        .time-display {
+            color: white;
+            font-weight: bold;
+            font-size: 18px;
+            text-align: right;
+            justify-self: end;
+        }
+        
+        /* Middle row - Screens and lights */
+        .middle-row {
+            height: 50vh;
+            display: flex;
+            padding: 20px 50px;
+            gap: 30px;
+            align-items: center;
+        }
+        
+        .screen {
+            flex: 1;
+            height: 100%;
+            background-color: #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 18px;
+            font-weight: bold;
+        }
+        
+        .lights-panel {
+            width: 120px;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            padding: 20px 0;
+        }
+        
+        .lights-header {
+            background-color: #FFD700;
+            color: #000;
+            text-align: center;
+            padding: 8px;
+            font-weight: bold;
+            font-size: 14px;
+        }
+        
+        .light-btn {
+            background-color: white;
+            color: #000;
+            text-align: center;
+            padding: 8px;
+            font-weight: bold;
+            font-size: 12px;
+            cursor: pointer;
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .light-btn.active {
+            background-color: #4CAF50;
+            color: white;
+        }
+        
+        /* Bottom row - Controls */
+        .bottom-row {
+            height: 35vh;
+            display: flex;
+            padding: 20px 50px;
+            gap: 30px;
+        }
+        
+        /* Left section - Sources and camera presets */
+        .left-section {
+            flex: 0.7;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .sources-grid {
+            flex: 1;
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+        
+        .source-btn {
+            background-color: white;
+            color: #000;
+            font-weight: bold;
+            font-size: 11px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 8px;
+        }
+        
+        .source-btn.selected {
+            background-color: #666;
+            color: white;
+        }
+        
+        .camera-presets {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .camera-btn {
+            background-color: white;
+            color: #000;
+            font-weight: bold;
+            font-size: 11px;
+            cursor: pointer;
+            padding: 12px 16px;
+            text-align: center;
+        }
+        
+        /* Middle section - Preview and project controls */
+        .middle-section {
+            flex: 1.6;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: repeat(4, 1fr);
+            gap: 10px;
+        }
+        
+        .control-btn {
+            background-color: white;
+            color: #000;
+            font-weight: bold;
+            font-size: 11px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 5px;
+        }
+        
+        .control-btn.active {
+            background-color: #4CAF50;
+            color: white;
+        }
+        
+        .listen-btn {
+            grid-column: 1 / -1;
+            background-color: white;
+            color: #000;
+            font-weight: bold;
+            font-size: 11px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+        }
+        
+        /* Right section - Power and volume */
+        .right-section {
+            flex: 0.7;
+            display: flex;
+            gap: 20px;
+        }
+        
+        .power-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            min-width: 80px;
+            flex-shrink: 1;
+        }
+        
+        .power-btn {
+            background-color: white;
+            color: #000;
+            font-weight: bold;
+            font-size: 11px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            height: 60px;
+            min-width: 0;
+        }
+        
+        .power-btn.selected {
+            background-color: #666;
+            color: white;
+        }
+        
+        .volume-controls {
+            flex: 1;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding: 10px 0;
+            min-width: 120px;
+        }
+        
+        .volume-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+            height: 100%;
+            width: 60px;
+            min-width: 50px;
+            flex-shrink: 1;
+        }
+        
+        .volume-label-top {
+            color: white;
+            font-size: 9px;
+            font-weight: bold;
+            text-align: center;
+            line-height: 1.1;
+        }
+        
+        .volume-label-bottom {
+            color: white;
+            font-size: 9px;
+            font-weight: bold;
+            text-align: center;
+        }
+        
+        .volume-slider {
+            writing-mode: bt-lr;
+            writing-mode: vertical-lr;
+            width: 15px;
+            height: 100px;
+            background: #666;
+            appearance: none;
+            cursor: pointer;
+            border-radius: 8px;
+            position: relative;
+            direction: rtl;
+            flex-shrink: 0;
+        }
+        
+        .volume-slider::-webkit-slider-thumb {
+            appearance: none;
+            width: 20px;
+            height: 12px;
+            background: white;
+            cursor: pointer;
+            border-radius: 2px;
+        }
+        
+        .volume-percentage {
+            color: white;
+            font-size: 10px;
+            font-weight: bold;
+            text-align: center;
+        }
+        
+        .mute-btn {
+            background-color: white;
+            color: #000;
+            font-weight: bold;
+            font-size: 8px;
+            cursor: pointer;
+            padding: 3px;
+            text-align: center;
+            width: 25px;
+            height: 25px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        
+        .mute-btn.active {
+            background-color: #ff0000;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="interface">
+        <!-- Header -->
+        <div class="header">
+            <div class="fsu-logo">FSU LOGO</div>
+            <div class="building-name">WJB</div>
+            <div class="time-display" id="timeDisplay">Sep 25, 2025 5:50 PM</div>
+        </div>
+        
+        <!-- Middle row - Screens and lights -->
+        <div class="middle-row">
+            <div class="screen" id="leftScreen">Left Screen</div>
+            
+            <div class="lights-panel">
+                <div class="lights-header">LIGHTS</div>
+                <div class="light-btn active" onclick="toggleLight(this, 'all')">ALL ON</div>
+                <div class="light-btn" onclick="toggleLight(this, 'lecture')">LECTURE</div>
+                <div class="light-btn" onclick="toggleLight(this, 'video')">VIDEO</div>
+                <div class="light-btn" onclick="toggleLight(this, 'video2')">VIDEO 2</div>
+                <div class="light-btn" onclick="toggleLight(this, 'off')">ALL OFF</div>
+            </div>
+            
+            <div class="screen" id="rightScreen">Right Screen</div>
+        </div>
+        
+        <!-- Bottom row - Controls -->
+        <div class="bottom-row">
+            <!-- Left section -->
+            <div class="left-section">
+                <div class="sources-grid">
+                    <div class="source-btn selected" onclick="selectSource(this, 'desktop')">DESKTOP PC</div>
+                    <div class="source-btn" onclick="selectSource(this, 'doccam')">DOC CAM</div>
+                    <div class="source-btn" onclick="selectSource(this, 'laptop')">LAPTOP</div>
+                    <div class="source-btn" onclick="selectSource(this, 'wireless')">WIRELESS STREAM</div>
+                    <div class="source-btn" onclick="selectSource(this, 'bluray')">BLU-RAY</div>
+                </div>
+                
+                <div class="camera-presets">
+                    <div class="camera-btn" onclick="selectCamera(1)">CAMERA PRESET 1</div>
+                    <div class="camera-btn" onclick="selectCamera(2)">CAMERA PRESET 2</div>
+                </div>
+            </div>
+            
+            <!-- Middle section -->
+            <div class="middle-section">
+                <div class="control-btn" onclick="togglePreview(this, 'left')">LEFT PREVIEW</div>
+                <div class="control-btn" onclick="togglePreview(this, 'right')">RIGHT PREVIEW</div>
+                <div class="control-btn" onclick="muteScreen(this, 'left')">PICTURE MUTE (BLACK SCREEN)</div>
+                <div class="control-btn" onclick="muteScreen(this, 'right')">PICTURE MUTE (BLACK SCREEN)</div>
+                <div class="control-btn" onclick="toggleProject(this, 'left')">LEFT PROJECT</div>
+                <div class="control-btn" onclick="toggleProject(this, 'right')">RIGHT PROJECT</div>
+                <div class="listen-btn" onclick="toggleListen(this)">LISTEN TO</div>
+            </div>
+            
+            <!-- Right section -->
+            <div class="right-section">
+                <div class="power-controls">
+                    <div class="power-btn selected" onclick="togglePower(this, true)">POWER ON</div>
+                    <div class="power-btn" onclick="togglePower(this, false)">POWER OFF</div>
+                </div>
+                
+                <div class="volume-controls">
+                    <div class="volume-section">
+                        <div class="volume-label-top">MIC VOLUME</div>
+                        <div class="volume-label-top">MAX</div>
+                        <input type="range" class="volume-slider" id="micSlider" min="0" max="100" value="50" oninput="updateVolumeSlider(this, 'micPercent')">
+                        <div class="volume-label-bottom">MIN</div>
+                        <div class="volume-percentage" id="micPercent">50%</div>
+                        <div class="mute-btn" onclick="toggleMute(this, 'mic')">🔇</div>
+                    </div>
+                    
+                    <div class="volume-section">
+                        <div class="volume-label-top">MAIN VOLUME</div>
+                        <div class="volume-label-top">MAX</div>
+                        <input type="range" class="volume-slider" id="mainSlider" min="0" max="100" value="50" oninput="updateVolumeSlider(this, 'mainPercent')">
+                        <div class="volume-label-bottom">MIN</div>
+                        <div class="volume-percentage" id="mainPercent">50%</div>
+                        <div class="mute-btn" onclick="toggleMute(this, 'main')">🔇</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        let currentSource = 'desktop';
+        let leftPreviewSource = null;
+        let rightPreviewSource = null;
+        let leftProjecting = false;
+        let rightProjecting = false;
+        let systemPower = true;
+        
+        // Update time every second
+        function updateTime() {
+            const now = new Date();
+            const options = { 
+                year: 'numeric', 
+                month: 'short', 
+                day: 'numeric', 
+                hour: 'numeric', 
+                minute: '2-digit',
+                hour12: true
+            };
+            document.getElementById('timeDisplay').textContent = now.toLocaleDateString('en-US', options);
+        }
+        
+        setInterval(updateTime, 1000);
+        updateTime();
+        
+        // Source selection
+        function selectSource(element, source) {
+            document.querySelectorAll('.source-btn').forEach(btn => btn.classList.remove('selected'));
+            element.classList.add('selected');
+            currentSource = source;
+        }
+        
+        // Preview controls
+        function togglePreview(element, side) {
+            if (side === 'left') {
+                leftPreviewSource = currentSource;
+                document.getElementById('leftScreen').textContent = `Preview: ${currentSource.toUpperCase()}`;
+            } else {
+                rightPreviewSource = currentSource;
+                document.getElementById('rightScreen').textContent = `Preview: ${currentSource.toUpperCase()}`;
+            }
+            
+            element.classList.add('active');
+            setTimeout(() => element.classList.remove('active'), 500);
+        }
+        
+        // Project controls
+        function toggleProject(element, side) {
+            if (side === 'left' && leftPreviewSource) {
+                leftProjecting = !leftProjecting;
+                if (leftProjecting) {
+                    document.getElementById('leftScreen').textContent = `PROJECTING: ${leftPreviewSource.toUpperCase()}`;
+                    element.classList.add('active');
+                } else {
+                    document.getElementById('leftScreen').textContent = `Preview: ${leftPreviewSource.toUpperCase()}`;
+                    element.classList.remove('active');
+                }
+            } else if (side === 'right' && rightPreviewSource) {
+                rightProjecting = !rightProjecting;
+                if (rightProjecting) {
+                    document.getElementById('rightScreen').textContent = `PROJECTING: ${rightPreviewSource.toUpperCase()}`;
+                    element.classList.add('active');
+                } else {
+                    document.getElementById('rightScreen').textContent = `Preview: ${rightPreviewSource.toUpperCase()}`;
+                    element.classList.remove('active');
+                }
+            }
+        }
+        
+        // Mute screen
+        function muteScreen(element, side) {
+            element.classList.toggle('active');
+            const screen = document.getElementById(side + 'Screen');
+            
+            if (element.classList.contains('active')) {
+                screen.textContent = 'MUTED (BLACK SCREEN)';
+                screen.style.backgroundColor = '#000';
+            } else {
+                if (side === 'left' && leftPreviewSource) {
+                    screen.textContent = leftProjecting ? `PROJECTING: ${leftPreviewSource.toUpperCase()}` : `Preview: ${leftPreviewSource.toUpperCase()}`;
+                } else if (side === 'right' && rightPreviewSource) {
+                    screen.textContent = rightProjecting ? `PROJECTING: ${rightPreviewSource.toUpperCase()}` : `Preview: ${rightPreviewSource.toUpperCase()}`;
+                } else {
+                    screen.textContent = side.charAt(0).toUpperCase() + side.slice(1) + ' Screen';
+                }
+            }
+        }
+        
+        // Listen to control
+        function toggleListen(element) {
+            element.classList.toggle('active');
+        }
+        
+        // Light controls
+        function toggleLight(element, type) {
+            document.querySelectorAll('.light-btn').forEach(btn => btn.classList.remove('active'));
+            element.classList.add('active');
+        }
+        
+        // Camera presets
+        function selectCamera(preset) {
+            console.log('Camera preset:', preset);
+        }
+        
+        // Power controls
+        function togglePower(element, isOn) {
+            systemPower = isOn;
+            document.querySelectorAll('.power-btn').forEach(btn => btn.classList.remove('selected'));
+            element.classList.add('selected');
+        }
+        
+        // Volume slider updates
+        function updateVolumeSlider(slider, percentId) {
+            const value = slider.value;
+            const percent = document.getElementById(percentId);
+            percent.textContent = value + '%';
+            
+            // Update slider background to show fill level
+            const fillPercent = (value / 100) * 100;
+            slider.style.background = `linear-gradient(to top, #FFD700 0%, #FFD700 ${fillPercent}%, #666 ${fillPercent}%, #666 100%)`;
+        }
+        
+        // Mute controls
+        function toggleMute(element, type) {
+            element.classList.toggle('active');
+            if (element.classList.contains('active')) {
+                element.textContent = '🔊';
+            } else {
+                element.textContent = '🔇';
+            }
+        }
+        
+        // Initialize volume sliders on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            updateVolumeSlider(document.getElementById('micSlider'), 'micPercent');
+            updateVolumeSlider(document.getElementById('mainSlider'), 'mainPercent');
+        });
+    </script>
+</body>
+</html>
