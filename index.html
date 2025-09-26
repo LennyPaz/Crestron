@@ -61,9 +61,9 @@
         
         /* Middle row - Screens and lights */
         .middle-row {
-            height: 50vh;
+            height: 55vh;
             display: flex;
-            padding: 20px 50px;
+            padding: 10px 50px;
             gap: 30px;
             align-items: center;
         }
@@ -119,15 +119,15 @@
         
         /* Bottom row - Controls */
         .bottom-row {
-            height: 35vh;
+            height: 30vh;
             display: flex;
-            padding: 20px 50px;
+            padding: 10px 50px;
             gap: 30px;
         }
         
         /* Left section - Sources and camera presets */
         .left-section {
-            flex: 0.7;
+            flex: 0.5;
             display: flex;
             flex-direction: column;
             gap: 20px;
@@ -151,6 +151,7 @@
             justify-content: center;
             text-align: center;
             padding: 8px;
+            height: 50px;
         }
         
         .source-btn.selected {
@@ -175,11 +176,13 @@
         
         /* Middle section - Preview and project controls */
         .middle-section {
-            flex: 1.6;
+            flex: 2;
             display: grid;
             grid-template-columns: 1fr 1fr;
-            grid-template-rows: repeat(4, 1fr);
+            grid-template-rows: repeat(4, 50px);
             gap: 10px;
+            align-content: start;
+            justify-content: center;
         }
         
         .control-btn {
@@ -193,6 +196,7 @@
             justify-content: center;
             text-align: center;
             padding: 5px;
+            height: 50px;
         }
         
         .control-btn.active {
@@ -211,11 +215,12 @@
             align-items: center;
             justify-content: center;
             text-align: center;
+            height: 50px;
         }
         
         /* Right section - Power and volume */
         .right-section {
-            flex: 0.7;
+            flex: 0.5;
             display: flex;
             gap: 20px;
         }
@@ -253,7 +258,7 @@
             justify-content: space-around;
             align-items: center;
             padding: 10px 0;
-            min-width: 120px;
+            min-width: 150px;
         }
         
         .volume-section {
@@ -262,9 +267,9 @@
             align-items: center;
             gap: 5px;
             height: 100%;
-            width: 60px;
-            min-width: 50px;
-            flex-shrink: 1;
+            flex: 1;
+            min-width: 60px;
+            justify-content: space-between;
         }
         
         .volume-label-top {
@@ -285,15 +290,16 @@
         .volume-slider {
             writing-mode: bt-lr;
             writing-mode: vertical-lr;
-            width: 15px;
-            height: 100px;
+            width: 20px;
+            height: 100%;
             background: #666;
             appearance: none;
             cursor: pointer;
             border-radius: 8px;
             position: relative;
             direction: rtl;
-            flex-shrink: 0;
+            flex: 1;
+            min-height: 150px;
         }
         
         .volume-slider::-webkit-slider-thumb {
@@ -397,7 +403,8 @@
                 
                 <div class="volume-controls">
                     <div class="volume-section">
-                        <div class="volume-label-top">MIC VOLUME</div>
+                        <div class="volume-label-top">MIC</div>
+                        <div class="volume-label-top">VOLUME</div>
                         <div class="volume-label-top">MAX</div>
                         <input type="range" class="volume-slider" id="micSlider" min="0" max="100" value="50" oninput="updateVolumeSlider(this, 'micPercent')">
                         <div class="volume-label-bottom">MIN</div>
@@ -406,7 +413,8 @@
                     </div>
                     
                     <div class="volume-section">
-                        <div class="volume-label-top">MAIN VOLUME</div>
+                        <div class="volume-label-top">MAIN</div>
+                        <div class="volume-label-top">VOLUME</div>
                         <div class="volume-label-top">MAX</div>
                         <input type="range" class="volume-slider" id="mainSlider" min="0" max="100" value="50" oninput="updateVolumeSlider(this, 'mainPercent')">
                         <div class="volume-label-bottom">MIN</div>
