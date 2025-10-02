@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Crestron Interface</title>
+    <title>FSU Crestron Interface</title>
     <style>
         * {
             margin: 0;
@@ -12,11 +12,12 @@
         }
         
         body {
-            font-family: Arial, sans-serif;
-            background-color: #782F40;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: linear-gradient(135deg, #782F40 0%, #572932 100%);
             overflow: hidden;
             height: 100vh;
             width: 100vw;
+            cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><path fill="white" stroke="black" stroke-width="1" d="M8 2 L8 22 L12 18 L15 26 L18 25 L15 17 L20 17 Z"/></svg>'), auto;
         }
         
         .interface {
@@ -24,238 +25,466 @@
             height: 100vh;
             display: flex;
             flex-direction: column;
-            background-color: #782F40;
+            background: linear-gradient(135deg, #782F40 0%, #572932 100%);
         }
         
-        /* Header - Top row */
+        /* Header */
         .header {
             height: 8vh;
             display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
+            grid-template-columns: 150px 1fr 150px;
             align-items: center;
-            padding: 0 20px;
-            background-color: #782F40;
+            padding: 0 30px;
+            background: transparent;
+            gap: 15px;
         }
         
         .fsu-logo {
-            color: white;
+            color: #CEB888;
             font-weight: bold;
-            font-size: 14px;
+            font-size: 10px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .building-info {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
         }
         
         .building-name {
             color: white;
             font-weight: bold;
-            font-size: 48px;
+            font-size: 28px;
             text-align: center;
-            justify-self: center;
+            letter-spacing: 2px;
+            line-height: 1;
         }
         
         .time-display {
             color: white;
+            font-weight: 600;
+            font-size: 16px;
+            text-align: center;
+            line-height: 1;
+        }
+        
+        .start-class-btn {
+            background: linear-gradient(135deg, #CEB888 0%, #DFD1A7 100%);
+            color: #101820;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 14px;
             font-weight: bold;
-            font-size: 24px;
-            text-align: right;
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
             justify-self: end;
+            height: fit-content;
+        }
+        
+        .start-class-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0,0,0,0.4);
+        }
+        
+        .start-class-btn:active {
+            transform: translateY(0);
         }
         
         /* Middle row - Screens and lights */
         .middle-row {
-            height: 50vh;
+            height: 48vh;
             display: flex;
-            padding: 5px 20px;
-            gap: 20px;
-            align-items: center;
+            padding: 12px 30px;
+            gap: 15px;
+        }
+        
+        .screen-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: rgba(16, 24, 32, 0.4);
+            border-radius: 8px;
+            padding: 10px;
+            border: 2px solid rgba(206, 184, 136, 0.3);
+        }
+        
+        .screen-label {
+            color: #CEB888;
+            font-size: 12px;
+            font-weight: bold;
+            margin-bottom: 6px;
+            text-align: center;
         }
         
         .screen {
             flex: 1;
-            height: 100%;
             background-color: #000;
             display: flex;
             align-items: center;
             justify-content: center;
-            color: white;
-            font-size: 18px;
+            color: #5CB8B2;
+            font-size: 14px;
             font-weight: bold;
+            border-radius: 4px;
+            position: relative;
+        }
+        
+        .screen-status {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: rgba(206, 184, 136, 0.9);
+            color: #101820;
+            padding: 3px 10px;
+            border-radius: 4px;
+            font-size: 11px;
         }
         
         .lights-panel {
             width: 120px;
-            height: 100%;
             display: flex;
             flex-direction: column;
-            gap: 5px;
-            padding: 20px 0;
+            gap: 8px;
         }
         
         .lights-header {
-            background-color: #FFD700;
-            color: #000;
+            background: linear-gradient(135deg, #CEB888 0%, #DFD1A7 100%);
+            color: #101820;
             text-align: center;
-            padding: 8px;
-            font-weight: bold;
-            font-size: 14px;
-            border-radius: 8px;
-        }
-        
-        .light-btn {
-            background-color: white;
-            color: #000;
-            text-align: center;
-            padding: 8px;
+            padding: 10px;
             font-weight: bold;
             font-size: 12px;
-            cursor: pointer;
-            flex: 1;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
             display: flex;
             align-items: center;
             justify-content: center;
+            gap: 6px;
+        }
+        
+        .light-btn {
+            background: white;
+            color: #101820;
+            text-align: center;
+            padding: 10px;
+            font-weight: 600;
+            font-size: 10px;
+            cursor: pointer;
+            flex: 1;
             border-radius: 8px;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+            border: none;
+        }
+        
+        .light-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
         }
         
         .light-btn.active {
-            background-color: #4CAF50;
+            background: #5CB8B2;
             color: white;
         }
         
         /* Bottom row - Controls */
         .bottom-row {
-            height: 42vh;
+            height: 44vh;
             display: flex;
-            padding: 5px 20px;
+            padding: 12px 30px 15px 30px;
             gap: 15px;
         }
         
-        /* Left section - Sources and camera presets */
-        .left-section {
-            flex: 0.5;
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
+        /* Card styling for sections */
+        .control-card {
+            background: rgba(16, 24, 32, 0.5);
+            border-radius: 8px;
+            padding: 12px;
+            border: 2px solid rgba(206, 184, 136, 0.3);
         }
         
-        .sources-grid {
-            flex: 1;
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
+        .card-title {
+            color: #CEB888;
+            font-size: 12px;
+            font-weight: bold;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        /* Left section - Input Sources */
+        .left-section {
+            flex: 0.65;
+            display: flex;
+            flex-direction: column;
             gap: 8px;
         }
         
+        .sources-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+            flex: 1;
+        }
+        
         .source-btn {
-            background-color: white;
-            color: #000;
-            font-weight: bold;
-            font-size: 12px;
+            background: white;
+            color: #101820;
+            font-weight: 600;
+            font-size: 10px;
             cursor: pointer;
+            border-radius: 8px;
+            padding: 6px;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
+            gap: 4px;
             text-align: center;
-            padding: 8px;
-            height: 80px;
-            border-radius: 8px;
+            border: none;
+        }
+        
+        .source-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            background: rgba(255, 255, 255, 0.9);
+        }
+        
+        .source-btn:active {
+            transform: translateY(0);
         }
         
         .source-btn.selected {
-            background-color: #666;
+            background: #425563;
             color: white;
+            border: 2px solid #CEB888;
         }
         
-        .camera-presets {
+        .btn-icon {
+            width: 40px;
+            height: 40px;
+            object-fit: contain;
+        }
+        
+        .camera-controls {
             display: flex;
             gap: 8px;
         }
         
         .camera-btn {
-            background-color: white;
-            color: #000;
-            font-weight: bold;
-            font-size: 11px;
+            flex: 1;
+            background: white;
+            color: #101820;
+            font-weight: 600;
+            font-size: 10px;
             cursor: pointer;
-            padding: 12px 16px;
-            text-align: center;
+            padding: 8px;
             border-radius: 8px;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 3px;
+            border: none;
         }
         
-        /* Middle section - Preview and project controls */
+        .camera-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        }
+        
+        /* Middle section - Workflow controls */
         .middle-section {
             flex: 2;
-            display: grid;
-            grid-template-columns: repeat(7, 1fr);
-            grid-template-rows: 80px;
-            gap: 8px;
-            align-content: start;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        
+        .workflow-guide {
+            background: rgba(206, 184, 136, 0.15);
+            border: 2px solid #CEB888;
+            border-radius: 8px;
+            padding: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: space-around;
+            gap: 4px;
+            height: 45px;
+        }
+        
+        .workflow-step {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
+            color: #CEB888;
+            font-size: 8px;
+            font-weight: bold;
+        }
+        
+        .workflow-number {
+            background: #CEB888;
+            color: #101820;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
             justify-content: center;
+            font-weight: bold;
+            font-size: 10px;
+        }
+        
+        .workflow-arrow {
+            color: #CEB888;
+            font-size: 14px;
+        }
+        
+        .controls-grid {
+            flex: 1;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            grid-template-rows: repeat(2, 1fr);
+            gap: 8px;
         }
         
         .control-btn {
-            background-color: white;
-            color: #000;
-            font-weight: bold;
-            font-size: 12px;
+            background: white;
+            color: #101820;
+            font-weight: 600;
+            font-size: 10px;
             cursor: pointer;
+            border-radius: 8px;
+            padding: 6px;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
             display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
+            gap: 4px;
             text-align: center;
-            padding: 8px;
-            height: 80px;
-            border-radius: 8px;
+            border: none;
         }
         
-        .control-btn.active {
-            background-color: #4CAF50;
+        .control-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            background: rgba(255, 255, 255, 0.9);
+        }
+        
+        .control-btn:active {
+            transform: translateY(0);
+        }
+        
+        .control-btn.preview-active {
+            background: #5CB8B2;
             color: white;
         }
         
-        .listen-btn {
-            background-color: white;
-            color: #000;
-            font-weight: bold;
-            font-size: 12px;
+        .control-btn.project-active {
+            background: #A6192E;
+            color: white;
+        }
+        
+        .control-btn.mute-active {
+            background: #FFC72C;
+            color: #101820;
+        }
+        
+        .audio-btn {
+            grid-column: 1 / -1;
+            background: white;
+            color: #101820;
+            font-weight: 600;
+            font-size: 10px;
             cursor: pointer;
+            border-radius: 8px;
+            padding: 8px;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
             display: flex;
             align-items: center;
             justify-content: center;
-            text-align: center;
-            height: 80px;
-            border-radius: 8px;
+            gap: 6px;
+            border: none;
+        }
+        
+        .audio-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        }
+        
+        .audio-btn.active {
+            background: #5CB8B2;
+            color: white;
         }
         
         /* Right section - Power and volume */
         .right-section {
-            flex: 0.5;
+            flex: 0.65;
             display: flex;
-            gap: 20px;
+            gap: 12px;
+        }
+        
+        .power-card {
+            height: 230px;
+            width: 110px;
+            flex-shrink: 0;
         }
         
         .power-controls {
             display: flex;
             flex-direction: column;
             gap: 8px;
-            min-width: 80px;
-            flex-shrink: 1;
+            flex: 1;
         }
         
         .power-btn {
-            background-color: white;
-            color: #000;
-            font-weight: bold;
-            font-size: 11px;
+            background: white;
+            color: #101820;
+            font-weight: 600;
+            font-size: 10px;
             cursor: pointer;
+            border-radius: 8px;
+            padding: 10px;
+            flex: 1;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
             display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
-            text-align: center;
-            height: 60px;
-            min-width: 0;
-            border-radius: 8px;
+            gap: 4px;
+            border: none;
+        }
+        
+        .power-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            background: rgba(255, 255, 255, 0.9);
+        }
+        
+        .power-btn:active {
+            transform: translateY(0);
         }
         
         .power-btn.selected {
-            background-color: #666;
+            background: #5CB8B2;
             color: white;
         }
         
@@ -263,50 +492,52 @@
             flex: 1;
             display: flex;
             justify-content: space-around;
-            align-items: center;
-            padding: 10px 0;
-            min-width: 150px;
+            padding: 0;
+            gap: 8px;
         }
         
         .volume-section {
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 5px;
-            height: 100%;
+            gap: 4px;
             flex: 1;
-            min-width: 60px;
-            justify-content: space-between;
+            height: 100%;
         }
         
-        .volume-label-top {
-            color: white;
+        .volume-label {
+            color: #CEB888;
             font-size: 9px;
             font-weight: bold;
             text-align: center;
-            line-height: 1.1;
+            line-height: 1.2;
         }
         
-        .volume-label-bottom {
-            color: white;
-            font-size: 9px;
+        .volume-slider-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 3px;
+            flex: 1;
+            justify-content: center;
+        }
+        
+        .volume-max {
+            color: #CEB888;
+            font-size: 8px;
             font-weight: bold;
-            text-align: center;
         }
         
         .volume-slider {
-            writing-mode: bt-lr;
             writing-mode: vertical-lr;
-            width: 20px;
-            height: 100%;
-            background: #666;
-            appearance: none;
-            cursor: pointer;
-            border-radius: 8px;
-            position: relative;
-            direction: rtl;
+            width: 16px;
             flex: 1;
             min-height: 150px;
+            background: #425563;
+            appearance: none;
+            cursor: pointer;
+            border-radius: 10px;
+            direction: rtl;
         }
         
         .volume-slider::-webkit-slider-thumb {
@@ -315,35 +546,139 @@
             height: 12px;
             background: white;
             cursor: pointer;
-            border-radius: 2px;
+            border-radius: 3px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .volume-slider::-moz-range-thumb {
+            width: 20px;
+            height: 12px;
+            background: white;
+            cursor: pointer;
+            border-radius: 3px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+            border: none;
+        }
+        
+        .volume-min {
+            color: #CEB888;
+            font-size: 8px;
+            font-weight: bold;
         }
         
         .volume-percentage {
             color: white;
             font-size: 10px;
             font-weight: bold;
-            text-align: center;
+            background: rgba(206, 184, 136, 0.3);
+            padding: 3px 6px;
+            border-radius: 4px;
         }
         
         .mute-btn {
-            background-color: white;
-            color: #000;
+            background: white;
+            color: #101820;
             font-weight: bold;
-            font-size: 8px;
+            font-size: 14px;
             cursor: pointer;
-            padding: 3px;
-            text-align: center;
-            width: 25px;
-            height: 25px;
+            padding: 5px;
+            width: 28px;
+            height: 28px;
+            border-radius: 6px;
             display: flex;
             align-items: center;
             justify-content: center;
-            flex-shrink: 0;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            border: none;
+        }}
+        
+        .volume-slider::-webkit-slider-thumb {
+            appearance: none;
+            width: 22px;
+            height: 14px;
+            background: white;
+            cursor: pointer;
+            border-radius: 3px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .volume-slider::-moz-range-thumb {
+            width: 22px;
+            height: 14px;
+            background: white;
+            cursor: pointer;
+            border-radius: 3px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+            border: none;
+        }
+        
+        .volume-min {
+            color: #CEB888;
+            font-size: 9px;
+            font-weight: bold;
+        }
+        
+        .volume-percentage {
+            color: white;
+            font-size: 11px;
+            font-weight: bold;
+            background: rgba(206, 184, 136, 0.3);
+            padding: 4px 8px;
+            border-radius: 4px;
+        }
+        
+        .mute-btn {
+            background: white;
+            color: #101820;
+            font-weight: bold;
+            font-size: 16px;
+            cursor: pointer;
+            padding: 6px;
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            border: none;
+        }
+        
+        .mute-btn:hover {
+            transform: scale(1.1);
         }
         
         .mute-btn.active {
-            background-color: #ff0000;
+            background: #A6192E;
             color: white;
+        }
+        
+        /* Help button */
+        .help-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            background: #CEB888;
+            color: #101820;
+            font-size: 22px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            border: none;
+        }
+        
+        .help-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 16px rgba(0,0,0,0.5);
         }
     </style>
 </head>
@@ -351,97 +686,226 @@
     <div class="interface">
         <!-- Header -->
         <div class="header">
-            <div class="fsu-logo">FSU LOGO</div>
-            <div class="building-name">WJB</div>
-            <div class="time-display" id="timeDisplay">Sep 25, 2025 5:50 PM</div>
+            <div class="fsu-logo">
+                <img src="icons/FSULogo.svg" alt="FSU Logo" style="width: 40px; height: 40px;">
+                <span>FLORIDA STATE<br>UNIVERSITY</span>
+            </div>
+            <div class="building-info">
+                <div class="building-name">WJB</div>
+                <div class="time-display" id="timeDisplay"></div>
+            </div>
+            <button class="start-class-btn" onclick="startClass()">
+                <span>▶</span>
+                <span>START CLASS</span>
+            </button>
         </div>
         
         <!-- Middle row - Screens and lights -->
         <div class="middle-row">
-            <div class="screen" id="leftScreen">Left Screen</div>
-            
-            <div class="lights-panel">
-                <div class="lights-header">LIGHTS</div>
-                <div class="light-btn active" onclick="toggleLight(this, 'all')">ALL ON</div>
-                <div class="light-btn" onclick="toggleLight(this, 'lecture')">LECTURE</div>
-                <div class="light-btn" onclick="toggleLight(this, 'video')">VIDEO</div>
-                <div class="light-btn" onclick="toggleLight(this, 'video2')">VIDEO 2</div>
-                <div class="light-btn" onclick="toggleLight(this, 'off')">ALL OFF</div>
+            <div class="screen-container">
+                <div class="screen-label">LEFT SCREEN</div>
+                <div class="screen" id="leftScreen">
+                    <span>No Input Selected</span>
+                    <span class="screen-status" id="leftStatus">Ready</span>
+                </div>
             </div>
             
-            <div class="screen" id="rightScreen">Right Screen</div>
+            <div class="lights-panel">
+                <div class="lights-header">
+                    <span>💡</span>
+                    <span>LIGHTS</span>
+                </div>
+                <button class="light-btn active" onclick="toggleLight(this)">ALL ON</button>
+                <button class="light-btn" onclick="toggleLight(this)">LECTURE</button>
+                <button class="light-btn" onclick="toggleLight(this)">VIDEO</button>
+                <button class="light-btn" onclick="toggleLight(this)">VIDEO 2</button>
+                <button class="light-btn" onclick="toggleLight(this)">ALL OFF</button>
+            </div>
+            
+            <div class="screen-container">
+                <div class="screen-label">RIGHT SCREEN</div>
+                <div class="screen" id="rightScreen">
+                    <span>No Input Selected</span>
+                    <span class="screen-status" id="rightStatus">Ready</span>
+                </div>
+            </div>
         </div>
         
         <!-- Bottom row - Controls -->
         <div class="bottom-row">
-            <!-- Left section -->
+            <!-- Left section - Input Sources -->
             <div class="left-section">
-                <div class="sources-grid">
-                    <div class="source-btn selected" onclick="selectSource(this, 'desktop')">DESKTOP PC</div>
-                    <div class="source-btn" onclick="selectSource(this, 'doccam')">DOC CAM</div>
-                    <div class="source-btn" onclick="selectSource(this, 'laptop')">LAPTOP</div>
-                    <div class="source-btn" onclick="selectSource(this, 'wireless')">WIRELESS STREAM</div>
-                    <div class="source-btn" onclick="selectSource(this, 'bluray')">BLU-RAY</div>
-                </div>
-                
-                <div class="camera-presets">
-                    <div class="camera-btn" onclick="selectCamera(1)">CAMERA PRESET 1</div>
-                    <div class="camera-btn" onclick="selectCamera(2)">CAMERA PRESET 2</div>
-                </div>
-            </div>
-            
-            <!-- Middle section -->
-            <div class="middle-section">
-                <div class="control-btn" onclick="togglePreview(this, 'left')">LEFT PREVIEW</div>
-                <div class="control-btn" onclick="togglePreview(this, 'right')">RIGHT PREVIEW</div>
-                <div class="control-btn" onclick="muteScreen(this, 'left')">PICTURE MUTE (BLACK SCREEN)</div>
-                <div class="control-btn" onclick="muteScreen(this, 'right')">PICTURE MUTE (BLACK SCREEN)</div>
-                <div class="control-btn" onclick="toggleProject(this, 'left')">LEFT PROJECT</div>
-                <div class="control-btn" onclick="toggleProject(this, 'right')">RIGHT PROJECT</div>
-                <div class="listen-btn" onclick="toggleListen(this)">LISTEN TO</div>
-            </div>
-            
-            <!-- Right section -->
-            <div class="right-section">
-                <div class="power-controls">
-                    <div class="power-btn selected" onclick="togglePower(this, true)">POWER ON</div>
-                    <div class="power-btn" onclick="togglePower(this, false)">POWER OFF</div>
-                </div>
-                
-                <div class="volume-controls">
-                    <div class="volume-section">
-                        <div class="volume-label-top">MIC</div>
-                        <div class="volume-label-top">VOLUME</div>
-                        <div class="volume-label-top">MAX</div>
-                        <input type="range" class="volume-slider" id="micSlider" min="0" max="100" value="50" oninput="updateVolumeSlider(this, 'micPercent')">
-                        <div class="volume-label-bottom">MIN</div>
-                        <div class="volume-percentage" id="micPercent">50%</div>
-                        <div class="mute-btn" onclick="toggleMute(this, 'mic')">🔇</div>
+                <div class="workflow-guide">
+                    <div class="workflow-step">
+                        <div class="workflow-number">1</div>
+                        <span>SELECT INPUT</span>
                     </div>
-                    
-                    <div class="volume-section">
-                        <div class="volume-label-top">MAIN</div>
-                        <div class="volume-label-top">VOLUME</div>
-                        <div class="volume-label-top">MAX</div>
-                        <input type="range" class="volume-slider" id="mainSlider" min="0" max="100" value="50" oninput="updateVolumeSlider(this, 'mainPercent')">
-                        <div class="volume-label-bottom">MIN</div>
-                        <div class="volume-percentage" id="mainPercent">50%</div>
-                        <div class="mute-btn" onclick="toggleMute(this, 'main')">🔇</div>
+                    <div class="workflow-arrow">→</div>
+                    <div class="workflow-step">
+                        <div class="workflow-number">2</div>
+                        <span>PREVIEW</span>
+                    </div>
+                    <div class="workflow-arrow">→</div>
+                    <div class="workflow-step">
+                        <div class="workflow-number">3</div>
+                        <span>PROJECT</span>
+                    </div>
+                </div>
+                
+                <div class="control-card" style="flex: 1;">
+                    <div class="card-title">
+                        <span>📺</span>
+                        <span>INPUT SOURCES</span>
+                    </div>
+                    <div class="sources-grid">
+                        <button class="source-btn" onclick="selectSource(this, 'desktop')">
+                            <img src="icons/DeskTopIcon.png" alt="Desktop" class="btn-icon">
+                            <span>DESKTOP PC</span>
+                        </button>
+                        <button class="source-btn" onclick="selectSource(this, 'doccam')">
+                            <img src="icons/DocCamIcon.svg" alt="Doc Cam" class="btn-icon">
+                            <span>DOC CAM</span>
+                        </button>
+                        <button class="source-btn" onclick="selectSource(this, 'laptop')">
+                            <img src="icons/LaptopIcon.webp" alt="Laptop" class="btn-icon">
+                            <span>LAPTOP</span>
+                        </button>
+                        <button class="source-btn" onclick="selectSource(this, 'wireless')">
+                            <img src="icons/WirelessIcon.png" alt="Wireless" class="btn-icon">
+                            <span>WIRELESS</span>
+                        </button>
+                        <button class="source-btn" onclick="selectSource(this, 'bluray')">
+                            <img src="icons/BluerayIcon.ico" alt="Blu-ray" class="btn-icon">
+                            <span>BLU-RAY</span>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="control-card">
+                    <div class="card-title">
+                        <span>🎥</span>
+                        <span>CAMERA PRESETS</span>
+                    </div>
+                    <div class="camera-controls">
+                        <button class="camera-btn" onclick="selectCamera(1)">
+                            <img src="icons/CameraIcon.jpg" alt="Camera" class="btn-icon">
+                            <span>PRESET 1</span>
+                        </button>
+                        <button class="camera-btn" onclick="selectCamera(2)">
+                            <img src="icons/CameraIcon.jpg" alt="Camera" class="btn-icon">
+                            <span>PRESET 2</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Middle section - Workflow controls -->
+            <div class="middle-section">
+                <div class="control-card" style="flex: 1;">
+                    <div class="card-title">
+                        <span>🎬</span>
+                        <span>SCREEN CONTROLS</span>
+                    </div>
+                    <div class="controls-grid">
+                        <button class="control-btn" onclick="togglePreview(this, 'left')">
+                            <img src="icons/LeftPreviewIcon.png" alt="Left Preview" class="btn-icon">
+                            <span>LEFT PREVIEW</span>
+                        </button>
+                        <button class="control-btn" onclick="togglePreview(this, 'right')">
+                            <img src="icons/RightPreviewIcon.png" alt="Right Preview" class="btn-icon">
+                            <span>RIGHT PREVIEW</span>
+                        </button>
+                        <button class="control-btn" onclick="toggleProject(this, 'left')">
+                            <img src="icons/ProjectIcon.png" alt="Project" class="btn-icon">
+                            <span>LEFT PROJECT</span>
+                        </button>
+                        <button class="control-btn" onclick="toggleProject(this, 'right')">
+                            <img src="icons/ProjectIcon.png" alt="Project" class="btn-icon">
+                            <span>RIGHT PROJECT</span>
+                        </button>
+                        <button class="control-btn" onclick="muteScreen(this, 'left')">
+                            <img src="icons/HideRightLeftIcon.png" alt="Hide" class="btn-icon">
+                            <span>HIDE LEFT</span>
+                        </button>
+                        <button class="control-btn" onclick="muteScreen(this, 'right')">
+                            <img src="icons/HideRightLeftIcon.png" alt="Hide" class="btn-icon">
+                            <span>HIDE RIGHT</span>
+                        </button>
+                        <button class="audio-btn" onclick="toggleAudio(this)">
+                            <span class="btn-icon" style="font-size: 32px;">🔊</span>
+                            <span>PLAY AUDIO FROM SELECTED INPUT</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Right section - Power and volume -->
+            <div class="right-section">
+                <div class="control-card power-card">
+                    <div class="card-title">
+                        <span>⚡</span>
+                        <span>POWER</span>
+                    </div>
+                    <div class="power-controls">
+                        <button class="power-btn" onclick="togglePower(this, true)">
+                            <img src="icons/PowerIcon.webp" alt="Power On" class="btn-icon">
+                            <span>POWER<br>ON</span>
+                        </button>
+                        <button class="power-btn selected" onclick="togglePower(this, false)">
+                            <img src="icons/PowerIcon.webp" alt="Power Off" class="btn-icon">
+                            <span>POWER<br>OFF</span>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="control-card" style="flex: 1; display: flex; flex-direction: column;">
+                    <div class="card-title">
+                        <span>🔊</span>
+                        <span>VOLUME</span>
+                    </div>
+                    <div class="volume-controls">
+                        <div class="volume-section">
+                            <div class="volume-label">MIC<br>VOLUME</div>
+                            <div class="volume-slider-container">
+                                <div class="volume-max">MAX</div>
+                                <input type="range" class="volume-slider" id="micSlider" min="0" max="100" value="50" oninput="updateVolumeSlider(this, 'micPercent')" orient="vertical">
+                                <div class="volume-min">MIN</div>
+                            </div>
+                            <div class="volume-percentage" id="micPercent">50%</div>
+                            <button class="mute-btn" onclick="toggleMute(this, 'mic')">🔇</button>
+                        </div>
+                        
+                        <div class="volume-section">
+                            <div class="volume-label">MAIN<br>VOLUME</div>
+                            <div class="volume-slider-container">
+                                <div class="volume-max">MAX</div>
+                                <input type="range" class="volume-slider" id="mainSlider" min="0" max="100" value="50" oninput="updateVolumeSlider(this, 'mainPercent')" orient="vertical">
+                                <div class="volume-min">MIN</div>
+                            </div>
+                            <div class="volume-percentage" id="mainPercent">50%</div>
+                            <button class="mute-btn" onclick="toggleMute(this, 'main')">🔇</button>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
     
+    <button class="help-btn" onclick="showHelp()">?</button>
+    
     <script>
-        let currentSource = 'desktop';
+        // State variables
+        let currentSource = null;
         let leftPreviewSource = null;
         let rightPreviewSource = null;
         let leftProjecting = false;
         let rightProjecting = false;
-        let systemPower = true;
+        let leftMuted = false;
+        let rightMuted = false;
+        let audioPlaying = false;
+        let systemPower = false; // Start with power OFF
         
-        // Update time every second
+        // Update time
         function updateTime() {
             const now = new Date();
             const options = { 
@@ -467,67 +931,129 @@
         
         // Preview controls
         function togglePreview(element, side) {
-            if (side === 'left') {
-                leftPreviewSource = currentSource;
-                document.getElementById('leftScreen').textContent = `Preview: ${currentSource.toUpperCase()}`;
-            } else {
-                rightPreviewSource = currentSource;
-                document.getElementById('rightScreen').textContent = `Preview: ${currentSource.toUpperCase()}`;
+            if (!currentSource) {
+                alert('Please select an input source first.');
+                return;
             }
             
-            element.classList.add('active');
-            setTimeout(() => element.classList.remove('active'), 500);
+            if (side === 'left') {
+                leftPreviewSource = currentSource;
+                updateScreenDisplay('left');
+            } else {
+                rightPreviewSource = currentSource;
+                updateScreenDisplay('right');
+            }
+            
+            element.classList.add('preview-active');
+            setTimeout(() => element.classList.remove('preview-active'), 300);
         }
         
         // Project controls
         function toggleProject(element, side) {
-            if (side === 'left' && leftPreviewSource) {
+            if (side === 'left') {
+                if (!leftPreviewSource && !currentSource) {
+                    alert('Please select an input source first.');
+                    return;
+                }
+                if (!leftPreviewSource && currentSource) {
+                    leftPreviewSource = currentSource;
+                }
                 leftProjecting = !leftProjecting;
-                if (leftProjecting) {
-                    document.getElementById('leftScreen').textContent = `PROJECTING: ${leftPreviewSource.toUpperCase()}`;
-                    element.classList.add('active');
-                } else {
-                    document.getElementById('leftScreen').textContent = `Preview: ${leftPreviewSource.toUpperCase()}`;
-                    element.classList.remove('active');
-                }
-            } else if (side === 'right' && rightPreviewSource) {
-                rightProjecting = !rightProjecting;
-                if (rightProjecting) {
-                    document.getElementById('rightScreen').textContent = `PROJECTING: ${rightPreviewSource.toUpperCase()}`;
-                    element.classList.add('active');
-                } else {
-                    document.getElementById('rightScreen').textContent = `Preview: ${rightPreviewSource.toUpperCase()}`;
-                    element.classList.remove('active');
-                }
-            }
-        }
-        
-        // Mute screen
-        function muteScreen(element, side) {
-            element.classList.toggle('active');
-            const screen = document.getElementById(side + 'Screen');
-            
-            if (element.classList.contains('active')) {
-                screen.textContent = 'MUTED (BLACK SCREEN)';
-                screen.style.backgroundColor = '#000';
+                element.classList.toggle('project-active', leftProjecting);
+                updateScreenDisplay('left');
             } else {
-                if (side === 'left' && leftPreviewSource) {
-                    screen.textContent = leftProjecting ? `PROJECTING: ${leftPreviewSource.toUpperCase()}` : `Preview: ${leftPreviewSource.toUpperCase()}`;
-                } else if (side === 'right' && rightPreviewSource) {
-                    screen.textContent = rightProjecting ? `PROJECTING: ${rightPreviewSource.toUpperCase()}` : `Preview: ${rightPreviewSource.toUpperCase()}`;
-                } else {
-                    screen.textContent = side.charAt(0).toUpperCase() + side.slice(1) + ' Screen';
+                if (!rightPreviewSource && !currentSource) {
+                    alert('Please select an input source first.');
+                    return;
+                }
+                if (!rightPreviewSource && currentSource) {
+                    rightPreviewSource = currentSource;
+                }
+                rightProjecting = !rightProjecting;
+                element.classList.toggle('project-active', rightProjecting);
+                updateScreenDisplay('right');
+            }
+        }
+        
+        // Mute/Hide screen
+        function muteScreen(element, side) {
+            element.classList.toggle('mute-active');
+            
+            if (side === 'left') {
+                leftMuted = !leftMuted;
+            } else {
+                rightMuted = !rightMuted;
+            }
+            updateScreenDisplay(side);
+        }
+        
+        // Update screen display
+        function updateScreenDisplay(side) {
+            const screen = document.getElementById(side + 'Screen');
+            const status = document.getElementById(side + 'Status');
+            
+            if (!screen || !status) {
+                console.error('Screen or status element not found for side:', side);
+                return;
+            }
+            
+            const isMuted = side === 'left' ? leftMuted : rightMuted;
+            const previewSource = side === 'left' ? leftPreviewSource : rightPreviewSource;
+            const isProjecting = side === 'left' ? leftProjecting : rightProjecting;
+            
+            if (isMuted) {
+                screen.innerHTML = '<span>SCREEN HIDDEN</span>';
+                screen.style.backgroundColor = '#000';
+                status.textContent = 'Hidden';
+                status.style.background = 'rgba(255, 199, 44, 0.9)';
+                status.style.color = '#101820';
+            } else if (isProjecting && previewSource) {
+                screen.innerHTML = `<span>PROJECTING: ${previewSource.toUpperCase()}</span><span class="screen-status" id="${side}Status">Projecting</span>`;
+                screen.style.backgroundColor = '#101820';
+                const newStatus = document.getElementById(side + 'Status');
+                if (newStatus) {
+                    newStatus.style.background = 'rgba(166, 25, 46, 0.9)';
+                    newStatus.style.color = 'white';
+                }
+            } else if (previewSource) {
+                screen.innerHTML = `<span>Preview: ${previewSource.toUpperCase()}</span><span class="screen-status" id="${side}Status">Preview</span>`;
+                screen.style.backgroundColor = '#425563';
+                const newStatus = document.getElementById(side + 'Status');
+                if (newStatus) {
+                    newStatus.style.background = 'rgba(92, 184, 178, 0.9)';
+                    newStatus.style.color = '#101820';
+                }
+            } else {
+                screen.innerHTML = `<span>No Input Selected</span><span class="screen-status" id="${side}Status">Ready</span>`;
+                screen.style.backgroundColor = '#000';
+                const newStatus = document.getElementById(side + 'Status');
+                if (newStatus) {
+                    newStatus.style.background = 'rgba(206, 184, 136, 0.9)';
+                    newStatus.style.color = '#101820';
                 }
             }
         }
         
-        // Listen to control
-        function toggleListen(element) {
-            element.classList.toggle('active');
+        // Audio control
+        function toggleAudio(element) {
+            if (!currentSource) {
+                alert('Please select an input source first.');
+                return;
+            }
+            
+            audioPlaying = !audioPlaying;
+            element.classList.toggle('active', audioPlaying);
+            
+            const textSpan = element.querySelector('span:last-child');
+            if (audioPlaying) {
+                textSpan.textContent = `PLAYING AUDIO FROM: ${currentSource.toUpperCase()}`;
+            } else {
+                textSpan.textContent = 'PLAY AUDIO FROM SELECTED INPUT';
+            }
         }
         
         // Light controls
-        function toggleLight(element, type) {
+        function toggleLight(element) {
             document.querySelectorAll('.light-btn').forEach(btn => btn.classList.remove('active'));
             element.classList.add('active');
         }
@@ -542,17 +1068,52 @@
             systemPower = isOn;
             document.querySelectorAll('.power-btn').forEach(btn => btn.classList.remove('selected'));
             element.classList.add('selected');
+            
+            if (!isOn) {
+                currentSource = null;
+                leftPreviewSource = null;
+                rightPreviewSource = null;
+                leftProjecting = false;
+                rightProjecting = false;
+                leftMuted = false;
+                rightMuted = false;
+                audioPlaying = false;
+                
+                updateScreenDisplay('left');
+                updateScreenDisplay('right');
+                
+                document.querySelectorAll('.control-btn').forEach(btn => {
+                    btn.classList.remove('preview-active', 'project-active', 'mute-active');
+                });
+                
+                document.querySelectorAll('.source-btn').forEach(btn => {
+                    btn.classList.remove('selected');
+                });
+                
+                const audioBtn = document.querySelector('.audio-btn');
+                if (audioBtn) {
+                    audioBtn.classList.remove('active');
+                    const textSpan = audioBtn.querySelector('span:last-child');
+                    if (textSpan) {
+                        textSpan.textContent = 'PLAY AUDIO FROM SELECTED INPUT';
+                    }
+                }
+            }
         }
         
         // Volume slider updates
         function updateVolumeSlider(slider, percentId) {
+            if (!slider) return;
+            
             const value = slider.value;
             const percent = document.getElementById(percentId);
-            percent.textContent = value + '%';
             
-            // Update slider background to show fill level
+            if (percent) {
+                percent.textContent = value + '%';
+            }
+            
             const fillPercent = (value / 100) * 100;
-            slider.style.background = `linear-gradient(to top, #FFD700 0%, #FFD700 ${fillPercent}%, #666 ${fillPercent}%, #666 100%)`;
+            slider.style.background = `linear-gradient(to top, #CEB888 0%, #CEB888 ${fillPercent}%, #425563 ${fillPercent}%, #425563 100%)`;
         }
         
         // Mute controls
@@ -563,6 +1124,56 @@
             } else {
                 element.textContent = '🔇';
             }
+        }
+        
+        // Start Class
+        function startClass() {
+            if (!systemPower) {
+                const powerOnBtn = document.querySelectorAll('.power-btn')[0];
+                togglePower(powerOnBtn, true);
+            }
+            
+            const desktopBtn = document.querySelector('.source-btn');
+            selectSource(desktopBtn, 'desktop');
+            
+            setTimeout(() => {
+                const controlBtns = document.querySelectorAll('.control-btn');
+                togglePreview(controlBtns[0], 'left');
+                togglePreview(controlBtns[1], 'right');
+                
+                setTimeout(() => {
+                    toggleProject(controlBtns[2], 'left');
+                    toggleProject(controlBtns[3], 'right');
+                }, 300);
+            }, 300);
+        }
+        
+        // Help system
+        function showHelp() {
+            alert(`FSU CLASSROOM CONTROL SYSTEM - QUICK START GUIDE
+
+GETTING STARTED:
+• Press "START CLASS" to quickly power on and setup Desktop PC on both screens
+• Or follow the 3-step process: Select Input → Preview (optional) → Project
+
+INPUT SOURCES:
+Select your content source from the left panel (Desktop PC, Document Camera, Laptop, etc.)
+
+SCREEN CONTROLS:
+• PREVIEW: See the input on screen before showing students
+• PROJECT: Display the input to students (preview optional)
+• HIDE: Blank the screen (students see black screen)
+
+AUDIO:
+Use "PLAY AUDIO FROM SELECTED INPUT" to route audio to classroom speakers
+
+LIGHTS:
+Control classroom lighting from the center panel
+
+POWER:
+Power On/Off controls all classroom equipment
+
+Need more help? Contact IT Support at (850) 644-HELP`);
         }
         
         // Initialize volume sliders on page load
