@@ -680,6 +680,95 @@
             transform: scale(1.1);
             box-shadow: 0 6px 16px rgba(0,0,0,0.5);
         }
+        
+        /* Loading Screen */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: linear-gradient(135deg, #782F40 0%, #572932 100%);
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            gap: 30px;
+        }
+        
+        .loading-overlay.active {
+            display: flex;
+        }
+        
+        .loading-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            max-width: 600px;
+            width: 80%;
+        }
+        
+        .loading-logo {
+            width: 100px;
+            height: 100px;
+            margin-bottom: 20px;
+        }
+        
+        .loading-messages {
+            text-align: center;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .loading-message-primary {
+            font-size: 56px;
+            font-weight: bold;
+            letter-spacing: 3px;
+        }
+        
+        .loading-message-secondary {
+            font-size: 36px;
+            font-weight: 600;
+            letter-spacing: 2px;
+        }
+        
+        .loading-message-tertiary {
+            font-size: 32px;
+            font-weight: 500;
+            letter-spacing: 1px;
+        }
+        
+        .progress-container {
+            width: 100%;
+            background: rgba(16, 24, 32, 0.6);
+            height: 40px;
+            border-radius: 20px;
+            overflow: hidden;
+            border: 2px solid #CEB888;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+        }
+        
+        .progress-bar {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #CEB888 0%, #DFD1A7 100%);
+            transition: width 0.1s linear;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding-right: 15px;
+        }
+        
+        .progress-percentage {
+            color: #101820;
+            font-weight: bold;
+            font-size: 18px;
+            text-shadow: 0 1px 2px rgba(255,255,255,0.3);
+        }
     </style>
 </head>
 <body>
@@ -893,6 +982,22 @@
     
     <button class="help-btn" onclick="showHelp()">?</button>
     
+    <!-- Loading Screen Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-content">
+            <div class="loading-messages">
+                <div class="loading-message-primary">PLEASE WAIT</div>
+                <div class="loading-message-secondary">SYSTEM WILL BE AVAILABLE</div>
+                <div class="loading-message-tertiary">PROJECTORS ARE WARMING UP!</div>
+            </div>
+            <div class="progress-container">
+                <div class="progress-bar" id="progressBar">
+                    <span class="progress-percentage" id="progressPercentage">0%</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
     <script>
         // State variables
         let currentSource = null;
@@ -1063,13 +1168,53 @@
             console.log('Camera preset:', preset);
         }
         
+        // Loading Screen Control
+        function showLoadingScreen(callback) {
+            const overlay = document.getElementById('loadingOverlay');
+            const progressBar = document.getElementById('progressBar');
+            const progressPercentage = document.getElementById('progressPercentage');
+            
+            overlay.classList.add('active');
+            
+            let progress = 0;
+            const duration = 15000; // 15 seconds
+            const intervalTime = 100; // Update every 100ms
+            const totalSteps = duration / intervalTime;
+            const increment = 100 / totalSteps;
+            
+            const interval = setInterval(() => {
+                progress += increment;
+                
+                if (progress >= 100) {
+                    progress = 100;
+                    clearInterval(interval);
+                    
+                    // Wait a brief moment at 100% then fade out
+                    setTimeout(() => {
+                        overlay.classList.remove('active');
+                        progressBar.style.width = '0%';
+                        progressPercentage.textContent = '0%';
+                        
+                        // Execute callback after loading completes
+                        if (callback) callback();
+                    }, 500);
+                }
+                
+                progressBar.style.width = progress + '%';
+                progressPercentage.textContent = Math.round(progress) + '%';
+            }, intervalTime);
+        }
+        
         // Power controls
         function togglePower(element, isOn) {
             systemPower = isOn;
             document.querySelectorAll('.power-btn').forEach(btn => btn.classList.remove('selected'));
             element.classList.add('selected');
             
-            if (!isOn) {
+            if (isOn) {
+                // Show loading screen when powering on
+                showLoadingScreen();
+            } else if (!isOn) {
                 currentSource = null;
                 leftPreviewSource = null;
                 rightPreviewSource = null;
@@ -1128,24 +1273,31 @@
         
         // Start Class
         function startClass() {
+            // Set power on
             if (!systemPower) {
+                systemPower = true;
                 const powerOnBtn = document.querySelectorAll('.power-btn')[0];
-                togglePower(powerOnBtn, true);
+                document.querySelectorAll('.power-btn').forEach(btn => btn.classList.remove('selected'));
+                powerOnBtn.classList.add('selected');
             }
             
-            const desktopBtn = document.querySelector('.source-btn');
-            selectSource(desktopBtn, 'desktop');
-            
-            setTimeout(() => {
-                const controlBtns = document.querySelectorAll('.control-btn');
-                togglePreview(controlBtns[0], 'left');
-                togglePreview(controlBtns[1], 'right');
+            // Show loading screen, then execute setup
+            showLoadingScreen(() => {
+                // After loading completes, set up the classroom
+                const desktopBtn = document.querySelector('.source-btn');
+                selectSource(desktopBtn, 'desktop');
                 
                 setTimeout(() => {
-                    toggleProject(controlBtns[2], 'left');
-                    toggleProject(controlBtns[3], 'right');
+                    const controlBtns = document.querySelectorAll('.control-btn');
+                    togglePreview(controlBtns[0], 'left');
+                    togglePreview(controlBtns[1], 'right');
+                    
+                    setTimeout(() => {
+                        toggleProject(controlBtns[2], 'left');
+                        toggleProject(controlBtns[3], 'right');
+                    }, 300);
                 }, 300);
-            }, 300);
+            });
         }
         
         // Help system
