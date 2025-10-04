@@ -42,10 +42,11 @@
         .fsu-logo {
             color: #CEB888;
             font-weight: bold;
-            font-size: 10px;
+            font-size: 14px;
             display: flex;
             align-items: center;
-            gap: 6px;
+            gap: 10px;
+            white-space: nowrap;
         }
         
         .building-info {
@@ -62,6 +63,13 @@
             text-align: center;
             letter-spacing: 2px;
             line-height: 1;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .building-name:hover {
+            color: #CEB888;
+            transform: scale(1.05);
         }
         
         .time-display {
@@ -755,12 +763,12 @@
             background: white;
             color: #101820;
             font-weight: bold;
-            font-size: 16px;
+            font-size: 20px;
             cursor: pointer;
-            padding: 6px;
-            width: 32px;
-            height: 32px;
-            border-radius: 6px;
+            padding: 10px;
+            width: 48px;
+            height: 48px;
+            border-radius: 8px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -899,11 +907,11 @@
         <!-- Header -->
         <div class="header">
             <div class="fsu-logo">
-                <img src="Icons/FSULogo.svg" alt="FSU Logo" style="width: 40px; height: 40px;">
-                <span>FLORIDA STATE<br>UNIVERSITY</span>
+                <img src="Icons/FSULogo.svg" alt="FSU Logo" style="width: 50px; height: 50px;">
+                <span>FLORIDA STATE UNIVERSITY</span>
             </div>
             <div class="building-info">
-                <div class="building-name">WJB</div>
+                <div class="building-name" onclick="toggleDemoView()">WJB</div>
                 <div class="time-display" id="timeDisplay"></div>
             </div>
             <button class="start-class-btn" onclick="startClass()">
@@ -913,7 +921,7 @@
         </div>
         
         <!-- Student View Demo Bar (FOR SHOWCASE ONLY) -->
-        <div class="student-view-demo">
+        <div class="student-view-demo hidden">
             <span class="demo-label">⚠ DEMO ONLY - ROOM VIEW:</span>
             <div class="student-projectors">
                 <div class="student-projector">
@@ -1159,6 +1167,12 @@
             'wireless': 'Wallpapers/Wireless.png',
             'doccam': null // No wallpaper for doc cam yet
         };
+        
+        // Toggle demo view
+        function toggleDemoView() {
+            const demoView = document.querySelector('.student-view-demo');
+            demoView.classList.toggle('hidden');
+        }
         
         // Update time
         function updateTime() {
@@ -1460,7 +1474,7 @@
         function updateVolumeSlider(slider, percentId) {
             if (!slider) return;
             
-            const value = slider.value;
+            const value = parseInt(slider.value);
             const percent = document.getElementById(percentId);
             
             if (percent) {
@@ -1469,6 +1483,21 @@
             
             const fillPercent = (value / 100) * 100;
             slider.style.background = `linear-gradient(to top, #CEB888 0%, #CEB888 ${fillPercent}%, #425563 ${fillPercent}%, #425563 100%)`;
+            
+            // Update mute button state based on slider value
+            const muteBtn = slider.closest('.volume-section').querySelector('.mute-btn');
+            
+            if (muteBtn) {
+                if (value == 0) {
+                    // At 0 - show as muted
+                    muteBtn.classList.add('active');
+                    muteBtn.textContent = '🔊';
+                } else {
+                    // Above 0 - show as unmuted
+                    muteBtn.classList.remove('active');
+                    muteBtn.textContent = '🔇';
+                }
+            }
         }
         
         // Mute controls - syncs with volume sliders
@@ -1610,15 +1639,40 @@ Need more help? Contact IT Support at (850) 644-HELP`);
         
         // Initialize volume sliders on page load
         document.addEventListener('DOMContentLoaded', function() {
-            updateVolumeSlider(document.getElementById('micSlider'), 'micPercent');
-            updateVolumeSlider(document.getElementById('mainSlider'), 'mainPercent');
+            const micSlider = document.getElementById('micSlider');
+            const mainSlider = document.getElementById('mainSlider');
+            
+            updateVolumeSlider(micSlider, 'micPercent');
+            updateVolumeSlider(mainSlider, 'mainPercent');
+            
+            // Save volume when user starts dragging (before they drag to 0)
+            micSlider.addEventListener('mousedown', function() {
+                if (micSlider.value > 0) {
+                    micPreviousVolume = parseInt(micSlider.value);
+                }
+            });
+            micSlider.addEventListener('touchstart', function() {
+                if (micSlider.value > 0) {
+                    micPreviousVolume = parseInt(micSlider.value);
+                }
+            });
+            
+            mainSlider.addEventListener('mousedown', function() {
+                if (mainSlider.value > 0) {
+                    mainPreviousVolume = parseInt(mainSlider.value);
+                }
+            });
+            mainSlider.addEventListener('touchstart', function() {
+                if (mainSlider.value > 0) {
+                    mainPreviousVolume = parseInt(mainSlider.value);
+                }
+            });
         });
         
-        // Toggle student view demo with backtick key
+        // Toggle student view demo with backtick key or by clicking building name
         document.addEventListener('keydown', function(e) {
             if (e.key === '`' || e.key === '~') {
-                const demoView = document.querySelector('.student-view-demo');
-                demoView.classList.toggle('hidden');
+                toggleDemoView();
             }
         });
     </script>
