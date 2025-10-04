@@ -99,12 +99,82 @@
             transform: translateY(0);
         }
         
+        /* Student View Demo Bar */
+        .student-view-demo {
+            background: rgba(255, 199, 44, 0.15);
+            border: 2px dashed #FFC72C;
+            border-radius: 8px;
+            padding: 8px 15px;
+            margin: 8px 30px 0 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+            transition: all 0.3s ease;
+        }
+        
+        .student-view-demo.hidden {
+            display: none;
+        }
+        
+        .demo-label {
+            color: #FFC72C;
+            font-size: 10px;
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+        
+        .student-projectors {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+        
+        .student-projector {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .projector-label {
+            color: #CEB888;
+            font-size: 10px;
+            font-weight: 600;
+        }
+        
+        .projector-display {
+            background: rgba(16, 24, 32, 0.6);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: bold;
+            min-width: 100px;
+            text-align: center;
+        }
+        
+        .projector-display.blanked {
+            background: #FFC72C;
+            color: #101820;
+        }
+        
+        .projector-display.projecting {
+            background: #A6192E;
+            color: white;
+        }
+        
         /* Middle row - Screens and lights */
         .middle-row {
-            height: 48vh;
+            height: 44vh;
             display: flex;
             padding: 12px 30px;
             gap: 15px;
+            transition: all 0.3s ease;
+        }
+        
+        /* Adjust height when demo view is hidden */
+        .student-view-demo.hidden ~ .middle-row {
+            height: 48vh;
         }
         
         .screen-container {
@@ -136,6 +206,16 @@
             font-weight: bold;
             border-radius: 4px;
             position: relative;
+            overflow: hidden;
+        }
+        
+        .screen img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            position: absolute;
+            top: 0;
+            left: 0;
         }
         
         .screen-status {
@@ -198,7 +278,7 @@
         
         /* Bottom row - Controls */
         .bottom-row {
-            height: 44vh;
+            height: 48vh;
             display: flex;
             padding: 12px 30px 15px 30px;
             gap: 15px;
@@ -210,6 +290,43 @@
             border-radius: 8px;
             padding: 12px;
             border: 2px solid rgba(206, 184, 136, 0.3);
+            transition: all 0.3s ease;
+        }
+        
+        /* Power warning animation */
+        .control-card.power-warning {
+            border-color: #A6192E;
+            box-shadow: 0 0 20px rgba(166, 25, 46, 0.6);
+            animation: powerPulse 0.5s ease-in-out 2;
+        }
+        
+        /* Source warning animation */
+        .control-card.source-warning {
+            border-color: #CEB888;
+            box-shadow: 0 0 20px rgba(206, 184, 136, 0.6);
+            animation: sourcePulse 0.5s ease-in-out 2;
+        }
+        
+        @keyframes powerPulse {
+            0%, 100% {
+                border-color: #A6192E;
+                box-shadow: 0 0 20px rgba(166, 25, 46, 0.6);
+            }
+            50% {
+                border-color: #FFC72C;
+                box-shadow: 0 0 30px rgba(255, 199, 44, 0.8);
+            }
+        }
+        
+        @keyframes sourcePulse {
+            0%, 100% {
+                border-color: #CEB888;
+                box-shadow: 0 0 20px rgba(206, 184, 136, 0.6);
+            }
+            50% {
+                border-color: #DFD1A7;
+                box-shadow: 0 0 30px rgba(223, 209, 167, 0.8);
+            }
         }
         
         .card-title {
@@ -304,6 +421,12 @@
         .camera-btn:hover {
             transform: translateY(-2px);
             box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        }
+        
+        .camera-btn.selected {
+            background: #425563;
+            color: white;
+            border: 2px solid #CEB888;
         }
         
         /* Middle section - Workflow controls */
@@ -789,10 +912,24 @@
             </button>
         </div>
         
+        <!-- Student View Demo Bar (FOR SHOWCASE ONLY) -->
+        <div class="student-view-demo">
+            <span class="demo-label">⚠ DEMO ONLY - ROOM VIEW:</span>
+            <div class="student-projectors">
+                <div class="student-projector">
+                    <span class="projector-label">LEFT PROJECTOR:</span>
+                    <div class="projector-display" id="leftProjectorDisplay">—</div>
+                </div>
+                <div class="student-projector">
+                    <span class="projector-label">RIGHT PROJECTOR:</span>
+                    <div class="projector-display" id="rightProjectorDisplay">—</div>
+                </div>
+            </div>
+        </div>
+        
         <!-- Middle row - Screens and lights -->
         <div class="middle-row">
             <div class="screen-container">
-                <div class="screen-label">LEFT SCREEN</div>
                 <div class="screen" id="leftScreen">
                     <span>No Input Selected</span>
                     <span class="screen-status" id="leftStatus">Ready</span>
@@ -812,7 +949,6 @@
             </div>
             
             <div class="screen-container">
-                <div class="screen-label">RIGHT SCREEN</div>
                 <div class="screen" id="rightScreen">
                     <span>No Input Selected</span>
                     <span class="screen-status" id="rightStatus">Ready</span>
@@ -876,11 +1012,11 @@
                         <span>CAMERA PRESETS</span>
                     </div>
                     <div class="camera-controls">
-                        <button class="camera-btn" onclick="selectCamera(1)">
+                        <button class="camera-btn" onclick="selectCamera(this, 1)">
                             <img src="Icons/CameraIcon.jpg" alt="Camera" class="btn-icon">
                             <span>PRESET 1</span>
                         </button>
-                        <button class="camera-btn" onclick="selectCamera(2)">
+                        <button class="camera-btn" onclick="selectCamera(this, 2)">
                             <img src="Icons/CameraIcon.jpg" alt="Camera" class="btn-icon">
                             <span>PRESET 2</span>
                         </button>
@@ -1003,12 +1139,26 @@
         let currentSource = null;
         let leftPreviewSource = null;
         let rightPreviewSource = null;
+        let leftProjectSource = null;  // What's actually being projected on left
+        let rightProjectSource = null; // What's actually being projected on right
         let leftProjecting = false;
         let rightProjecting = false;
         let leftMuted = false;
         let rightMuted = false;
         let audioPlaying = false;
+        let audioSource = null; // Track which source audio is playing from
+        let micPreviousVolume = 50; // Store previous volume for unmuting
+        let mainPreviousVolume = 50; // Store previous volume for unmuting
         let systemPower = false; // Start with power OFF
+        
+        // Source to wallpaper mapping (using correct capitalization for Wallpapers folder)
+        const sourceWallpapers = {
+            'desktop': 'Wallpapers/DesktopLockScreen.png',
+            'laptop': 'Wallpapers/Laptop LockScreen.jpg',
+            'bluray': 'Wallpapers/Blue Ray.webp',
+            'wireless': 'Wallpapers/Wireless.png',
+            'doccam': null // No wallpaper for doc cam yet
+        };
         
         // Update time
         function updateTime() {
@@ -1027,6 +1177,27 @@
         setInterval(updateTime, 1000);
         updateTime();
         
+        // Power warning flash
+        function flashPowerWarning() {
+            const powerCard = document.querySelector('.power-card');
+            powerCard.classList.add('power-warning');
+            setTimeout(() => {
+                powerCard.classList.remove('power-warning');
+            }, 1000);
+        }
+        
+        // Source warning flash
+        function flashSourceWarning() {
+            const sourceCards = document.querySelectorAll('.left-section .control-card');
+            // Flash the INPUT SOURCES card (first control-card in left-section)
+            if (sourceCards.length > 0) {
+                sourceCards[0].classList.add('source-warning');
+                setTimeout(() => {
+                    sourceCards[0].classList.remove('source-warning');
+                }, 1000);
+            }
+        }
+        
         // Source selection
         function selectSource(element, source) {
             document.querySelectorAll('.source-btn').forEach(btn => btn.classList.remove('selected'));
@@ -1034,10 +1205,30 @@
             currentSource = source;
         }
         
+        // Update student view (what's actually being projected)
+        function updateStudentView(side) {
+            const display = document.getElementById(side + 'ProjectorDisplay');
+            const isMuted = side === 'left' ? leftMuted : rightMuted;
+            const isProjecting = side === 'left' ? leftProjecting : rightProjecting;
+            const projectSource = side === 'left' ? leftProjectSource : rightProjectSource;
+            
+            display.classList.remove('blanked', 'projecting');
+            
+            if (isMuted && isProjecting) {
+                display.textContent = 'BLANKED';
+                display.classList.add('blanked');
+            } else if (isProjecting && projectSource) {
+                display.textContent = projectSource.toUpperCase();
+                display.classList.add('projecting');
+            } else {
+                display.textContent = '—';
+            }
+        }
+        
         // Preview controls
         function togglePreview(element, side) {
             if (!currentSource) {
-                alert('Please select an input source first.');
+                flashSourceWarning();
                 return;
             }
             
@@ -1053,35 +1244,52 @@
             setTimeout(() => element.classList.remove('preview-active'), 300);
         }
         
-        // Project controls
+        // Project controls - Always projects current source, doesn't toggle off
         function toggleProject(element, side) {
-            if (side === 'left') {
-                if (!leftPreviewSource && !currentSource) {
-                    alert('Please select an input source first.');
-                    return;
-                }
-                if (!leftPreviewSource && currentSource) {
-                    leftPreviewSource = currentSource;
-                }
-                leftProjecting = !leftProjecting;
-                element.classList.toggle('project-active', leftProjecting);
-                updateScreenDisplay('left');
-            } else {
-                if (!rightPreviewSource && !currentSource) {
-                    alert('Please select an input source first.');
-                    return;
-                }
-                if (!rightPreviewSource && currentSource) {
-                    rightPreviewSource = currentSource;
-                }
-                rightProjecting = !rightProjecting;
-                element.classList.toggle('project-active', rightProjecting);
-                updateScreenDisplay('right');
+            // Check if power is on first
+            if (!systemPower) {
+                flashPowerWarning();
+                return;
             }
+            
+            if (!currentSource) {
+                return; // Silently fail if no source
+            }
+            
+            // Always project the CURRENT source (no toggle off)
+            if (side === 'left') {
+                leftProjectSource = currentSource;
+                leftProjecting = true;
+                // Don't toggle class - just ensure all left project buttons show active
+                document.querySelectorAll('.control-btn').forEach(btn => {
+                    if (btn.textContent.includes('LEFT PROJECT')) {
+                        btn.classList.remove('project-active');
+                    }
+                });
+            } else {
+                rightProjectSource = currentSource;
+                rightProjecting = true;
+                // Don't toggle class - just ensure all right project buttons show active
+                document.querySelectorAll('.control-btn').forEach(btn => {
+                    if (btn.textContent.includes('RIGHT PROJECT')) {
+                        btn.classList.remove('project-active');
+                    }
+                });
+            }
+            
+            updateScreenDisplay(side);
+            updateStudentView(side);
         }
         
-        // Mute/Hide screen
+        // Mute/Hide screen (toggles on/off) - affects PROJECTORS only, not preview screens
         function muteScreen(element, side) {
+            // Check if power is on first
+            if (!systemPower) {
+                flashPowerWarning();
+                return;
+            }
+            
+            // Toggle the mute state
             element.classList.toggle('mute-active');
             
             if (side === 'left') {
@@ -1089,10 +1297,11 @@
             } else {
                 rightMuted = !rightMuted;
             }
-            updateScreenDisplay(side);
+            // Update student view to show blanked or unblanked state
+            updateStudentView(side);
         }
         
-        // Update screen display
+        // Update screen display (preview screens - NOT affected by mute/projection)
         function updateScreenDisplay(side) {
             const screen = document.getElementById(side + 'Screen');
             const status = document.getElementById(side + 'Status');
@@ -1102,26 +1311,20 @@
                 return;
             }
             
-            const isMuted = side === 'left' ? leftMuted : rightMuted;
             const previewSource = side === 'left' ? leftPreviewSource : rightPreviewSource;
-            const isProjecting = side === 'left' ? leftProjecting : rightProjecting;
             
-            if (isMuted) {
-                screen.innerHTML = '<span>SCREEN HIDDEN</span>';
-                screen.style.backgroundColor = '#000';
-                status.textContent = 'Hidden';
-                status.style.background = 'rgba(255, 199, 44, 0.9)';
-                status.style.color = '#101820';
-            } else if (isProjecting && previewSource) {
-                screen.innerHTML = `<span>PROJECTING: ${previewSource.toUpperCase()}</span><span class="screen-status" id="${side}Status">Projecting</span>`;
-                screen.style.backgroundColor = '#101820';
-                const newStatus = document.getElementById(side + 'Status');
-                if (newStatus) {
-                    newStatus.style.background = 'rgba(166, 25, 46, 0.9)';
-                    newStatus.style.color = 'white';
+            // Preview screens ONLY show previews, NOT mute or projection state
+            if (previewSource) {
+                const wallpaper = sourceWallpapers[previewSource];
+                
+                if (wallpaper) {
+                    // Show wallpaper image
+                    screen.innerHTML = `<img src="${wallpaper}" alt="${previewSource}"><span class="screen-status" id="${side}Status">Preview</span>`;
+                } else {
+                    // Fallback to text for sources without wallpapers
+                    screen.innerHTML = `<span>Preview: ${previewSource.toUpperCase()}</span><span class="screen-status" id="${side}Status">Preview</span>`;
                 }
-            } else if (previewSource) {
-                screen.innerHTML = `<span>Preview: ${previewSource.toUpperCase()}</span><span class="screen-status" id="${side}Status">Preview</span>`;
+                
                 screen.style.backgroundColor = '#425563';
                 const newStatus = document.getElementById(side + 'Status');
                 if (newStatus) {
@@ -1142,19 +1345,17 @@
         // Audio control
         function toggleAudio(element) {
             if (!currentSource) {
-                alert('Please select an input source first.');
-                return;
+                flashSourceWarning();
+                return; // Silently fail if no source selected
             }
             
-            audioPlaying = !audioPlaying;
-            element.classList.toggle('active', audioPlaying);
+            // Always switch to current source and play
+            audioPlaying = true;
+            audioSource = currentSource;
+            element.classList.add('active');
             
             const textSpan = element.querySelector('span:last-child');
-            if (audioPlaying) {
-                textSpan.textContent = `PLAYING AUDIO FROM: ${currentSource.toUpperCase()}`;
-            } else {
-                textSpan.textContent = 'PLAY AUDIO FROM SELECTED INPUT';
-            }
+            textSpan.textContent = `PLAYING AUDIO FROM: ${currentSource.toUpperCase()}`;
         }
         
         // Light controls
@@ -1164,7 +1365,15 @@
         }
         
         // Camera presets
-        function selectCamera(preset) {
+        function selectCamera(element, preset) {
+            // Remove selection from all camera buttons
+            document.querySelectorAll('.camera-btn').forEach(btn => 
+                btn.classList.remove('selected')
+            );
+            
+            // Add selection to clicked button
+            element.classList.add('selected');
+            
             console.log('Camera preset:', preset);
         }
         
@@ -1181,8 +1390,29 @@
             const intervalTime = 100; // Update every 100ms
             const totalSteps = duration / intervalTime;
             const increment = 100 / totalSteps;
+            let interval;
             
-            const interval = setInterval(() => {
+            // Function to complete loading immediately
+            function skipLoading() {
+                clearInterval(interval);
+                progress = 100;
+                progressBar.style.width = '100%';
+                progressPercentage.textContent = '100%';
+                
+                setTimeout(() => {
+                    overlay.classList.remove('active');
+                    progressBar.style.width = '0%';
+                    progressPercentage.textContent = '0%';
+                    document.removeEventListener('keydown', skipLoading);
+                    
+                    if (callback) callback();
+                }, 300);
+            }
+            
+            // Add keyboard shortcut to skip loading
+            document.addEventListener('keydown', skipLoading, { once: true });
+            
+            interval = setInterval(() => {
                 progress += increment;
                 
                 if (progress >= 100) {
@@ -1194,6 +1424,7 @@
                         overlay.classList.remove('active');
                         progressBar.style.width = '0%';
                         progressPercentage.textContent = '0%';
+                        document.removeEventListener('keydown', skipLoading);
                         
                         // Execute callback after loading completes
                         if (callback) callback();
@@ -1207,6 +1438,11 @@
         
         // Power controls
         function togglePower(element, isOn) {
+            // If trying to power on when already on, just return
+            if (isOn && systemPower) {
+                return;
+            }
+            
             systemPower = isOn;
             document.querySelectorAll('.power-btn').forEach(btn => btn.classList.remove('selected'));
             element.classList.add('selected');
@@ -1215,34 +1451,8 @@
                 // Show loading screen when powering on
                 showLoadingScreen();
             } else if (!isOn) {
-                currentSource = null;
-                leftPreviewSource = null;
-                rightPreviewSource = null;
-                leftProjecting = false;
-                rightProjecting = false;
-                leftMuted = false;
-                rightMuted = false;
-                audioPlaying = false;
-                
-                updateScreenDisplay('left');
-                updateScreenDisplay('right');
-                
-                document.querySelectorAll('.control-btn').forEach(btn => {
-                    btn.classList.remove('preview-active', 'project-active', 'mute-active');
-                });
-                
-                document.querySelectorAll('.source-btn').forEach(btn => {
-                    btn.classList.remove('selected');
-                });
-                
-                const audioBtn = document.querySelector('.audio-btn');
-                if (audioBtn) {
-                    audioBtn.classList.remove('active');
-                    const textSpan = audioBtn.querySelector('span:last-child');
-                    if (textSpan) {
-                        textSpan.textContent = 'PLAY AUDIO FROM SELECTED INPUT';
-                    }
-                }
+                // Power off - reset everything
+                resetSystem();
             }
         }
         
@@ -1261,19 +1471,39 @@
             slider.style.background = `linear-gradient(to top, #CEB888 0%, #CEB888 ${fillPercent}%, #425563 ${fillPercent}%, #425563 100%)`;
         }
         
-        // Mute controls
+        // Mute controls - syncs with volume sliders
         function toggleMute(element, type) {
+            const slider = type === 'mic' ? 
+                document.getElementById('micSlider') : 
+                document.getElementById('mainSlider');
+            const percentId = type === 'mic' ? 'micPercent' : 'mainPercent';
+            
             element.classList.toggle('active');
+            
             if (element.classList.contains('active')) {
+                // MUTING - save current volume and set to 0
+                if (type === 'mic') {
+                    micPreviousVolume = slider.value;
+                } else {
+                    mainPreviousVolume = slider.value;
+                }
+                slider.value = 0;
                 element.textContent = '🔊';
             } else {
+                // UNMUTING - restore previous volume
+                const previousVolume = type === 'mic' ? 
+                    micPreviousVolume : mainPreviousVolume;
+                slider.value = previousVolume;
                 element.textContent = '🔇';
             }
+            
+            updateVolumeSlider(slider, percentId);
         }
         
         // Start Class
         function startClass() {
-            // Set power on
+            const wasAlreadyOn = systemPower;
+            
             if (!systemPower) {
                 systemPower = true;
                 const powerOnBtn = document.querySelectorAll('.power-btn')[0];
@@ -1281,23 +1511,73 @@
                 powerOnBtn.classList.add('selected');
             }
             
-            // Show loading screen, then execute setup
-            showLoadingScreen(() => {
-                // After loading completes, set up the classroom
-                const desktopBtn = document.querySelector('.source-btn');
-                selectSource(desktopBtn, 'desktop');
+            if (wasAlreadyOn) {
+                // Skip loading, go straight to setup
+                setupClassroom();
+            } else {
+                // Show loading screen, then setup
+                showLoadingScreen(() => {
+                    setupClassroom();
+                });
+            }
+        }
+        
+        // Setup classroom - used by start class
+        function setupClassroom() {
+            const desktopBtn = document.querySelector('.source-btn');
+            selectSource(desktopBtn, 'desktop');
+            
+            setTimeout(() => {
+                const controlBtns = document.querySelectorAll('.control-btn');
+                togglePreview(controlBtns[0], 'left');
+                togglePreview(controlBtns[1], 'right');
                 
                 setTimeout(() => {
-                    const controlBtns = document.querySelectorAll('.control-btn');
-                    togglePreview(controlBtns[0], 'left');
-                    togglePreview(controlBtns[1], 'right');
-                    
-                    setTimeout(() => {
-                        toggleProject(controlBtns[2], 'left');
-                        toggleProject(controlBtns[3], 'right');
-                    }, 300);
+                    toggleProject(controlBtns[2], 'left');
+                    toggleProject(controlBtns[3], 'right');
                 }, 300);
+            }, 300);
+        }
+        
+        // Reset system - used when powering off
+        function resetSystem() {
+            currentSource = null;
+            leftPreviewSource = null;
+            rightPreviewSource = null;
+            leftProjectSource = null;
+            rightProjectSource = null;
+            leftProjecting = false;
+            rightProjecting = false;
+            leftMuted = false;
+            rightMuted = false;
+            audioPlaying = false;
+            audioSource = null;
+            
+            updateScreenDisplay('left');
+            updateScreenDisplay('right');
+            updateStudentView('left');
+            updateStudentView('right');
+            
+            document.querySelectorAll('.control-btn').forEach(btn => {
+                btn.classList.remove('preview-active', 'project-active', 'mute-active');
             });
+            
+            document.querySelectorAll('.source-btn').forEach(btn => {
+                btn.classList.remove('selected');
+            });
+            
+            document.querySelectorAll('.camera-btn').forEach(btn => {
+                btn.classList.remove('selected');
+            });
+            
+            const audioBtn = document.querySelector('.audio-btn');
+            if (audioBtn) {
+                audioBtn.classList.remove('active');
+                const textSpan = audioBtn.querySelector('span:last-child');
+                if (textSpan) {
+                    textSpan.textContent = 'PLAY AUDIO FROM SELECTED INPUT';
+                }
+            }
         }
         
         // Help system
@@ -1332,6 +1612,14 @@ Need more help? Contact IT Support at (850) 644-HELP`);
         document.addEventListener('DOMContentLoaded', function() {
             updateVolumeSlider(document.getElementById('micSlider'), 'micPercent');
             updateVolumeSlider(document.getElementById('mainSlider'), 'mainPercent');
+        });
+        
+        // Toggle student view demo with backtick key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === '`' || e.key === '~') {
+                const demoView = document.querySelector('.student-view-demo');
+                demoView.classList.toggle('hidden');
+            }
         });
     </script>
 </body>
