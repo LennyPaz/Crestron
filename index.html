@@ -485,31 +485,33 @@
             font-size: 14px;
         }
         
+        /* PHASE 1: New Screen Controls Grid - 5 buttons in top row */
         .controls-grid {
             flex: 1;
             display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            grid-template-rows: repeat(2, 1fr);
-            gap: 8px;
+            grid-template-columns: repeat(5, 1fr);
+            grid-template-rows: 1fr;
+            gap: 10px;
         }
         
         .control-btn {
             background: white;
             color: #101820;
             font-weight: 600;
-            font-size: 10px;
+            font-size: 11px;
             cursor: pointer;
             border-radius: 8px;
-            padding: 6px;
+            padding: 12px;
             transition: all 0.2s ease;
             box-shadow: 0 2px 6px rgba(0,0,0,0.2);
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            gap: 4px;
+            gap: 6px;
             text-align: center;
             border: none;
+            min-height: 120px;
         }
         
         .control-btn:hover {
@@ -537,22 +539,42 @@
             color: #101820;
         }
         
+        .control-btn.menu-open {
+            background: rgba(206, 184, 136, 0.9);
+            color: #101820;
+            box-shadow: 0 0 20px rgba(206, 184, 136, 0.8);
+        }
+        
+        .control-btn.hide-menu-open {
+            background: rgba(255, 199, 44, 0.9);
+            color: #101820;
+            box-shadow: 0 0 20px rgba(255, 199, 44, 0.8);
+        }
+        
+        .control-btn .btn-icon {
+            width: 60px;
+            height: 60px;
+        }
+        
+        /* Audio button styling - part of the 5-button row */
         .audio-btn {
-            grid-column: 1 / -1;
             background: white;
             color: #101820;
             font-weight: 600;
-            font-size: 10px;
+            font-size: 11px;
             cursor: pointer;
             border-radius: 8px;
-            padding: 8px;
+            padding: 12px;
             transition: all 0.2s ease;
             box-shadow: 0 2px 6px rgba(0,0,0,0.2);
             display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
             gap: 6px;
             border: none;
+            text-align: center;
+            min-height: 120px;
         }
         
         .audio-btn:hover {
@@ -563,6 +585,250 @@
         .audio-btn.active {
             background: #5CB8B2;
             color: white;
+        }
+        
+        .audio-btn .btn-icon {
+            font-size: 48px;
+            line-height: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-top: 17px;
+            margin-bottom: 12px;
+            margin-left: -2px;
+        }
+        
+        /* PHASE 2: Project Controls Menu */
+        .project-controls-menu {
+            display: none;
+            grid-column: 1 / -1;
+            background: rgba(206, 184, 136, 0.2);
+            border: 2px solid #CEB888;
+            border-radius: 8px;
+            padding: 15px;
+            gap: 10px;
+            margin-top: 8px;
+            animation: slideDown 0.3s ease;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            position: relative;
+        }
+        
+        .project-controls-menu.active {
+            display: flex;
+        }
+        
+        .project-menu-label {
+            color: #CEB888;
+            font-size: 13px;
+            font-weight: bold;
+            letter-spacing: 1.5px;
+        }
+        
+        .project-options-row {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            position: relative;
+        }
+        
+        .project-option-btn {
+            background: white;
+            color: #101820;
+            font-weight: 600;
+            font-size: 12px;
+            cursor: pointer;
+            border-radius: 8px;
+            padding: 20px;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+            border: 2px solid transparent;
+            width: 130px;
+            height: 130px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+        
+        .project-option-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            background: rgba(255, 255, 255, 0.9);
+        }
+        
+        .project-option-btn:active {
+            transform: translateY(0);
+        }
+        
+        .project-option-btn.selected {
+            background: rgba(206, 184, 136, 0.9);
+            color: #101820;
+            border-color: #CEB888;
+        }
+        
+        .project-label-main {
+            font-size: 16px;
+            font-weight: bold;
+        }
+        
+        .project-label-sub {
+            font-size: 10px;
+            opacity: 0.8;
+        }
+        
+        .close-menu-btn {
+            background: #A6192E;
+            color: white;
+            font-weight: bold;
+            font-size: 22px;
+            cursor: pointer;
+            border-radius: 8px;
+            width: 45px;
+            height: 45px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: none;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+            transition: all 0.2s ease;
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            line-height: 1;
+            padding-top: 2px;
+            padding-left: 1px;
+        }
+        
+        .close-menu-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+        }
+        
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        /* PHASE 3: Hide & Mute Controls Menu */
+        .hide-controls-menu {
+            display: none;
+            grid-column: 1 / -1;
+            background: rgba(255, 199, 44, 0.2);
+            border: 2px solid #FFC72C;
+            border-radius: 8px;
+            padding: 15px;
+            gap: 10px;
+            margin-top: 8px;
+            animation: slideDown 0.3s ease;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            position: relative;
+        }
+        
+        .hide-controls-menu.active {
+            display: flex;
+        }
+        
+        .hide-menu-label {
+            color: #FFC72C;
+            font-size: 13px;
+            font-weight: bold;
+            letter-spacing: 1.5px;
+        }
+        
+        .hide-options-row {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            position: relative;
+        }
+        
+        .hide-option-btn {
+            background: white;
+            color: #101820;
+            font-weight: 600;
+            font-size: 12px;
+            cursor: pointer;
+            border-radius: 8px;
+            padding: 20px;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+            border: 2px solid transparent;
+            width: 130px;
+            height: 130px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+        
+        .hide-option-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            background: rgba(255, 255, 255, 0.9);
+        }
+        
+        .hide-option-btn:active {
+            transform: translateY(0);
+        }
+        
+        .hide-option-btn.selected {
+            background: rgba(255, 199, 44, 0.9);
+            color: #101820;
+            border-color: #FFC72C;
+        }
+        
+        .hide-label-main {
+            font-size: 16px;
+            font-weight: bold;
+        }
+        
+        .hide-label-sub {
+            font-size: 10px;
+            opacity: 0.8;
+        }
+        
+        .close-hide-menu-btn {
+            background: #A6192E;
+            color: white;
+            font-weight: bold;
+            font-size: 22px;
+            cursor: pointer;
+            border-radius: 8px;
+            width: 45px;
+            height: 45px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: none;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+            transition: all 0.2s ease;
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            line-height: 1;
+            padding-top: 2px;
+            padding-left: 1px;
+        }
+        
+        .close-hide-menu-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
         }
         
         /* Right section - Power and volume */
@@ -1048,26 +1314,62 @@
                             <img src="Icons/RightPreviewIcon.png" alt="Right Preview" class="btn-icon">
                             <span>RIGHT PREVIEW</span>
                         </button>
-                        <button class="control-btn" onclick="toggleProject(this, 'left')">
-                            <img src="Icons/ProjectIcon.png" alt="Project" class="btn-icon">
-                            <span>LEFT PROJECT</span>
-                        </button>
-                        <button class="control-btn" onclick="toggleProject(this, 'right')">
-                            <img src="Icons/ProjectIcon.png" alt="Project" class="btn-icon">
-                            <span>RIGHT PROJECT</span>
-                        </button>
-                        <button class="control-btn" onclick="muteScreen(this, 'left')">
-                            <img src="Icons/HideRightLeftIcon.png" alt="Hide" class="btn-icon">
-                            <span>HIDE LEFT</span>
-                        </button>
-                        <button class="control-btn" onclick="muteScreen(this, 'right')">
-                            <img src="Icons/HideRightLeftIcon.png" alt="Hide" class="btn-icon">
-                            <span>HIDE RIGHT</span>
-                        </button>
                         <button class="audio-btn" onclick="toggleAudio(this)">
-                            <span class="btn-icon" style="font-size: 32px;">🔊</span>
-                            <span>PLAY AUDIO FROM SELECTED INPUT</span>
+                            <span class="btn-icon">🔊</span>
+                            <span>PLAY AUDIO</span>
                         </button>
+                        <button class="control-btn" onclick="openProjectControls(this)">
+                            <img src="Icons/ProjectIcon.png" alt="Project" class="btn-icon">
+                            <span>PROJECT</span>
+                        </button>
+                        <button class="control-btn" onclick="openHideControls(this)">
+                            <img src="Icons/HideRightLeftIcon.png" alt="Hide" class="btn-icon">
+                            <span>HIDE & MUTE</span>
+                        </button>
+                        
+                        <!-- PHASE 2: Project Controls Menu -->
+                        <div class="project-controls-menu" id="projectControlsMenu">
+                            <button class="close-menu-btn" onclick="closeProjectControls()">
+                                ✕
+                            </button>
+                            <div class="project-menu-label">PROJECTOR CONTROLS</div>
+                            <div class="project-options-row">
+                                <button class="project-option-btn" id="projectLeftBtn" onclick="projectToScreen('left')">
+                                    <span class="project-label-main">LEFT</span>
+                                    <span class="project-label-sub">Project Left</span>
+                                </button>
+                                <button class="project-option-btn" id="projectBothBtn" onclick="projectToScreen('both')">
+                                    <span class="project-label-main">BOTH</span>
+                                    <span class="project-label-sub">Project on Both</span>
+                                </button>
+                                <button class="project-option-btn" id="projectRightBtn" onclick="projectToScreen('right')">
+                                    <span class="project-label-main">RIGHT</span>
+                                    <span class="project-label-sub">Project Right</span>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- PHASE 3: Hide & Mute Controls Menu -->
+                        <div class="hide-controls-menu" id="hideControlsMenu">
+                            <button class="close-hide-menu-btn" onclick="closeHideControls()">
+                                ✕
+                            </button>
+                            <div class="hide-menu-label">HIDE & MUTE CONTROLS</div>
+                            <div class="hide-options-row">
+                                <button class="hide-option-btn" id="hideLeftBtn" onclick="hideScreen('left')">
+                                    <span class="hide-label-main">LEFT</span>
+                                    <span class="hide-label-sub">Hide & Mute Left</span>
+                                </button>
+                                <button class="hide-option-btn" id="hideBothBtn" onclick="hideScreen('both')">
+                                    <span class="hide-label-main">BOTH</span>
+                                    <span class="hide-label-sub">Hide & Mute Both</span>
+                                </button>
+                                <button class="hide-option-btn" id="hideRightBtn" onclick="hideScreen('right')">
+                                    <span class="hide-label-main">RIGHT</span>
+                                    <span class="hide-label-sub">Hide & Mute Right</span>
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -1391,290 +1693,36 @@
             console.log('Camera preset:', preset);
         }
         
-        // Loading Screen Control
-        function showLoadingScreen(callback) {
-            const overlay = document.getElementById('loadingOverlay');
-            const progressBar = document.getElementById('progressBar');
-            const progressPercentage = document.getElementById('progressPercentage');
-            
-            overlay.classList.add('active');
-            
-            let progress = 0;
-            const duration = 15000; // 15 seconds
-            const intervalTime = 100; // Update every 100ms
-            const totalSteps = duration / intervalTime;
-            const increment = 100 / totalSteps;
-            let interval;
-            
-            // Function to complete loading immediately
-            function skipLoading() {
-                clearInterval(interval);
-                progress = 100;
-                progressBar.style.width = '100%';
-                progressPercentage.textContent = '100%';
-                
-                setTimeout(() => {
-                    overlay.classList.remove('active');
-                    progressBar.style.width = '0%';
-                    progressPercentage.textContent = '0%';
-                    document.removeEventListener('keydown', skipLoading);
-                    
-                    if (callback) callback();
-                }, 300);
-            }
-            
-            // Add keyboard shortcut to skip loading
-            document.addEventListener('keydown', skipLoading, { once: true });
-            
-            interval = setInterval(() => {
-                progress += increment;
-                
-                if (progress >= 100) {
-                    progress = 100;
-                    clearInterval(interval);
-                    
-                    // Wait a brief moment at 100% then fade out
-                    setTimeout(() => {
-                        overlay.classList.remove('active');
-                        progressBar.style.width = '0%';
-                        progressPercentage.textContent = '0%';
-                        document.removeEventListener('keydown', skipLoading);
-                        
-                        // Execute callback after loading completes
-                        if (callback) callback();
-                    }, 500);
-                }
-                
-                progressBar.style.width = progress + '%';
-                progressPercentage.textContent = Math.round(progress) + '%';
-            }, intervalTime);
-        }
+        // PHASE 2: Project Controls Menu Functions
+        let projectLeftSelected = false;
+        let projectRightSelected = false;
         
-        // Power controls
-        function togglePower(element, isOn) {
-            // If trying to power on when already on, just return
-            if (isOn && systemPower) {
+        function openProjectControls(element) {
+            // Check if power is on first
+            if (!systemPower) {
+                flashPowerWarning();
                 return;
             }
             
-            systemPower = isOn;
-            document.querySelectorAll('.power-btn').forEach(btn => btn.classList.remove('selected'));
-            element.classList.add('selected');
-            
-            if (isOn) {
-                // Show loading screen when powering on
-                showLoadingScreen();
-            } else if (!isOn) {
-                // Power off - reset everything
-                resetSystem();
+            if (!currentSource) {
+                flashSourceWarning();
+                return;
             }
+            
+            // Close any other open menus
+            closeHideControls();
+            
+            // Update button states to reflect current projection state
+            updateProjectButtonStates();
+            
+            // Highlight the PROJECT button
+            element.classList.add('menu-open');
+            
+            // Open the project controls menu
+            const menu = document.getElementById('projectControlsMenu');
+            menu.classList.add('active');
         }
         
-        // Volume slider updates
-        function updateVolumeSlider(slider, percentId) {
-            if (!slider) return;
-            
-            const value = parseInt(slider.value);
-            const percent = document.getElementById(percentId);
-            
-            if (percent) {
-                percent.textContent = value + '%';
-            }
-            
-            const fillPercent = (value / 100) * 100;
-            slider.style.background = `linear-gradient(to top, #CEB888 0%, #CEB888 ${fillPercent}%, #425563 ${fillPercent}%, #425563 100%)`;
-            
-            // Update mute button state based on slider value
-            const muteBtn = slider.closest('.volume-section').querySelector('.mute-btn');
-            
-            if (muteBtn) {
-                if (value == 0) {
-                    // At 0 - show as muted
-                    muteBtn.classList.add('active');
-                    muteBtn.textContent = '🔊';
-                } else {
-                    // Above 0 - show as unmuted
-                    muteBtn.classList.remove('active');
-                    muteBtn.textContent = '🔇';
-                }
-            }
-        }
-        
-        // Mute controls - syncs with volume sliders
-        function toggleMute(element, type) {
-            const slider = type === 'mic' ? 
-                document.getElementById('micSlider') : 
-                document.getElementById('mainSlider');
-            const percentId = type === 'mic' ? 'micPercent' : 'mainPercent';
-            
-            element.classList.toggle('active');
-            
-            if (element.classList.contains('active')) {
-                // MUTING - save current volume and set to 0
-                if (type === 'mic') {
-                    micPreviousVolume = slider.value;
-                } else {
-                    mainPreviousVolume = slider.value;
-                }
-                slider.value = 0;
-                element.textContent = '🔊';
-            } else {
-                // UNMUTING - restore previous volume
-                const previousVolume = type === 'mic' ? 
-                    micPreviousVolume : mainPreviousVolume;
-                slider.value = previousVolume;
-                element.textContent = '🔇';
-            }
-            
-            updateVolumeSlider(slider, percentId);
-        }
-        
-        // Start Class
-        function startClass() {
-            const wasAlreadyOn = systemPower;
-            
-            if (!systemPower) {
-                systemPower = true;
-                const powerOnBtn = document.querySelectorAll('.power-btn')[0];
-                document.querySelectorAll('.power-btn').forEach(btn => btn.classList.remove('selected'));
-                powerOnBtn.classList.add('selected');
-            }
-            
-            if (wasAlreadyOn) {
-                // Skip loading, go straight to setup
-                setupClassroom();
-            } else {
-                // Show loading screen, then setup
-                showLoadingScreen(() => {
-                    setupClassroom();
-                });
-            }
-        }
-        
-        // Setup classroom - used by start class
-        function setupClassroom() {
-            const desktopBtn = document.querySelector('.source-btn');
-            selectSource(desktopBtn, 'desktop');
-            
-            setTimeout(() => {
-                const controlBtns = document.querySelectorAll('.control-btn');
-                togglePreview(controlBtns[0], 'left');
-                togglePreview(controlBtns[1], 'right');
-                
-                setTimeout(() => {
-                    toggleProject(controlBtns[2], 'left');
-                    toggleProject(controlBtns[3], 'right');
-                }, 300);
-            }, 300);
-        }
-        
-        // Reset system - used when powering off
-        function resetSystem() {
-            currentSource = null;
-            leftPreviewSource = null;
-            rightPreviewSource = null;
-            leftProjectSource = null;
-            rightProjectSource = null;
-            leftProjecting = false;
-            rightProjecting = false;
-            leftMuted = false;
-            rightMuted = false;
-            audioPlaying = false;
-            audioSource = null;
-            
-            updateScreenDisplay('left');
-            updateScreenDisplay('right');
-            updateStudentView('left');
-            updateStudentView('right');
-            
-            document.querySelectorAll('.control-btn').forEach(btn => {
-                btn.classList.remove('preview-active', 'project-active', 'mute-active');
-            });
-            
-            document.querySelectorAll('.source-btn').forEach(btn => {
-                btn.classList.remove('selected');
-            });
-            
-            document.querySelectorAll('.camera-btn').forEach(btn => {
-                btn.classList.remove('selected');
-            });
-            
-            const audioBtn = document.querySelector('.audio-btn');
-            if (audioBtn) {
-                audioBtn.classList.remove('active');
-                const textSpan = audioBtn.querySelector('span:last-child');
-                if (textSpan) {
-                    textSpan.textContent = 'PLAY AUDIO FROM SELECTED INPUT';
-                }
-            }
-        }
-        
-        // Help system
-        function showHelp() {
-            alert(`FSU CLASSROOM CONTROL SYSTEM - QUICK START GUIDE
-
-GETTING STARTED:
-• Press "START CLASS" to quickly power on and setup Desktop PC on both screens
-• Or follow the 3-step process: Select Input → Preview (optional) → Project
-
-INPUT SOURCES:
-Select your content source from the left panel (Desktop PC, Document Camera, Laptop, etc.)
-
-SCREEN CONTROLS:
-• PREVIEW: See the input on screen before showing students
-• PROJECT: Display the input to students (preview optional)
-• HIDE: Blank the screen (students see black screen)
-
-AUDIO:
-Use "PLAY AUDIO FROM SELECTED INPUT" to route audio to classroom speakers
-
-LIGHTS:
-Control classroom lighting from the center panel
-
-POWER:
-Power On/Off controls all classroom equipment
-
-Need more help? Contact IT Support at (850) 644-HELP`);
-        }
-        
-        // Initialize volume sliders on page load
-        document.addEventListener('DOMContentLoaded', function() {
-            const micSlider = document.getElementById('micSlider');
-            const mainSlider = document.getElementById('mainSlider');
-            
-            updateVolumeSlider(micSlider, 'micPercent');
-            updateVolumeSlider(mainSlider, 'mainPercent');
-            
-            // Save volume when user starts dragging (before they drag to 0)
-            micSlider.addEventListener('mousedown', function() {
-                if (micSlider.value > 0) {
-                    micPreviousVolume = parseInt(micSlider.value);
-                }
-            });
-            micSlider.addEventListener('touchstart', function() {
-                if (micSlider.value > 0) {
-                    micPreviousVolume = parseInt(micSlider.value);
-                }
-            });
-            
-            mainSlider.addEventListener('mousedown', function() {
-                if (mainSlider.value > 0) {
-                    mainPreviousVolume = parseInt(mainSlider.value);
-                }
-            });
-            mainSlider.addEventListener('touchstart', function() {
-                if (mainSlider.value > 0) {
-                    mainPreviousVolume = parseInt(mainSlider.value);
-                }
-            });
-        });
-        
-        // Toggle student view demo with backtick key or by clicking building name
-        document.addEventListener('keydown', function(e) {
-            if (e.key === '`' || e.key === '~') {
-                toggleDemoView();
-            }
-        });
-    </script>
-</body>
-</html>
+        function closeProjectControls() {
+            const menu = document.getElementById('projectControlsMenu');
+            menu.
