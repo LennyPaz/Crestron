@@ -598,25 +598,234 @@
             margin-left: -2px;
         }
         
+        /* PHASE 4: Doc Cam Selection Menu */
+        .doccam-selection-menu {
+            display: none;
+            background: rgba(92, 184, 178, 0.2);
+            border: 2px solid #5CB8B2;
+            border-radius: 8px;
+            padding: 15px;
+            gap: 10px;
+            animation: slideDown 0.3s ease;
+            justify-content: flex-start;
+            align-items: center;
+            flex-direction: column;
+            position: relative;
+            flex: 1;
+            max-width: 49%;
+        }
+        
+        .doccam-selection-menu.active {
+            display: flex;
+        }
+        
+        .doccam-menu-label {
+            color: #5CB8B2;
+            font-size: 13px;
+            font-weight: bold;
+            letter-spacing: 1.5px;
+        }
+        
+        .doccam-options-row {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            position: relative;
+        }
+        
+        .doccam-option-btn {
+            background: white;
+            color: #101820;
+            font-weight: 600;
+            font-size: 12px;
+            cursor: pointer;
+            border-radius: 8px;
+            padding: 20px;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+            border: 2px solid transparent;
+            width: 130px;
+            height: 130px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+        
+        .doccam-option-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            background: rgba(255, 255, 255, 0.9);
+        }
+        
+        .doccam-option-btn:active {
+            transform: translateY(0);
+        }
+        
+        .doccam-option-btn.selected {
+            background: #425563;
+            color: white;
+            border-color: #CEB888;
+        }
+        
+        .doccam-label-main {
+            font-size: 16px;
+            font-weight: bold;
+        }
+        
+        .doccam-label-sub {
+            font-size: 10px;
+            opacity: 0.8;
+        }
+        
+        /* PHASE 5: Blu-ray Controls Menu */
+        .bluray-controls-menu {
+            display: none;
+            background: rgba(92, 184, 178, 0.2);
+            border: 2px solid #5CB8B2;
+            border-radius: 8px;
+            padding: 15px;
+            gap: 8px;
+            animation: slideDown 0.3s ease;
+            justify-content: flex-start;
+            align-items: center;
+            flex-direction: column;
+            position: relative;
+            flex: 1;
+            max-width: 49%;
+        }
+        
+        .bluray-controls-menu.active {
+            display: flex;
+        }
+        
+        .bluray-menu-label {
+            color: #5CB8B2;
+            font-size: 13px;
+            font-weight: bold;
+            letter-spacing: 1.5px;
+        }
+        
+        .bluray-controls-container {
+            display: flex;
+            gap: 12px;
+            width: 100%;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .bluray-playback-section {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        
+        .bluray-controls-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 6px;
+        }
+        
+        .bluray-controls-grid.four-btn {
+            grid-template-columns: repeat(4, 1fr);
+        }
+        
+        .bluray-navigation-section {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(3, 1fr);
+            gap: 6px;
+        }
+        
+        .bluray-btn {
+            background: white;
+            color: #101820;
+            font-weight: 600;
+            font-size: 10px;
+            cursor: pointer;
+            border-radius: 6px;
+            padding: 8px 6px;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+            border: 2px solid transparent;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 3px;
+            min-height: 45px;
+        }
+        
+        .bluray-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            background: rgba(255, 255, 255, 0.9);
+        }
+        
+        .bluray-btn:active {
+            transform: translateY(0);
+        }
+        
+        .bluray-btn-icon {
+            font-size: 16px;
+            line-height: 1;
+        }
+        
+        .bluray-btn-label {
+            font-size: 8px;
+            text-align: center;
+            line-height: 1.1;
+        }
+        
+        /* Special styling for ENTER button (center of navigation) */
+        .bluray-btn.center-btn {
+            background: #5CB8B2;
+            color: white;
+            font-weight: bold;
+        }
+        
+        .bluray-btn.center-btn:hover {
+            background: #4A9A95;
+        }
+        
+        /* Empty grid cell for navigation layout */
+        .bluray-nav-spacer {
+            grid-column: 2;
+            grid-row: 2;
+        }
+        
         /* PHASE 2: Project Controls Menu */
         .project-controls-menu {
             display: none;
-            grid-column: 1 / -1;
             background: rgba(206, 184, 136, 0.2);
             border: 2px solid #CEB888;
             border-radius: 8px;
             padding: 15px;
             gap: 10px;
-            margin-top: 8px;
             animation: slideDown 0.3s ease;
-            justify-content: center;
+            justify-content: flex-start;
             align-items: center;
             flex-direction: column;
             position: relative;
+            flex: 1;
+            max-width: 49%;
+            margin-left: auto;
         }
         
         .project-controls-menu.active {
             display: flex;
+        }
+        
+        /* PHASE 4: Wrapper for side-by-side layout */
+        .menus-wrapper {
+            grid-column: 1 / -1;
+            display: flex;
+            gap: 10px;
+            margin-top: 8px;
+            align-items: stretch;
         }
         
         .project-menu-label {
@@ -697,8 +906,8 @@
             box-shadow: 0 2px 6px rgba(0,0,0,0.2);
             transition: all 0.2s ease;
             position: absolute;
-            top: 10px;
-            right: 10px;
+            top: 5px;
+            right: 5px;
             line-height: 1;
             padding-top: 2px;
             padding-left: 1px;
@@ -723,18 +932,19 @@
         /* PHASE 3: Hide & Mute Controls Menu */
         .hide-controls-menu {
             display: none;
-            grid-column: 1 / -1;
             background: rgba(255, 199, 44, 0.2);
             border: 2px solid #FFC72C;
             border-radius: 8px;
             padding: 15px;
             gap: 10px;
-            margin-top: 8px;
             animation: slideDown 0.3s ease;
-            justify-content: center;
+            justify-content: flex-start;
             align-items: center;
             flex-direction: column;
             position: relative;
+            flex: 1;
+            max-width: 49%;
+            margin-left: auto;
         }
         
         .hide-controls-menu.active {
@@ -819,8 +1029,8 @@
             box-shadow: 0 2px 6px rgba(0,0,0,0.2);
             transition: all 0.2s ease;
             position: absolute;
-            top: 10px;
-            right: 10px;
+            top: 5px;
+            right: 5px;
             line-height: 1;
             padding-top: 2px;
             padding-left: 1px;
@@ -1327,8 +1537,110 @@
                             <span>HIDE & MUTE</span>
                         </button>
                         
-                        <!-- PHASE 2: Project Controls Menu -->
-                        <div class="project-controls-menu" id="projectControlsMenu">
+                        <!-- PHASE 4: Wrapper for side-by-side menus -->
+                        <div class="menus-wrapper" id="menusWrapper">
+                            <!-- PHASE 4: Doc Cam Selection Menu -->
+                            <div class="doccam-selection-menu" id="doccamSelectionMenu">
+                                <div class="doccam-menu-label">SELECT DOCUMENT CAMERA</div>
+                                <div class="doccam-options-row">
+                                    <button class="doccam-option-btn" id="doccamLeftBtn" onclick="selectDocCam('left')">
+                                        <span class="doccam-label-main">LEFT</span>
+                                        <span class="doccam-label-sub">Left Doc Cam</span>
+                                    </button>
+                                    <button class="doccam-option-btn" id="doccamRightBtn" onclick="selectDocCam('right')">
+                                        <span class="doccam-label-main">RIGHT</span>
+                                        <span class="doccam-label-sub">Right Doc Cam</span>
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <!-- PHASE 5: Blu-ray Controls Menu -->
+                            <div class="bluray-controls-menu" id="blurayControlsMenu">
+                                <div class="bluray-menu-label">BLU-RAY CONTROLS</div>
+                                
+                                <div class="bluray-controls-container">
+                                    <!-- Left side: Playback Controls -->
+                                    <div class="bluray-playback-section">
+                                        <!-- Playback Controls Row 1 -->
+                                        <div class="bluray-controls-grid">
+                                            <button class="bluray-btn" onclick="return false;">
+                                                <span class="bluray-btn-icon">⏪</span>
+                                                <span class="bluray-btn-label">REW</span>
+                                            </button>
+                                            <button class="bluray-btn" onclick="return false;">
+                                                <span class="bluray-btn-icon">▶</span>
+                                                <span class="bluray-btn-label">PLAY</span>
+                                            </button>
+                                            <button class="bluray-btn" onclick="return false;">
+                                                <span class="bluray-btn-icon">⏩</span>
+                                                <span class="bluray-btn-label">FWD</span>
+                                            </button>
+                                        </div>
+                                        
+                                        <!-- Playback Controls Row 2 -->
+                                        <div class="bluray-controls-grid four-btn">
+                                            <button class="bluray-btn" onclick="return false;">
+                                                <span class="bluray-btn-icon">⏮</span>
+                                                <span class="bluray-btn-label">SKIP</span>
+                                            </button>
+                                            <button class="bluray-btn" onclick="return false;">
+                                                <span class="bluray-btn-icon">⏹</span>
+                                                <span class="bluray-btn-label">STOP</span>
+                                            </button>
+                                            <button class="bluray-btn" onclick="return false;">
+                                                <span class="bluray-btn-icon">⏸</span>
+                                                <span class="bluray-btn-label">PAUSE</span>
+                                            </button>
+                                            <button class="bluray-btn" onclick="return false;">
+                                                <span class="bluray-btn-icon">⏭</span>
+                                                <span class="bluray-btn-label">SKIP</span>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Right side: Navigation Grid -->
+                                    <div class="bluray-navigation-section">
+                                        <!-- Top row -->
+                                        <div></div>
+                                        <button class="bluray-btn" onclick="return false;">
+                                            <span class="bluray-btn-icon">▲</span>
+                                            <span class="bluray-btn-label">UP</span>
+                                        </button>
+                                        <button class="bluray-btn" onclick="return false;">
+                                            <span class="bluray-btn-icon">⏏</span>
+                                            <span class="bluray-btn-label">EJECT</span>
+                                        </button>
+                                        
+                                        <!-- Middle row -->
+                                        <button class="bluray-btn" onclick="return false;">
+                                            <span class="bluray-btn-icon">◀</span>
+                                            <span class="bluray-btn-label">LEFT</span>
+                                        </button>
+                                        <button class="bluray-btn center-btn" onclick="return false;">
+                                            <span class="bluray-btn-icon">⏎</span>
+                                            <span class="bluray-btn-label">ENTER</span>
+                                        </button>
+                                        <button class="bluray-btn" onclick="return false;">
+                                            <span class="bluray-btn-icon">▶</span>
+                                            <span class="bluray-btn-label">RIGHT</span>
+                                        </button>
+                                        
+                                        <!-- Bottom row -->
+                                        <div></div>
+                                        <button class="bluray-btn" onclick="return false;">
+                                            <span class="bluray-btn-icon">▼</span>
+                                            <span class="bluray-btn-label">DOWN</span>
+                                        </button>
+                                        <button class="bluray-btn" onclick="return false;">
+                                            <span class="bluray-btn-icon">☰</span>
+                                            <span class="bluray-btn-label">MENU</span>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- PHASE 2: Project Controls Menu -->
+                            <div class="project-controls-menu" id="projectControlsMenu">
                             <button class="close-menu-btn" onclick="closeProjectControls()">
                                 ✕
                             </button>
@@ -1348,9 +1660,9 @@
                                 </button>
                             </div>
                         </div>
-                        
-                        <!-- PHASE 3: Hide & Mute Controls Menu -->
-                        <div class="hide-controls-menu" id="hideControlsMenu">
+                            
+                            <!-- PHASE 3: Hide & Mute Controls Menu -->
+                            <div class="hide-controls-menu" id="hideControlsMenu">
                             <button class="close-hide-menu-btn" onclick="closeHideControls()">
                                 ✕
                             </button>
@@ -1370,6 +1682,7 @@
                                 </button>
                             </div>
                         </div>
+                        </div> <!-- Close menus-wrapper -->
                     </div>
                 </div>
             </div>
@@ -1447,6 +1760,7 @@
     <script>
         // State variables
         let currentSource = null;
+        let selectedDocCam = null; // 'left' or 'right' when doc cam is selected
         let leftPreviewSource = null;
         let rightPreviewSource = null;
         let leftProjectSource = null;  // What's actually being projected on left
@@ -1519,6 +1833,23 @@
             document.querySelectorAll('.source-btn').forEach(btn => btn.classList.remove('selected'));
             element.classList.add('selected');
             currentSource = source;
+            
+            // PHASE 4: If doc cam is selected, open doc cam menu and auto-select left
+            if (source === 'doccam') {
+                selectedDocCam = 'left'; // Auto-select left
+                openDocCamMenu();
+                closeBlurayMenu();
+            } else if (source === 'bluray') {
+                // PHASE 5: Open Blu-ray controls menu
+                openBlurayMenu();
+                closeDocCamMenu();
+                selectedDocCam = null;
+            } else {
+                // Close both doc cam and bluray menus if switching to different source
+                closeDocCamMenu();
+                closeBlurayMenu();
+                selectedDocCam = null;
+            }
         }
         
         // Update student view (what's actually being projected)
@@ -1534,7 +1865,12 @@
                 display.textContent = 'BLANKED';
                 display.classList.add('blanked');
             } else if (isProjecting && projectSource) {
-                display.textContent = projectSource.toUpperCase();
+                // PHASE 4: Show which doc cam if doc cam is the source
+                if (projectSource === 'doccam' && selectedDocCam) {
+                    display.textContent = `${selectedDocCam.toUpperCase()} DOC CAM`;
+                } else {
+                    display.textContent = projectSource.toUpperCase();
+                }
                 display.classList.add('projecting');
             } else {
                 display.textContent = '—';
@@ -1693,6 +2029,54 @@
             console.log('Camera preset:', preset);
         }
         
+        // PHASE 4: Doc Cam Selection Menu Functions
+        function openDocCamMenu() {
+            const menu = document.getElementById('doccamSelectionMenu');
+            menu.classList.add('active');
+            
+            // Update button states
+            updateDocCamButtonStates();
+        }
+        
+        function closeDocCamMenu() {
+            const menu = document.getElementById('doccamSelectionMenu');
+            menu.classList.remove('active');
+        }
+        
+        function selectDocCam(side) {
+            selectedDocCam = side;
+            
+            // Update highlighting to match source button style
+            updateDocCamButtonStates();
+        }
+        
+        function updateDocCamButtonStates() {
+            const leftBtn = document.getElementById('doccamLeftBtn');
+            const rightBtn = document.getElementById('doccamRightBtn');
+            
+            // Remove all selected states
+            leftBtn.classList.remove('selected');
+            rightBtn.classList.remove('selected');
+            
+            // Add selected state based on current selection
+            if (selectedDocCam === 'left') {
+                leftBtn.classList.add('selected');
+            } else if (selectedDocCam === 'right') {
+                rightBtn.classList.add('selected');
+            }
+        }
+        
+        // PHASE 5: Blu-ray Controls Menu Functions
+        function openBlurayMenu() {
+            const menu = document.getElementById('blurayControlsMenu');
+            menu.classList.add('active');
+        }
+        
+        function closeBlurayMenu() {
+            const menu = document.getElementById('blurayControlsMenu');
+            menu.classList.remove('active');
+        }
+        
         // PHASE 2: Project Controls Menu Functions
         let projectLeftSelected = false;
         let projectRightSelected = false;
@@ -1709,7 +2093,7 @@
                 return;
             }
             
-            // Close any other open menus
+            // Close hide menu but NOT doc cam menu
             closeHideControls();
             
             // Update button states to reflect current projection state
@@ -1739,18 +2123,10 @@
             const rightBtn = document.getElementById('projectRightBtn');
             const bothBtn = document.getElementById('projectBothBtn');
             
-            // Remove all selected states
+            // Remove all selected states - no highlighting on project buttons
             leftBtn.classList.remove('selected');
             rightBtn.classList.remove('selected');
             bothBtn.classList.remove('selected');
-            
-            // Add selected state based on current projections
-            if (leftProjecting && leftProjectSource === currentSource) {
-                leftBtn.classList.add('selected');
-            }
-            if (rightProjecting && rightProjectSource === currentSource) {
-                rightBtn.classList.add('selected');
-            }
         }
         
         function projectToScreen(side) {
@@ -1764,29 +2140,15 @@
                 leftProjecting = true;
                 updateScreenDisplay('left');
                 updateStudentView('left');
-                
-                // Check if both are now selected with current source
-                if (rightProjecting && rightProjectSource === currentSource) {
-                    // Both left and right are now projecting - close menu
-                    closeProjectControls();
-                } else {
-                    // Update button states to show selection
-                    updateProjectButtonStates();
-                }
+                // Just update button states, don't auto-close
+                updateProjectButtonStates();
             } else if (side === 'right') {
                 rightProjectSource = currentSource;
                 rightProjecting = true;
                 updateScreenDisplay('right');
                 updateStudentView('right');
-                
-                // Check if both are now selected with current source
-                if (leftProjecting && leftProjectSource === currentSource) {
-                    // Both left and right are now projecting - close menu
-                    closeProjectControls();
-                } else {
-                    // Update button states to show selection
-                    updateProjectButtonStates();
-                }
+                // Just update button states, don't auto-close
+                updateProjectButtonStates();
             } else if (side === 'both') {
                 leftProjectSource = currentSource;
                 rightProjectSource = currentSource;
@@ -1796,9 +2158,8 @@
                 updateScreenDisplay('right');
                 updateStudentView('left');
                 updateStudentView('right');
-                
-                // Close immediately when BOTH is clicked
-                closeProjectControls();
+                // Just update button states, don't auto-close
+                updateProjectButtonStates();
             }
         }
         
@@ -1810,7 +2171,7 @@
                 return;
             }
             
-            // Close any other open menus
+            // Close project menu but NOT doc cam menu
             closeProjectControls();
             
             // Update button states to reflect current hide/mute state
@@ -1952,7 +2313,9 @@
                 // Show loading screen when powering on
                 showLoadingScreen();
             } else if (!isOn) {
-                // Power off - reset everything
+                // Power off - close menus and reset everything
+                closeProjectControls();
+                closeHideControls();
                 resetSystem();
             }
         }
@@ -2065,6 +2428,7 @@
         // Reset system - used when powering off
         function resetSystem() {
             currentSource = null;
+            selectedDocCam = null;
             leftPreviewSource = null;
             rightPreviewSource = null;
             leftProjectSource = null;
@@ -2080,6 +2444,12 @@
             updateScreenDisplay('right');
             updateStudentView('left');
             updateStudentView('right');
+            
+            // PHASE 4: Close doc cam menu
+            closeDocCamMenu();
+            
+            // PHASE 5: Close bluray menu
+            closeBlurayMenu();
             
             document.querySelectorAll('.control-btn').forEach(btn => {
                 btn.classList.remove('preview-active', 'project-active', 'mute-active');
