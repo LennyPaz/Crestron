@@ -32,7 +32,7 @@
         .header {
             height: 8vh;
             display: grid;
-            grid-template-columns: 150px 1fr 150px;
+            grid-template-columns: 1fr auto 1fr;
             align-items: center;
             padding: 0 30px;
             background: transparent;
@@ -54,6 +54,7 @@
             flex-direction: column;
             align-items: center;
             gap: 4px;
+            justify-self: center;
         }
         
         .building-name {
@@ -175,7 +176,7 @@
         .middle-row {
             height: 44vh;
             display: flex;
-            padding: 12px 30px;
+            padding: 6px 15px;
             gap: 15px;
             transition: all 0.3s ease;
         }
@@ -265,7 +266,7 @@
             text-align: center;
             padding: 10px;
             font-weight: 600;
-            font-size: 10px;
+            font-size: 14px;
             cursor: pointer;
             flex: 1;
             border-radius: 8px;
@@ -288,7 +289,7 @@
         .bottom-row {
             height: 48vh;
             display: flex;
-            padding: 12px 30px 15px 30px;
+            padding: 6px 15px 24px 15px;
             gap: 15px;
         }
         
@@ -296,7 +297,7 @@
         .control-card {
             background: rgba(16, 24, 32, 0.5);
             border-radius: 8px;
-            padding: 12px;
+            padding: 8px;
             border: 2px solid rgba(206, 184, 136, 0.3);
             transition: all 0.3s ease;
         }
@@ -341,7 +342,7 @@
             color: #CEB888;
             font-size: 12px;
             font-weight: bold;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
             display: flex;
             align-items: center;
             gap: 6px;
@@ -358,7 +359,7 @@
         .sources-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
-            gap: 8px;
+            gap: 6px;
             flex: 1;
         }
         
@@ -369,14 +370,14 @@
             font-size: 10px;
             cursor: pointer;
             border-radius: 8px;
-            padding: 6px;
+            padding: 4px;
             transition: all 0.2s ease;
             box-shadow: 0 2px 6px rgba(0,0,0,0.2);
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            gap: 4px;
+            gap: 2px;
             text-align: center;
             border: none;
         }
@@ -398,8 +399,8 @@
         }
         
         .btn-icon {
-            width: 40px;
-            height: 40px;
+            width: 32px;
+            height: 32px;
             object-fit: contain;
         }
         
@@ -413,7 +414,7 @@
             background: white;
             color: #101820;
             font-weight: 600;
-            font-size: 10px;
+            font-size: 14px;
             cursor: pointer;
             padding: 8px;
             border-radius: 8px;
@@ -498,7 +499,7 @@
             background: white;
             color: #101820;
             font-weight: 600;
-            font-size: 11px;
+            font-size: 14px;
             cursor: pointer;
             border-radius: 8px;
             padding: 12px;
@@ -561,7 +562,7 @@
             background: white;
             color: #101820;
             font-weight: 600;
-            font-size: 11px;
+            font-size: 14px;
             cursor: pointer;
             border-radius: 8px;
             padding: 12px;
@@ -1048,10 +1049,72 @@
             gap: 12px;
         }
         
-        .power-card {
-            height: 230px;
-            width: 110px;
+        .power-and-screens-column {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            width: 150px;
             flex-shrink: 0;
+            height: 100%;
+        }
+        
+        .power-card {
+            flex-shrink: 0;
+        }
+        
+        /* PHASE 6: Screen Controls Card */
+        .screen-card {
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+        }
+        
+        .screen-controls-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px;
+            row-gap: 12px;
+            flex: 1;
+        }
+        
+        .projector-control-btn {
+            background: white;
+            color: #101820;
+            font-weight: 600;
+            font-size: 10px;
+            cursor: pointer;
+            border-radius: 8px;
+            padding: 12px 8px;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            border: none;
+            min-height: 56px;
+        }
+        
+        .projector-control-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            background: rgba(255, 255, 255, 0.9);
+        }
+        
+        .projector-control-btn:active {
+            transform: translateY(0);
+        }
+        
+        .projector-control-btn.active {
+            background: #5CB8B2;
+            color: white;
+        }
+        
+        .projector-btn-icon {
+            font-size: 18px;
+            line-height: 1;
         }
         
         .power-controls {
@@ -1065,7 +1128,7 @@
             background: white;
             color: #101820;
             font-weight: 600;
-            font-size: 10px;
+            font-size: 13px;
             cursor: pointer;
             border-radius: 8px;
             padding: 10px;
@@ -1100,7 +1163,7 @@
             display: flex;
             justify-content: space-around;
             padding: 0;
-            gap: 8px;
+            gap: 0px;
         }
         
         .volume-section {
@@ -1114,7 +1177,7 @@
         
         .volume-label {
             color: #CEB888;
-            font-size: 9px;
+            font-size: 12px;
             font-weight: bold;
             text-align: center;
             line-height: 1.2;
@@ -1463,7 +1526,6 @@
                 
                 <div class="control-card" style="flex: 1;">
                     <div class="card-title">
-                        <span>📺</span>
                         <span>INPUT SOURCES</span>
                     </div>
                     <div class="sources-grid">
@@ -1471,38 +1533,45 @@
                             <img src="Icons/DeskTopIcon.png" alt="Desktop" class="btn-icon">
                             <span>DESKTOP PC</span>
                         </button>
-                        <button class="source-btn" onclick="selectSource(this, 'doccam')">
-                            <img src="Icons/DocCamIcon.svg" alt="Doc Cam" class="btn-icon">
-                            <span>DOC CAM</span>
+                        <button class="source-btn" onclick="selectSource(this, 'mac')">
+                            <img src="Icons/MacIcon.png" alt="Mac" class="btn-icon">
+                            <span>MAC</span>
                         </button>
                         <button class="source-btn" onclick="selectSource(this, 'laptop')">
                             <img src="Icons/LaptopIcon.webp" alt="Laptop" class="btn-icon">
                             <span>LAPTOP</span>
                         </button>
-                        <button class="source-btn" onclick="selectSource(this, 'wireless')">
-                            <img src="Icons/WirelessIcon.png" alt="Wireless" class="btn-icon">
-                            <span>WIRELESS</span>
+                        <button class="source-btn" onclick="selectSource(this, 'doccam')">
+                            <img src="Icons/DocCamIcon.svg" alt="Doc Cam" class="btn-icon">
+                            <span>DOC CAM</span>
+                        </button>
+                        <button class="source-btn" onclick="selectSource(this, 'camera')">
+                            <img src="Icons/CameraIcon.jpg" alt="Camera" class="btn-icon">
+                            <span>CAMERA</span>
                         </button>
                         <button class="source-btn" onclick="selectSource(this, 'bluray')">
                             <img src="Icons/BluerayIcon.ico" alt="Blu-ray" class="btn-icon">
                             <span>BLU-RAY</span>
+                        </button>
+                        <button class="source-btn" onclick="selectSource(this, 'wireless')">
+                            <img src="Icons/WirelessIcon.png" alt="Wireless" class="btn-icon">
+                            <span>WIRELESS STREAM</span>
                         </button>
                     </div>
                 </div>
                 
                 <div class="control-card">
                     <div class="card-title">
-                        <span>🎥</span>
                         <span>CAMERA PRESETS</span>
                     </div>
                     <div class="camera-controls">
                         <button class="camera-btn" onclick="selectCamera(this, 1)">
                             <img src="Icons/CameraIcon.jpg" alt="Camera" class="btn-icon">
-                            <span>PRESET 1</span>
+                            <span>ANGLE 1</span>
                         </button>
                         <button class="camera-btn" onclick="selectCamera(this, 2)">
                             <img src="Icons/CameraIcon.jpg" alt="Camera" class="btn-icon">
-                            <span>PRESET 2</span>
+                            <span>ANGLE 2</span>
                         </button>
                     </div>
                 </div>
@@ -1512,7 +1581,6 @@
             <div class="middle-section">
                 <div class="control-card" style="flex: 1;">
                     <div class="card-title">
-                        <span>🎬</span>
                         <span>SCREEN CONTROLS</span>
                     </div>
                     <div class="controls-grid">
@@ -1687,28 +1755,53 @@
                 </div>
             </div>
             
-            <!-- Right section - Power and volume -->
+            <!-- Right section - Power, Screen Controls, and Volume -->
             <div class="right-section">
-                <div class="control-card power-card">
-                    <div class="card-title">
-                        <span>⚡</span>
-                        <span>POWER</span>
+                <div class="power-and-screens-column">
+                    <div class="control-card power-card">
+                        <div class="card-title">
+                            <span>POWER</span>
+                        </div>
+                        <div class="power-controls">
+                            <button class="power-btn" onclick="togglePower(this, true)">
+                                <img src="Icons/PowerIcon.webp" alt="Power On" class="btn-icon">
+                                <span>POWER<br>ON</span>
+                            </button>
+                            <button class="power-btn selected" onclick="togglePower(this, false)">
+                                <img src="Icons/PowerIcon.webp" alt="Power Off" class="btn-icon">
+                                <span>POWER<br>OFF</span>
+                            </button>
+                        </div>
                     </div>
-                    <div class="power-controls">
-                        <button class="power-btn" onclick="togglePower(this, true)">
-                            <img src="Icons/PowerIcon.webp" alt="Power On" class="btn-icon">
-                            <span>POWER<br>ON</span>
-                        </button>
-                        <button class="power-btn selected" onclick="togglePower(this, false)">
-                            <img src="Icons/PowerIcon.webp" alt="Power Off" class="btn-icon">
-                            <span>POWER<br>OFF</span>
-                        </button>
+                    
+                    <!-- PHASE 6: Screen Controls -->
+                    <div class="control-card screen-card">
+                        <div class="card-title">
+                            <span>PROJECTOR SCREENS</span>
+                        </div>
+                        <div class="screen-controls-grid">
+                            <button class="projector-control-btn" onclick="toggleScreen(this, 'left', 'up')">
+                                <img src="Icons/ProjectorScreenIcon.png" alt="Screen" class="btn-icon" style="width: 30px; height: 30px;">
+                                <span>LEFT<br>SCREEN<br>UP</span>
+                            </button>
+                            <button class="projector-control-btn" onclick="toggleScreen(this, 'right', 'up')">
+                                <img src="Icons/ProjectorScreenIcon.png" alt="Screen" class="btn-icon" style="width: 30px; height: 30px;">
+                                <span>RIGHT<br>SCREEN<br>UP</span>
+                            </button>
+                            <button class="projector-control-btn" onclick="toggleScreen(this, 'left', 'down')">
+                                <img src="Icons/ProjectorScreenIcon.png" alt="Screen" class="btn-icon" style="width: 30px; height: 30px;">
+                                <span>LEFT<br>SCREEN<br>DOWN</span>
+                            </button>
+                            <button class="projector-control-btn" onclick="toggleScreen(this, 'right', 'down')">
+                                <img src="Icons/ProjectorScreenIcon.png" alt="Screen" class="btn-icon" style="width: 30px; height: 30px;">
+                                <span>RIGHT<br>SCREEN<br>DOWN</span>
+                            </button>
+                        </div>
                     </div>
                 </div>
                 
                 <div class="control-card" style="flex: 1; display: flex; flex-direction: column;">
                     <div class="card-title">
-                        <span>🔊</span>
                         <span>VOLUME</span>
                     </div>
                     <div class="volume-controls">
@@ -1775,12 +1868,18 @@
         let mainPreviousVolume = 50; // Store previous volume for unmuting
         let systemPower = false; // Start with power OFF
         
+        // PHASE 6: Projector screen and lamp state
+        let leftScreenDown = false;     // Physical screen position - START WITH SCREENS UP
+        let rightScreenDown = false;
+        
         // Source to wallpaper mapping (using correct capitalization for Wallpapers folder)
         const sourceWallpapers = {
             'desktop': 'Wallpapers/DesktopLockScreen.png',
+            'mac': 'Wallpapers/Mac.png',
             'laptop': 'Wallpapers/Laptop LockScreen.jpg',
             'bluray': 'Wallpapers/Blue Ray.webp',
             'wireless': 'Wallpapers/Wireless.png',
+            'camera': null, // No wallpaper for camera yet
             'doccam': null // No wallpaper for doc cam yet
         };
         
@@ -1788,6 +1887,12 @@
         function toggleDemoView() {
             const demoView = document.querySelector('.student-view-demo');
             demoView.classList.toggle('hidden');
+        }
+        
+        // Initialize student view on page load
+        function initializeStudentView() {
+            updateStudentView('left');
+            updateStudentView('right');
         }
         
         // Update time
@@ -1858,22 +1963,26 @@
             const isMuted = side === 'left' ? leftMuted : rightMuted;
             const isProjecting = side === 'left' ? leftProjecting : rightProjecting;
             const projectSource = side === 'left' ? leftProjectSource : rightProjectSource;
+            const screenDown = side === 'left' ? leftScreenDown : rightScreenDown;
             
             display.classList.remove('blanked', 'projecting');
             
+            // PHASE 6: Show screen position with bigger arrow
+            let screenIcon = screenDown ? ' ▼' : ' ▲';
+            
             if (isMuted && isProjecting) {
-                display.textContent = 'BLANKED';
+                display.textContent = 'BLANKED' + screenIcon;
                 display.classList.add('blanked');
             } else if (isProjecting && projectSource) {
                 // PHASE 4: Show which doc cam if doc cam is the source
                 if (projectSource === 'doccam' && selectedDocCam) {
-                    display.textContent = `${selectedDocCam.toUpperCase()} DOC CAM`;
+                    display.textContent = `${selectedDocCam.toUpperCase()} DOC CAM` + screenIcon;
                 } else {
-                    display.textContent = projectSource.toUpperCase();
+                    display.textContent = projectSource.toUpperCase() + screenIcon;
                 }
                 display.classList.add('projecting');
             } else {
-                display.textContent = '—';
+                display.textContent = '—' + screenIcon;
             }
         }
         
@@ -2007,7 +2116,13 @@
             element.classList.add('active');
             
             const textSpan = element.querySelector('span:last-child');
-            textSpan.textContent = `PLAYING AUDIO FROM: ${currentSource.toUpperCase()}`;
+            
+            // Special handling for doc cam - show which doc cam
+            if (currentSource === 'doccam' && selectedDocCam) {
+                textSpan.textContent = `PLAYING AUDIO FROM: ${selectedDocCam.toUpperCase()} DOC CAM`;
+            } else {
+                textSpan.textContent = `PLAYING AUDIO FROM: ${currentSource.toUpperCase()}`;
+            }
         }
         
         // Light controls
@@ -2075,6 +2190,21 @@
         function closeBlurayMenu() {
             const menu = document.getElementById('blurayControlsMenu');
             menu.classList.remove('active');
+        }
+        
+        // PHASE 6: Projector Screen Controls
+        function toggleScreen(element, side, direction) {
+            // Preview-style flash effect
+            element.classList.add('active');
+            setTimeout(() => element.classList.remove('active'), 300);
+            
+            if (side === 'left') {
+                leftScreenDown = (direction === 'down');
+            } else {
+                rightScreenDown = (direction === 'down');
+            }
+            
+            updateStudentView(side);
         }
         
         // PHASE 2: Project Controls Menu Functions
@@ -2310,9 +2440,19 @@
             element.classList.add('selected');
             
             if (isOn) {
+                // PHASE 6: Drop screens when powering on
+                leftScreenDown = true;
+                rightScreenDown = true;
+                updateStudentView('left');
+                updateStudentView('right');
+                
                 // Show loading screen when powering on
                 showLoadingScreen();
             } else if (!isOn) {
+                // PHASE 6: Raise screens when powering off
+                leftScreenDown = false;
+                rightScreenDown = false;
+                
                 // Power off - close menus and reset everything
                 closeProjectControls();
                 closeHideControls();
@@ -2403,6 +2543,10 @@
         
         // Setup classroom - used by start class
         function setupClassroom() {
+            // PHASE 6: Drop screens
+            leftScreenDown = true;
+            rightScreenDown = true;
+            
             const desktopBtn = document.querySelector('.source-btn');
             selectSource(desktopBtn, 'desktop');
             
@@ -2439,6 +2583,10 @@
             rightMuted = false;
             audioPlaying = false;
             audioSource = null;
+            
+            // PHASE 6: Reset screen state (already done in togglePower, but included for completeness)
+            leftScreenDown = false;
+            rightScreenDown = false;
             
             updateScreenDisplay('left');
             updateScreenDisplay('right');
@@ -2508,6 +2656,9 @@ Need more help? Contact IT Support at (850) 644-HELP`);
             
             updateVolumeSlider(micSlider, 'micPercent');
             updateVolumeSlider(mainSlider, 'mainPercent');
+            
+            // Initialize student view to show arrows
+            initializeStudentView();
             
             // Save volume when user starts dragging (before they drag to 0)
             micSlider.addEventListener('mousedown', function() {
