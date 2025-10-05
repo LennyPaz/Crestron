@@ -49,6 +49,11 @@
             white-space: nowrap;
         }
         
+        .fsu-logo img {
+            width: 65px;
+            height: 65px;
+        }
+        
         .building-info {
             display: flex;
             flex-direction: column;
@@ -108,7 +113,7 @@
             transform: translateY(0);
         }
         
-        /* Student View Demo Bar */
+        /* Room View Demo Bar */
         .student-view-demo {
             background: rgba(255, 199, 44, 0.15);
             border: 2px dashed #FFC72C;
@@ -354,6 +359,7 @@
             display: flex;
             flex-direction: column;
             gap: 8px;
+            min-height: 0;
         }
         
         .sources-grid {
@@ -361,6 +367,8 @@
             grid-template-columns: repeat(2, 1fr);
             gap: 6px;
             flex: 1;
+            min-height: 0;
+            align-content: start;
         }
         
         .source-btn {
@@ -380,6 +388,8 @@
             gap: 2px;
             text-align: center;
             border: none;
+            min-height: 0;
+            height: auto;
         }
         
         .source-btn:hover {
@@ -399,14 +409,24 @@
         }
         
         .btn-icon {
-            width: 32px;
-            height: 32px;
+            width: 40px;
+            height: 40px;
             object-fit: contain;
+        }
+        
+        /* Scale down icons on shorter screens */
+        @media (max-height: 800px) {
+            .btn-icon {
+                width: 32px;
+                height: 32px;
+            }
         }
         
         .camera-controls {
             display: flex;
             gap: 8px;
+            flex: 1;
+            min-height: 0;
         }
         
         .camera-btn {
@@ -416,15 +436,17 @@
             font-weight: 600;
             font-size: 14px;
             cursor: pointer;
-            padding: 8px;
+            padding: 6px;
             border-radius: 8px;
             transition: all 0.2s ease;
             box-shadow: 0 2px 6px rgba(0,0,0,0.2);
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 3px;
+            gap: 2px;
             border: none;
+            min-height: 0;
+            height: 100%;
         }
         
         .camera-btn:hover {
@@ -444,6 +466,7 @@
             display: flex;
             flex-direction: column;
             gap: 12px;
+            min-height: 0;
         }
         
         .workflow-guide {
@@ -493,6 +516,7 @@
             grid-template-columns: repeat(5, 1fr);
             grid-template-rows: 1fr;
             gap: 10px;
+            min-height: 0;
         }
         
         .control-btn {
@@ -502,7 +526,7 @@
             font-size: 14px;
             cursor: pointer;
             border-radius: 8px;
-            padding: 12px;
+            padding: 16px 12px;
             transition: all 0.2s ease;
             box-shadow: 0 2px 6px rgba(0,0,0,0.2);
             display: flex;
@@ -512,7 +536,8 @@
             gap: 6px;
             text-align: center;
             border: none;
-            min-height: 120px;
+            min-height: 0;
+            height: 100%;
         }
         
         .control-btn:hover {
@@ -565,7 +590,7 @@
             font-size: 14px;
             cursor: pointer;
             border-radius: 8px;
-            padding: 12px;
+            padding: 16px 12px;
             transition: all 0.2s ease;
             box-shadow: 0 2px 6px rgba(0,0,0,0.2);
             display: flex;
@@ -575,7 +600,8 @@
             gap: 6px;
             border: none;
             text-align: center;
-            min-height: 120px;
+            min-height: 0;
+            height: 100%;
         }
         
         .audio-btn:hover {
@@ -734,6 +760,10 @@
             grid-template-columns: repeat(4, 1fr);
         }
         
+        .bluray-controls-grid.four-btn .bluray-btn {
+            min-height: 45px;
+        }
+        
         .bluray-navigation-section {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
@@ -783,13 +813,14 @@
         
         /* Special styling for ENTER button (center of navigation) */
         .bluray-btn.center-btn {
-            background: #5CB8B2;
+            background: #425563;
             color: white;
             font-weight: bold;
+            border: 2px solid #CEB888;
         }
         
         .bluray-btn.center-btn:hover {
-            background: #4A9A95;
+            background: #354451;
         }
         
         /* Empty grid cell for navigation layout */
@@ -1046,7 +1077,16 @@
         .right-section {
             flex: 0.65;
             display: flex;
+            flex-direction: column;
+            gap: 8px;
+            min-height: 0;
+        }
+        
+        .power-volume-row {
+            display: flex;
             gap: 12px;
+            flex: 1;
+            min-height: 0;
         }
         
         .power-and-screens-column {
@@ -1056,6 +1096,7 @@
             width: 150px;
             flex-shrink: 0;
             height: 100%;
+            min-height: 0;
         }
         
         .power-card {
@@ -1064,10 +1105,10 @@
         
         /* PHASE 6: Screen Controls Card */
         .screen-card {
-            flex-shrink: 0;
+            flex: 1;
             display: flex;
             flex-direction: column;
-            flex: 1;
+            min-height: 0;
         }
         
         .screen-controls-grid {
@@ -1076,6 +1117,7 @@
             gap: 6px;
             row-gap: 12px;
             flex: 1;
+            min-height: 0;
         }
         
         .projector-control-btn {
@@ -1094,7 +1136,8 @@
             justify-content: center;
             gap: 4px;
             border: none;
-            min-height: 56px;
+            min-height: 0;
+            height: 100%;
         }
         
         .projector-control-btn:hover {
@@ -1327,15 +1370,9 @@
         
         /* Help button */
         .help-btn {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            width: 45px;
-            height: 45px;
-            border-radius: 50%;
             background: #CEB888;
             color: #101820;
-            font-size: 22px;
+            font-size: 14px;
             font-weight: bold;
             cursor: pointer;
             box-shadow: 0 4px 12px rgba(0,0,0,0.4);
@@ -1344,11 +1381,120 @@
             justify-content: center;
             transition: all 0.3s ease;
             border: none;
+            border-radius: 8px;
+            padding: 12px;
+            flex-shrink: 0;
         }
         
         .help-btn:hover {
-            transform: scale(1.1);
+            transform: translateY(-2px);
             box-shadow: 0 6px 16px rgba(0,0,0,0.5);
+        }
+        
+        /* Power Off Confirmation Modal */
+        .power-off-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(16, 24, 32, 0.85);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+            backdrop-filter: blur(4px);
+        }
+        
+        .power-off-modal.active {
+            display: flex;
+        }
+        
+        .modal-content {
+            background: linear-gradient(135deg, #782F40 0%, #572932 100%);
+            border: 3px solid #CEB888;
+            border-radius: 12px;
+            padding: 40px;
+            max-width: 500px;
+            width: 80%;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.6);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 30px;
+        }
+        
+        .modal-icon {
+            font-size: 72px;
+            line-height: 1;
+        }
+        
+        .modal-message {
+            text-align: center;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        
+        .modal-title {
+            font-size: 28px;
+            font-weight: bold;
+            letter-spacing: 1px;
+            color: #FFC72C;
+        }
+        
+        .modal-text {
+            font-size: 18px;
+            line-height: 1.5;
+            color: #CEB888;
+        }
+        
+        .modal-buttons {
+            display: flex;
+            gap: 20px;
+            width: 100%;
+            margin-top: 10px;
+        }
+        
+        .modal-btn {
+            flex: 1;
+            padding: 18px 32px;
+            font-size: 18px;
+            font-weight: bold;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            letter-spacing: 1px;
+        }
+        
+        .modal-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0,0,0,0.4);
+        }
+        
+        .modal-btn:active {
+            transform: translateY(0);
+        }
+        
+        .modal-btn-no {
+            background: white;
+            color: #101820;
+        }
+        
+        .modal-btn-no:hover {
+            background: rgba(255, 255, 255, 0.9);
+        }
+        
+        .modal-btn-yes {
+            background: #A6192E;
+            color: white;
+        }
+        
+        .modal-btn-yes:hover {
+            background: #8A1526;
         }
         
         /* Loading Screen */
@@ -1446,7 +1592,7 @@
         <!-- Header -->
         <div class="header">
             <div class="fsu-logo">
-                <img src="Icons/FSULogo.svg" alt="FSU Logo" style="width: 50px; height: 50px;">
+                <img src="Icons/FSULogo.svg" alt="FSU Logo">
                 <span>FLORIDA STATE UNIVERSITY</span>
             </div>
             <div class="building-info">
@@ -1459,7 +1605,7 @@
             </button>
         </div>
         
-        <!-- Student View Demo Bar (FOR SHOWCASE ONLY) -->
+        <!-- Room View Demo Bar (FOR SHOWCASE ONLY) -->
         <div class="student-view-demo hidden">
             <span class="demo-label">⚠ DEMO ONLY - ROOM VIEW:</span>
             <div class="student-projectors">
@@ -1524,7 +1670,7 @@
                     </div>
                 </div>
                 
-                <div class="control-card" style="flex: 1;">
+                <div class="control-card" style="flex: 1; padding-bottom: 4px; display: flex; flex-direction: column; min-height: 0;">
                     <div class="card-title">
                         <span>INPUT SOURCES</span>
                     </div>
@@ -1560,7 +1706,7 @@
                     </div>
                 </div>
                 
-                <div class="control-card">
+                <div class="control-card" style="display: flex; flex-direction: column; min-height: 0; flex-shrink: 0;">
                     <div class="card-title">
                         <span>CAMERA PRESETS</span>
                     </div>
@@ -1631,15 +1777,15 @@
                                     <div class="bluray-playback-section">
                                         <!-- Playback Controls Row 1 -->
                                         <div class="bluray-controls-grid">
-                                            <button class="bluray-btn" onclick="return false;">
+                                            <button class="bluray-btn" onclick="flashBlurayButton(this); return false;">
                                                 <span class="bluray-btn-icon">⏪</span>
                                                 <span class="bluray-btn-label">REW</span>
                                             </button>
-                                            <button class="bluray-btn" onclick="return false;">
+                                            <button class="bluray-btn" onclick="flashBlurayButton(this); return false;">
                                                 <span class="bluray-btn-icon">▶</span>
                                                 <span class="bluray-btn-label">PLAY</span>
                                             </button>
-                                            <button class="bluray-btn" onclick="return false;">
+                                            <button class="bluray-btn" onclick="flashBlurayButton(this); return false;">
                                                 <span class="bluray-btn-icon">⏩</span>
                                                 <span class="bluray-btn-label">FWD</span>
                                             </button>
@@ -1647,19 +1793,19 @@
                                         
                                         <!-- Playback Controls Row 2 -->
                                         <div class="bluray-controls-grid four-btn">
-                                            <button class="bluray-btn" onclick="return false;">
+                                            <button class="bluray-btn" onclick="flashBlurayButton(this); return false;">
                                                 <span class="bluray-btn-icon">⏮</span>
                                                 <span class="bluray-btn-label">SKIP</span>
                                             </button>
-                                            <button class="bluray-btn" onclick="return false;">
+                                            <button class="bluray-btn" onclick="flashBlurayButton(this); return false;">
                                                 <span class="bluray-btn-icon">⏹</span>
                                                 <span class="bluray-btn-label">STOP</span>
                                             </button>
-                                            <button class="bluray-btn" onclick="return false;">
+                                            <button class="bluray-btn" onclick="flashBlurayButton(this); return false;">
                                                 <span class="bluray-btn-icon">⏸</span>
                                                 <span class="bluray-btn-label">PAUSE</span>
                                             </button>
-                                            <button class="bluray-btn" onclick="return false;">
+                                            <button class="bluray-btn" onclick="flashBlurayButton(this); return false;">
                                                 <span class="bluray-btn-icon">⏭</span>
                                                 <span class="bluray-btn-label">SKIP</span>
                                             </button>
@@ -1670,36 +1816,36 @@
                                     <div class="bluray-navigation-section">
                                         <!-- Top row -->
                                         <div></div>
-                                        <button class="bluray-btn" onclick="return false;">
+                                        <button class="bluray-btn" onclick="flashBlurayButton(this); return false;">
                                             <span class="bluray-btn-icon">▲</span>
                                             <span class="bluray-btn-label">UP</span>
                                         </button>
-                                        <button class="bluray-btn" onclick="return false;">
+                                        <button class="bluray-btn" onclick="flashBlurayButton(this); return false;">
                                             <span class="bluray-btn-icon">⏏</span>
                                             <span class="bluray-btn-label">EJECT</span>
                                         </button>
                                         
                                         <!-- Middle row -->
-                                        <button class="bluray-btn" onclick="return false;">
+                                        <button class="bluray-btn" onclick="flashBlurayButton(this); return false;">
                                             <span class="bluray-btn-icon">◀</span>
                                             <span class="bluray-btn-label">LEFT</span>
                                         </button>
-                                        <button class="bluray-btn center-btn" onclick="return false;">
+                                        <button class="bluray-btn center-btn" onclick="flashBlurayButton(this); return false;">
                                             <span class="bluray-btn-icon">⏎</span>
                                             <span class="bluray-btn-label">ENTER</span>
                                         </button>
-                                        <button class="bluray-btn" onclick="return false;">
+                                        <button class="bluray-btn" onclick="flashBlurayButton(this); return false;">
                                             <span class="bluray-btn-icon">▶</span>
                                             <span class="bluray-btn-label">RIGHT</span>
                                         </button>
                                         
                                         <!-- Bottom row -->
                                         <div></div>
-                                        <button class="bluray-btn" onclick="return false;">
+                                        <button class="bluray-btn" onclick="flashBlurayButton(this); return false;">
                                             <span class="bluray-btn-icon">▼</span>
                                             <span class="bluray-btn-label">DOWN</span>
                                         </button>
-                                        <button class="bluray-btn" onclick="return false;">
+                                        <button class="bluray-btn" onclick="flashBlurayButton(this); return false;">
                                             <span class="bluray-btn-icon">☰</span>
                                             <span class="bluray-btn-label">MENU</span>
                                         </button>
@@ -1755,8 +1901,9 @@
                 </div>
             </div>
             
-            <!-- Right section - Power, Screen Controls, and Volume -->
+            <!-- Right section - Power, Volume, and Help -->
             <div class="right-section">
+                <div class="power-volume-row">
                 <div class="power-and-screens-column">
                     <div class="control-card power-card">
                         <div class="card-title">
@@ -1800,6 +1947,7 @@
                     </div>
                 </div>
                 
+                <div style="display: flex; flex-direction: column; gap: 8px; flex: 1; min-height: 0;">
                 <div class="control-card" style="flex: 1; display: flex; flex-direction: column;">
                     <div class="card-title">
                         <span>VOLUME</span>
@@ -1828,11 +1976,26 @@
                         </div>
                     </div>
                 </div>
-            </div>
+                
+                <button class="help-btn" onclick="showHelp()">HELP</button>
+                </div>
+                </div>
         </div>
     </div>
     
-    <button class="help-btn" onclick="showHelp()">?</button>
+    <!-- Power Off Confirmation Modal -->
+    <div class="power-off-modal" id="powerOffModal">
+        <div class="modal-content">
+            <div class="modal-message">
+                <div class="modal-title">POWER OFF PROJECTORS?</div>
+                <div class="modal-text">Are you sure you want to turn off the projectors?</div>
+            </div>
+            <div class="modal-buttons">
+                <button class="modal-btn modal-btn-no" onclick="cancelPowerOff()">NO, CANCEL</button>
+                <button class="modal-btn modal-btn-yes" onclick="confirmPowerOff()">YES, POWER OFF</button>
+            </div>
+        </div>
+    </div>
     
     <!-- Loading Screen Overlay -->
     <div class="loading-overlay" id="loadingOverlay">
@@ -1889,10 +2052,10 @@
             demoView.classList.toggle('hidden');
         }
         
-        // Initialize student view on page load
+        // Initialize room view on page load
         function initializeStudentView() {
-            updateStudentView('left');
-            updateStudentView('right');
+            updateRoomView('left');
+            updateRoomView('right');
         }
         
         // Update time
@@ -1957,8 +2120,8 @@
             }
         }
         
-        // Update student view (what's actually being projected)
-        function updateStudentView(side) {
+        // Update room view (what's actually being projected)
+        function updateRoomView(side) {
             const display = document.getElementById(side + 'ProjectorDisplay');
             const isMuted = side === 'left' ? leftMuted : rightMuted;
             const isProjecting = side === 'left' ? leftProjecting : rightProjecting;
@@ -2039,7 +2202,7 @@
             }
             
             updateScreenDisplay(side);
-            updateStudentView(side);
+            updateRoomView(side);
         }
         
         // Mute/Hide screen (toggles on/off) - affects PROJECTORS only, not preview screens
@@ -2058,8 +2221,8 @@
             } else {
                 rightMuted = !rightMuted;
             }
-            // Update student view to show blanked or unblanked state
-            updateStudentView(side);
+            // Update room view to show blanked or unblanked state
+            updateRoomView(side);
         }
         
         // Update screen display (preview screens - NOT affected by mute/projection)
@@ -2192,6 +2355,19 @@
             menu.classList.remove('active');
         }
         
+        // PHASE 8: Flash blu-ray button to give feedback
+        function flashBlurayButton(button) {
+            const originalBg = button.style.background || (button.classList.contains('center-btn') ? '#425563' : 'white');
+            const originalColor = button.style.color || (button.classList.contains('center-btn') ? 'white' : '#101820');
+            
+            button.style.background = '#5CB8B2';
+            button.style.color = 'white';
+            setTimeout(() => {
+                button.style.background = originalBg;
+                button.style.color = originalColor;
+            }, 200);
+        }
+        
         // PHASE 6: Projector Screen Controls
         function toggleScreen(element, side, direction) {
             // Preview-style flash effect
@@ -2204,7 +2380,7 @@
                 rightScreenDown = (direction === 'down');
             }
             
-            updateStudentView(side);
+            updateRoomView(side);
         }
         
         // PHASE 2: Project Controls Menu Functions
@@ -2269,16 +2445,24 @@
                 leftProjectSource = currentSource;
                 leftProjecting = true;
                 updateScreenDisplay('left');
-                updateStudentView('left');
+                updateRoomView('left');
                 // Just update button states, don't auto-close
                 updateProjectButtonStates();
+                
+                // PHASE 8: Flash the button that was clicked
+                const projectBtn = document.getElementById('projectLeftBtn');
+                flashProjectButton(projectBtn);
             } else if (side === 'right') {
                 rightProjectSource = currentSource;
                 rightProjecting = true;
                 updateScreenDisplay('right');
-                updateStudentView('right');
+                updateRoomView('right');
                 // Just update button states, don't auto-close
                 updateProjectButtonStates();
+                
+                // PHASE 8: Flash the button that was clicked
+                const projectBtn = document.getElementById('projectRightBtn');
+                flashProjectButton(projectBtn);
             } else if (side === 'both') {
                 leftProjectSource = currentSource;
                 rightProjectSource = currentSource;
@@ -2286,11 +2470,23 @@
                 rightProjecting = true;
                 updateScreenDisplay('left');
                 updateScreenDisplay('right');
-                updateStudentView('left');
-                updateStudentView('right');
+                updateRoomView('left');
+                updateRoomView('right');
                 // Just update button states, don't auto-close
                 updateProjectButtonStates();
+                
+                // PHASE 8: Flash the button that was clicked
+                const projectBtn = document.getElementById('projectBothBtn');
+                flashProjectButton(projectBtn);
             }
+        }
+        
+        // PHASE 8: Flash project button to give feedback
+        function flashProjectButton(button) {
+            button.classList.add('selected');
+            setTimeout(() => {
+                button.classList.remove('selected');
+            }, 300);
         }
         
         // PHASE 3: Hide & Mute Controls Menu Functions
@@ -2349,12 +2545,12 @@
         function hideScreen(side) {
             if (side === 'left') {
                 leftMuted = !leftMuted;
-                updateStudentView('left');
+                updateRoomView('left');
                 // NO auto-close - update button states to show selection
                 updateHideButtonStates();
             } else if (side === 'right') {
                 rightMuted = !rightMuted;
-                updateStudentView('right');
+                updateRoomView('right');
                 // NO auto-close - update button states to show selection
                 updateHideButtonStates();
             } else if (side === 'both') {
@@ -2362,8 +2558,8 @@
                 const shouldHide = !leftMuted || !rightMuted;
                 leftMuted = shouldHide;
                 rightMuted = shouldHide;
-                updateStudentView('left');
-                updateStudentView('right');
+                updateRoomView('left');
+                updateRoomView('right');
                 // NO auto-close - update button states to show selection
                 updateHideButtonStates();
             }
@@ -2435,6 +2631,12 @@
                 return;
             }
             
+            // If trying to power off when system is on, show confirmation modal
+            if (!isOn && systemPower) {
+                showPowerOffModal();
+                return;
+            }
+            
             systemPower = isOn;
             document.querySelectorAll('.power-btn').forEach(btn => btn.classList.remove('selected'));
             element.classList.add('selected');
@@ -2443,21 +2645,45 @@
                 // PHASE 6: Drop screens when powering on
                 leftScreenDown = true;
                 rightScreenDown = true;
-                updateStudentView('left');
-                updateStudentView('right');
+                updateRoomView('left');
+                updateRoomView('right');
                 
                 // Show loading screen when powering on
                 showLoadingScreen();
-            } else if (!isOn) {
-                // PHASE 6: Raise screens when powering off
-                leftScreenDown = false;
-                rightScreenDown = false;
-                
-                // Power off - close menus and reset everything
-                closeProjectControls();
-                closeHideControls();
-                resetSystem();
             }
+        }
+        
+        // Show power off confirmation modal
+        function showPowerOffModal() {
+            const modal = document.getElementById('powerOffModal');
+            modal.classList.add('active');
+        }
+        
+        // Cancel power off
+        function cancelPowerOff() {
+            const modal = document.getElementById('powerOffModal');
+            modal.classList.remove('active');
+        }
+        
+        // Confirm power off
+        function confirmPowerOff() {
+            const modal = document.getElementById('powerOffModal');
+            modal.classList.remove('active');
+            
+            // Actually power off the system
+            systemPower = false;
+            const powerOffBtn = document.querySelectorAll('.power-btn')[1];
+            document.querySelectorAll('.power-btn').forEach(btn => btn.classList.remove('selected'));
+            powerOffBtn.classList.add('selected');
+            
+            // PHASE 6: Raise screens when powering off
+            leftScreenDown = false;
+            rightScreenDown = false;
+            
+            // Power off - close menus and reset everything
+            closeProjectControls();
+            closeHideControls();
+            resetSystem();
         }
         
         // Volume slider updates
@@ -2563,8 +2789,23 @@
                     rightProjecting = true;
                     updateScreenDisplay('left');
                     updateScreenDisplay('right');
-                    updateStudentView('left');
-                    updateStudentView('right');
+                    updateRoomView('left');
+                    updateRoomView('right');
+                    
+                    // PHASE 8: Also play audio from desktop
+                    setTimeout(() => {
+                        const audioBtn = document.querySelector('.audio-btn');
+                        if (audioBtn && currentSource) {
+                            audioPlaying = true;
+                            audioSource = currentSource;
+                            audioBtn.classList.add('active');
+                            
+                            const textSpan = audioBtn.querySelector('span:last-child');
+                            if (textSpan) {
+                                textSpan.textContent = `PLAYING AUDIO FROM: ${currentSource.toUpperCase()}`;
+                            }
+                        }
+                    }, 200);
                 }, 300);
             }, 300);
         }
