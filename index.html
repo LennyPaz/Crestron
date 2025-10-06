@@ -2246,7 +2246,12 @@
                     screen.innerHTML = `<img src="${wallpaper}" alt="${previewSource}"><span class="screen-status" id="${side}Status">Preview</span>`;
                 } else {
                     // Fallback to text for sources without wallpapers
-                    screen.innerHTML = `<span>Preview: ${previewSource.toUpperCase()}</span><span class="screen-status" id="${side}Status">Preview</span>`;
+                    // VISIBILITY FIX: Show which doc cam is being previewed
+            let displayText = previewSource.toUpperCase();
+            if (previewSource === 'doccam' && selectedDocCam) {
+                displayText = `${selectedDocCam.toUpperCase()} DOC CAM`;
+            }
+            screen.innerHTML = `<span>Preview: ${displayText}</span><span class="screen-status" id="${side}Status">Preview</span>`;
                 }
                 
                 screen.style.backgroundColor = '#425563';
@@ -2676,9 +2681,13 @@
             document.querySelectorAll('.power-btn').forEach(btn => btn.classList.remove('selected'));
             powerOffBtn.classList.add('selected');
             
-            // PHASE 6: Raise screens when powering off
+            // USER CONTROL FIX: Raise screens when powering off (return to safe state)
             leftScreenDown = false;
             rightScreenDown = false;
+            
+            // Update room view to reflect screen changes
+            updateRoomView('left');
+            updateRoomView('right');
             
             // Power off - close menus and reset everything
             closeProjectControls();
