@@ -104,6 +104,7 @@
         
         .start-class-btn:active {
             filter: brightness(0.95);
+            transform: scale(0.95);
         }
         
         /* Room View Demo Bar */
@@ -325,6 +326,10 @@
             filter: brightness(1.05);
         }
         
+        .light-btn:active {
+            transform: scale(0.95);
+        }
+        
         .light-btn.active {
             background: #5CB8B2;
             color: white;
@@ -440,6 +445,7 @@
         
         .source-btn:active {
             filter: brightness(0.95);
+            transform: scale(0.94);
         }
         
         .source-btn.selected {
@@ -492,6 +498,10 @@
         .camera-btn:hover {
             box-shadow: 0 4px 10px rgba(0,0,0,0.3);
             filter: brightness(1.05);
+        }
+        
+        .camera-btn:active {
+            transform: scale(0.94);
         }
         
         .camera-btn.selected {
@@ -588,6 +598,7 @@
         
         .control-btn:active {
             filter: brightness(0.95);
+            transform: scale(0.95);
         }
         
         .control-btn.preview-active {
@@ -649,20 +660,19 @@
             filter: brightness(1.05);
         }
         
+        .audio-btn:active {
+            transform: scale(0.95);
+        }
+        
         .audio-btn.active {
             background: #5CB8B2;
             color: white;
         }
         
         .audio-btn .btn-icon {
-            font-size: 48px;
-            line-height: 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-top: 17px;
-            margin-bottom: 12px;
-            margin-left: -2px;
+            width: 60px;
+            height: 60px;
+            object-fit: contain;
         }
         
         /* PHASE 4: Doc Cam Selection Menu */
@@ -730,6 +740,7 @@
         
         .doccam-option-btn:active {
             filter: brightness(0.95);
+            transform: scale(0.94);
         }
         
         .doccam-option-btn.selected {
@@ -838,6 +849,7 @@
         
         .bluray-btn:active {
             filter: brightness(0.95);
+            transform: scale(0.93);
         }
         
         .bluray-btn-icon {
@@ -944,6 +956,7 @@
         
         .project-option-btn:active {
             filter: brightness(0.95);
+            transform: scale(0.94);
         }
         
         .project-option-btn.selected {
@@ -988,6 +1001,10 @@
         .close-menu-btn:hover {
             box-shadow: 0 4px 10px rgba(0,0,0,0.3);
             filter: brightness(1.1);
+        }
+        
+        .close-menu-btn:active {
+            transform: scale(0.92);
         }
         
         @keyframes slideDown {
@@ -1067,6 +1084,7 @@
         
         .hide-option-btn:active {
             filter: brightness(0.95);
+            transform: scale(0.94);
         }
         
         .hide-option-btn.selected {
@@ -1111,6 +1129,10 @@
         .close-hide-menu-btn:hover {
             box-shadow: 0 4px 10px rgba(0,0,0,0.3);
             filter: brightness(1.1);
+        }
+        
+        .close-hide-menu-btn:active {
+            transform: scale(0.92);
         }
         
         /* Right section - Power and volume */
@@ -1188,6 +1210,7 @@
         
         .projector-control-btn:active {
             filter: brightness(0.95);
+            transform: scale(0.94);
         }
         
         .projector-control-btn.active {
@@ -1234,6 +1257,7 @@
         
         .power-btn:active {
             filter: brightness(0.95);
+            transform: scale(0.94);
         }
         
         .power-btn.selected {
@@ -1403,6 +1427,10 @@
             filter: brightness(1.1);
         }
         
+        .mute-btn:active {
+            transform: scale(0.92);
+        }
+        
         .mute-btn.active {
             background: #A6192E;
             color: white;
@@ -1429,6 +1457,10 @@
         .help-btn:hover {
             box-shadow: 0 6px 16px rgba(0,0,0,0.5);
             filter: brightness(1.05);
+        }
+        
+        .help-btn:active {
+            transform: scale(0.95);
         }
         
         /* Power Off Confirmation Modal */
@@ -1517,6 +1549,7 @@
         
         .modal-btn:active {
             filter: brightness(0.95);
+            transform: scale(0.96);
         }
         
         .modal-btn-no {

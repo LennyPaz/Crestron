@@ -1021,15 +1021,19 @@ let projectorMode = 2; // 1 or 2 projectors (default 2)
             const muteBtn = slider.closest('.volume-section').querySelector('.mute-btn');
             
             if (muteBtn) {
-                // BATCH 1 FIX #3: Swap emojis to show CURRENT state, not action
-                if (value == 0) {
-                    // At 0 - show as muted (muted speaker icon)
-                    muteBtn.classList.add('active');
-                    muteBtn.textContent = '🔇';
-                } else {
-                    // Above 0 - show as unmuted (speaker with sound icon)
-                    muteBtn.classList.remove('active');
-                    muteBtn.textContent = '🔊';
+                const muteBtnImg = muteBtn.querySelector('img');
+                if (muteBtnImg) {
+                    if (value == 0) {
+                        // At 0 - show as muted
+                        muteBtn.classList.add('active');
+                        muteBtnImg.src = 'Icons/Muted.png';
+                        muteBtnImg.alt = 'Muted';
+                    } else {
+                        // Above 0 - show as unmuted
+                        muteBtn.classList.remove('active');
+                        muteBtnImg.src = 'Icons/Unmuted.png';
+                        muteBtnImg.alt = 'Unmuted';
+                    }
                 }
             }
         }
@@ -1040,6 +1044,7 @@ let projectorMode = 2; // 1 or 2 projectors (default 2)
                 document.getElementById('micSlider') : 
                 document.getElementById('mainSlider');
             const percentId = type === 'mic' ? 'micPercent' : 'mainPercent';
+            const muteBtnImg = element.querySelector('img');
             
             element.classList.toggle('active');
             
@@ -1051,13 +1056,19 @@ let projectorMode = 2; // 1 or 2 projectors (default 2)
                     mainPreviousVolume = slider.value;
                 }
                 slider.value = 0;
-                element.textContent = '🔇';
+                if (muteBtnImg) {
+                    muteBtnImg.src = 'Icons/Muted.png';
+                    muteBtnImg.alt = 'Muted';
+                }
             } else {
                 // UNMUTING - restore previous volume
                 const previousVolume = type === 'mic' ? 
                     micPreviousVolume : mainPreviousVolume;
                 slider.value = previousVolume;
-                element.textContent = '🔊';
+                if (muteBtnImg) {
+                    muteBtnImg.src = 'Icons/Unmuted.png';
+                    muteBtnImg.alt = 'Unmuted';
+                }
             }
             
             updateVolumeSlider(slider, percentId);
@@ -1295,6 +1306,12 @@ Need more help? Contact IT Support at (850) 644-HELP`);
             updateVolumeSlider(micSlider, 'micPercent');
             updateVolumeSlider(mainSlider, 'mainPercent');
             
+            // Initialize mute button icons to show Unmuted state (since sliders start at 50%)
+            document.querySelectorAll('.mute-btn img').forEach(img => {
+                img.src = 'Icons/Unmuted.png';
+                img.alt = 'Unmuted';
+            });
+            
             // Setup fullscreen click handlers
             setupScreenClickHandlers();
             
@@ -1308,6 +1325,7 @@ Need more help? Contact IT Support at (850) 644-HELP`);
             
             // Initialize student view to show arrows
             initializeStudentView();
+            
             
             // Save volume when user starts dragging (before they drag to 0)
             micSlider.addEventListener('mousedown', function() {

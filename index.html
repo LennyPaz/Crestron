@@ -111,7 +111,7 @@
                             <span>DOC CAM</span>
                         </button>
                         <button class="source-btn" onclick="selectSource(this, 'camera')">
-                            <img src="Icons/CameraIcon.jpg" alt="Camera" class="btn-icon">
+                            <img src="Icons/CameraIcon.png" alt="Camera" class="btn-icon">
                             <span>CAMERA</span>
                         </button>
                         <button class="source-btn" onclick="selectSource(this, 'bluray')">
@@ -131,11 +131,11 @@
                     </div>
                     <div class="camera-controls">
                         <button class="camera-btn" onclick="selectCamera(this, 1)">
-                            <img src="Icons/CameraIcon.jpg" alt="Camera" class="btn-icon">
+                            <img src="Icons/CameraIcon.png" alt="Camera" class="btn-icon">
                             <span>ANGLE 1</span>
                         </button>
                         <button class="camera-btn" onclick="selectCamera(this, 2)">
-                            <img src="Icons/CameraIcon.jpg" alt="Camera" class="btn-icon">
+                            <img src="Icons/CameraIcon.png" alt="Camera" class="btn-icon">
                             <span>ANGLE 2</span>
                         </button>
                     </div>
@@ -158,7 +158,7 @@
                             <span>RIGHT PREVIEW</span>
                         </button>
                         <button class="audio-btn" onclick="toggleAudio(this)">
-                            <span class="btn-icon">🔊</span>
+                            <img src="Icons/PlayAudio.png" alt="Play Audio" class="btn-icon" style="width: 60px; height: 60px;">
                             <span>PLAY AUDIO FROM SELECTED INPUT</span>
                         </button>
                         <button class="control-btn" onclick="openProjectControls(this)">
@@ -348,20 +348,20 @@
                         </div>
                         <div class="screen-controls-grid">
                             <button class="projector-control-btn" onclick="toggleScreen(this, 'left', 'up')">
-                                <img src="Icons/ProjectorScreenIcon.png" alt="Screen" class="btn-icon" style="width: 30px; height: 30px;">
-                                <span>LEFT<br>SCREEN<br>UP</span>
+                            <img src="Icons/ScreenUp.png" alt="Screen Up" class="btn-icon" style="width: 30px; height: 30px;">
+                            <span>LEFT<br>SCREEN<br>UP</span>
                             </button>
                             <button class="projector-control-btn" onclick="toggleScreen(this, 'right', 'up')">
-                                <img src="Icons/ProjectorScreenIcon.png" alt="Screen" class="btn-icon" style="width: 30px; height: 30px;">
-                                <span>RIGHT<br>SCREEN<br>UP</span>
+                            <img src="Icons/ScreenUp.png" alt="Screen Up" class="btn-icon" style="width: 30px; height: 30px;">
+                            <span>RIGHT<br>SCREEN<br>UP</span>
                             </button>
                             <button class="projector-control-btn" onclick="toggleScreen(this, 'left', 'down')">
-                                <img src="Icons/ProjectorScreenIcon.png" alt="Screen" class="btn-icon" style="width: 30px; height: 30px;">
-                                <span>LEFT<br>SCREEN<br>DOWN</span>
+                            <img src="Icons/ScreenDown.png" alt="Screen Down" class="btn-icon" style="width: 30px; height: 30px;">
+                            <span>LEFT<br>SCREEN<br>DOWN</span>
                             </button>
                             <button class="projector-control-btn" onclick="toggleScreen(this, 'right', 'down')">
-                                <img src="Icons/ProjectorScreenIcon.png" alt="Screen" class="btn-icon" style="width: 30px; height: 30px;">
-                                <span>RIGHT<br>SCREEN<br>DOWN</span>
+                            <img src="Icons/ScreenDown.png" alt="Screen Down" class="btn-icon" style="width: 30px; height: 30px;">
+                            <span>RIGHT<br>SCREEN<br>DOWN</span>
                             </button>
                         </div>
                     </div>
@@ -381,7 +381,9 @@
                                 <div class="volume-min">MIN</div>
                             </div>
                             <div class="volume-percentage" id="micPercent">50%</div>
-                            <button class="mute-btn" onclick="toggleMute(this, 'mic')">🔇</button>
+                            <button class="mute-btn" onclick="toggleMute(this, 'mic')">
+                                <img src="Icons/Muted.png" alt="Mute" style="width: 28px; height: 28px;">
+                            </button>
                         </div>
                         
                         <div class="volume-section">
@@ -392,7 +394,9 @@
                                 <div class="volume-min">MIN</div>
                             </div>
                             <div class="volume-percentage" id="mainPercent">50%</div>
-                            <button class="mute-btn" onclick="toggleMute(this, 'main')">🔇</button>
+                            <button class="mute-btn" onclick="toggleMute(this, 'main')">
+                                <img src="Icons/Muted.png" alt="Mute" style="width: 28px; height: 28px;">
+                            </button>
                         </div>
                     </div>
                 </div>
