@@ -221,6 +221,12 @@
             border-radius: 4px;
             position: relative;
             overflow: hidden;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+        }
+        
+        .screen:hover {
+            transform: scale(1.02);
         }
         
         .screen img {
@@ -241,6 +247,47 @@
             padding: 3px 10px;
             border-radius: 4px;
             font-size: 11px;
+        }
+        
+        .screen-status.no-input {
+            background: rgba(166, 25, 46, 0.9);
+            color: white;
+        }
+        
+        /* Fullscreen overlay */
+        .fullscreen-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: #000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 99999;
+            cursor: pointer;
+        }
+        
+        .fullscreen-overlay.active {
+            display: flex;
+        }
+        
+        .fullscreen-content {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+        
+        .fullscreen-text {
+            color: #5CB8B2;
+            font-size: 48px;
+            font-weight: bold;
+            text-align: center;
+        }
+        
+        .fullscreen-text.no-input {
+            color: #A6192E;
         }
         
         .lights-panel {
@@ -2013,6 +2060,12 @@
         </div>
     </div>
     
+    <!-- Fullscreen Overlay -->
+    <div class="fullscreen-overlay" id="fullscreenOverlay" onclick="exitFullscreen()">
+        <img class="fullscreen-content" id="fullscreenImage" style="display: none;">
+        <div class="fullscreen-text" id="fullscreenText" style="display: none;"></div>
+    </div>
+    
     <script>
         // State variables
         let currentSource = null;
@@ -2035,6 +2088,21 @@
         // PHASE 6: Projector screen and lamp state
         let leftScreenDown = false;     // Physical screen position - START WITH SCREENS UP
         let rightScreenDown = false;
+        
+        // Phase 1: Source connected state (for "No Input" badge)
+        // Only show "No Input" for regular doc cam in 2-projector mode OR left doc cam in 1-projector mode
+        function isSourceConnected(source) {
+            if (source === 'doccam') {
+                // In current 2-projector mode: left doc cam gets "No Input", right is fine
+                if (selectedDocCam === 'left') {
+                    return false; // Show "No Input" for left doc cam
+                } else {
+                    return true; // Right doc cam works fine
+                }
+            }
+            // All other sources are connected
+            return true;
+        }
         
         // Source to wallpaper mapping (using correct capitalization for Wallpapers folder)
         const sourceWallpapers = {
@@ -2296,26 +2364,38 @@
             
             // Preview screens ONLY show previews, NOT mute or projection state
             if (previewSource) {
-                const wallpaper = sourceWallpapers[previewSource];
+                // Check if source is connected
+                const isConnected = isSourceConnected(previewSource);
                 
-                if (wallpaper) {
-                    // Show wallpaper image
-                    screen.innerHTML = `<img src="${wallpaper}" alt="${previewSource}"><span class="screen-status" id="${side}Status">Preview</span>`;
+                if (!isConnected) {
+                    // Show "No Input" badge for disconnected sources
+                    let displayText = previewSource.toUpperCase();
+                    if (previewSource === 'doccam' && selectedDocCam) {
+                        displayText = `${selectedDocCam.toUpperCase()} DOC CAM`;
+                    }
+                    screen.innerHTML = `<span style="color: #A6192E;">No Input Detected</span><span class="screen-status no-input" id="${side}Status">No Input</span>`;
+                    screen.style.backgroundColor = '#000';
                 } else {
-                    // Fallback to text for sources without wallpapers
-                    // VISIBILITY FIX: Show which doc cam is being previewed
-            let displayText = previewSource.toUpperCase();
-            if (previewSource === 'doccam' && selectedDocCam) {
-                displayText = `${selectedDocCam.toUpperCase()} DOC CAM`;
-            }
-            screen.innerHTML = `<span>Preview: ${displayText}</span><span class="screen-status" id="${side}Status">Preview</span>`;
-                }
-                
-                screen.style.backgroundColor = '#425563';
-                const newStatus = document.getElementById(side + 'Status');
-                if (newStatus) {
-                    newStatus.style.background = 'rgba(92, 184, 178, 0.9)';
-                    newStatus.style.color = '#101820';
+                    const wallpaper = sourceWallpapers[previewSource];
+                    
+                    if (wallpaper) {
+                        // Show wallpaper image
+                        screen.innerHTML = `<img src="${wallpaper}" alt="${previewSource}"><span class="screen-status" id="${side}Status">Preview</span>`;
+                    } else {
+                        // Fallback to text for sources without wallpapers
+                        let displayText = previewSource.toUpperCase();
+                        if (previewSource === 'doccam' && selectedDocCam) {
+                            displayText = `${selectedDocCam.toUpperCase()} DOC CAM`;
+                        }
+                        screen.innerHTML = `<span>Preview: ${displayText}</span><span class="screen-status" id="${side}Status">Preview</span>`;
+                    }
+                    
+                    screen.style.backgroundColor = '#425563';
+                    const newStatus = document.getElementById(side + 'Status');
+                    if (newStatus) {
+                        newStatus.style.background = 'rgba(92, 184, 178, 0.9)';
+                        newStatus.style.color = '#101820';
+                    }
                 }
             } else {
                 screen.innerHTML = `<span>No Input Selected</span><span class="screen-status" id="${side}Status">Ready</span>`;
@@ -2631,7 +2711,9 @@
             // Update button states to reflect current hide/mute state
             updateHideButtonStates();
             
-            // Highlight the HIDE & MUTE button
+            // Highlight the HIDE & MUTE button with menu-open style ONLY
+            // Remove any existing classes first
+            element.classList.remove('mute-active');
             element.classList.add('hide-menu-open');
             
             // Open the hide controls menu
@@ -2643,7 +2725,7 @@
             const menu = document.getElementById('hideControlsMenu');
             menu.classList.remove('active');
             
-            // BATCH 3 FIX #7: Keep button yellow if anything is muted
+            // Phase 1 Fix: Keep button yellow ONLY if something is actually muted
             const hideBtn = document.querySelectorAll('.control-btn')[4]; // 5th button (0-indexed)
             if (hideBtn) {
                 hideBtn.classList.remove('hide-menu-open');
@@ -2697,9 +2779,6 @@
             
             // BATCH 2 FIX #5: Update audio button state when muting changes
             updateAudioButtonState();
-            
-            // BATCH 3 FIX #7: Update hide button persistent state
-            updateHideButtonPersistentState();
         }
         
         // Loading Screen Control
@@ -3042,6 +3121,86 @@ Power On/Off controls all classroom equipment
 Need more help? Contact IT Support at (850) 644-HELP`);
         }
         
+        // Phase 1: Fullscreen functionality
+        function enterFullscreen(side) {
+            const screen = document.getElementById(side + 'Screen');
+            const previewSource = side === 'left' ? leftPreviewSource : rightPreviewSource;
+            const overlay = document.getElementById('fullscreenOverlay');
+            const fullscreenImage = document.getElementById('fullscreenImage');
+            const fullscreenText = document.getElementById('fullscreenText');
+            
+            // Show overlay
+            overlay.classList.add('active');
+            
+            if (!previewSource) {
+                // No input selected - show black screen with text
+                fullscreenImage.style.display = 'none';
+                fullscreenText.style.display = 'block';
+                fullscreenText.textContent = 'No Input Selected';
+                fullscreenText.classList.remove('no-input');
+            } else if (!isSourceConnected(previewSource)) {
+                // No input detected - show warning
+                fullscreenImage.style.display = 'none';
+                fullscreenText.style.display = 'block';
+                fullscreenText.textContent = 'No Input Detected';
+                fullscreenText.classList.add('no-input');
+            } else {
+                // Show content
+                const wallpaper = sourceWallpapers[previewSource];
+                if (wallpaper) {
+                    fullscreenImage.src = wallpaper;
+                    fullscreenImage.style.display = 'block';
+                    fullscreenText.style.display = 'none';
+                } else {
+                    // Fallback text
+                    fullscreenImage.style.display = 'none';
+                    fullscreenText.style.display = 'block';
+                    let displayText = previewSource.toUpperCase();
+                    if (previewSource === 'doccam' && selectedDocCam) {
+                        displayText = `${selectedDocCam.toUpperCase()} DOC CAM`;
+                    }
+                    fullscreenText.textContent = `Preview: ${displayText}`;
+                    fullscreenText.classList.remove('no-input');
+                }
+            }
+        }
+        
+        function exitFullscreen() {
+            const overlay = document.getElementById('fullscreenOverlay');
+            overlay.classList.remove('active');
+        }
+        
+        // Add click handlers to screens
+        function setupScreenClickHandlers() {
+            const leftScreen = document.getElementById('leftScreen');
+            const rightScreen = document.getElementById('rightScreen');
+            
+            if (leftScreen) {
+                leftScreen.addEventListener('click', function(e) {
+                    // Don't trigger if clicking on status badge
+                    if (!e.target.classList.contains('screen-status')) {
+                        enterFullscreen('left');
+                    }
+                });
+            }
+            
+            if (rightScreen) {
+                rightScreen.addEventListener('click', function(e) {
+                    // Don't trigger if clicking on status badge
+                    if (!e.target.classList.contains('screen-status')) {
+                        enterFullscreen('right');
+                    }
+                });
+            }
+        }
+        
+        // ESC key to exit fullscreen
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                exitFullscreen();
+            }
+        });
+        
         // Initialize volume sliders on page load
         document.addEventListener('DOMContentLoaded', function() {
             const micSlider = document.getElementById('micSlider');
@@ -3049,6 +3208,9 @@ Need more help? Contact IT Support at (850) 644-HELP`);
             
             updateVolumeSlider(micSlider, 'micPercent');
             updateVolumeSlider(mainSlider, 'mainPercent');
+            
+            // Setup fullscreen click handlers
+            setupScreenClickHandlers();
             
             // Initialize student view to show arrows
             initializeStudentView();
