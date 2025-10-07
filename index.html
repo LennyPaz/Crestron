@@ -2910,4 +2910,179 @@
                 setupClassroom();
             } else {
                 // Show loading screen, then setup
-                showLoadingScreen(() =
+                showLoadingScreen(() => {
+                    setupClassroom();
+                });
+            }
+        }
+        
+        // Setup classroom - used by start class
+        function setupClassroom() {
+            // PHASE 6: Drop screens
+            leftScreenDown = true;
+            rightScreenDown = true;
+            
+            const desktopBtn = document.querySelector('.source-btn');
+            selectSource(desktopBtn, 'desktop');
+            
+            setTimeout(() => {
+                const controlBtns = document.querySelectorAll('.control-btn');
+                togglePreview(controlBtns[0], 'left');
+                togglePreview(controlBtns[1], 'right');
+                
+                setTimeout(() => {
+                    // Project to BOTH screens
+                    leftProjectSource = currentSource;
+                    rightProjectSource = currentSource;
+                    leftProjecting = true;
+                    rightProjecting = true;
+                    updateScreenDisplay('left');
+                    updateScreenDisplay('right');
+                    updateRoomView('left');
+                    updateRoomView('right');
+                    
+                    // PHASE 8: Also play audio from desktop
+                    setTimeout(() => {
+                        const audioBtn = document.querySelector('.audio-btn');
+                        if (audioBtn && currentSource) {
+                            audioPlaying = true;
+                            audioSource = currentSource;
+                            audioBtn.classList.add('active');
+                            
+                            const textSpan = audioBtn.querySelector('span:last-child');
+                            if (textSpan) {
+                                textSpan.textContent = `PLAYING AUDIO FROM: ${currentSource.toUpperCase()}`;
+                            }
+                        }
+                    }, 200);
+                }, 300);
+            }, 300);
+        }
+        
+        // Reset system - used when powering off
+        function resetSystem() {
+            currentSource = null;
+            selectedDocCam = null;
+            leftPreviewSource = null;
+            rightPreviewSource = null;
+            leftProjectSource = null;
+            rightProjectSource = null;
+            leftProjecting = false;
+            rightProjecting = false;
+            leftMuted = false;
+            rightMuted = false;
+            audioPlaying = false;
+            audioSource = null;
+            audioDocCam = null;
+            
+            // PHASE 6: Reset screen state (already done in togglePower, but included for completeness)
+            leftScreenDown = false;
+            rightScreenDown = false;
+            
+            updateScreenDisplay('left');
+            updateScreenDisplay('right');
+            updateRoomView('left');
+            updateRoomView('right');
+            
+            // BATCH 1 FIX #2: Close all menus on power off
+            closeDocCamMenu();
+            closeBlurayMenu();
+            closeProjectControls();
+            closeHideControls();
+            
+            document.querySelectorAll('.control-btn').forEach(btn => {
+                btn.classList.remove('preview-active', 'project-active', 'mute-active', 'hide-menu-open');
+            });
+            
+            document.querySelectorAll('.source-btn').forEach(btn => {
+                btn.classList.remove('selected');
+            });
+            
+            document.querySelectorAll('.camera-btn').forEach(btn => {
+                btn.classList.remove('selected');
+            });
+            
+            const audioBtn = document.querySelector('.audio-btn');
+            if (audioBtn) {
+                audioBtn.classList.remove('active');
+                audioBtn.style.background = '';
+                audioBtn.style.color = '';
+                const textSpan = audioBtn.querySelector('span:last-child');
+                if (textSpan) {
+                    textSpan.textContent = 'PLAY AUDIO FROM SELECTED INPUT';
+                }
+            }
+        }
+        
+        // Help system
+        function showHelp() {
+            alert(`FSU CLASSROOM CONTROL SYSTEM - QUICK START GUIDE
+
+GETTING STARTED:
+• Press "START CLASS" to quickly power on and setup Desktop PC on both screens
+• Or follow the 3-step process: Select Input → Preview (optional) → Project
+
+INPUT SOURCES:
+Select your content source from the left panel (Desktop PC, Document Camera, Laptop, etc.)
+
+SCREEN CONTROLS:
+• PREVIEW: See the input on screen before showing students
+• PROJECT: Display the input to students (preview optional)
+• HIDE: Blank the screen (students see black screen)
+
+AUDIO:
+Use "PLAY AUDIO FROM SELECTED INPUT" to route audio to classroom speakers
+
+LIGHTS:
+Control classroom lighting from the center panel
+
+POWER:
+Power On/Off controls all classroom equipment
+
+Need more help? Contact IT Support at (850) 644-HELP`);
+        }
+        
+        // Initialize volume sliders on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            const micSlider = document.getElementById('micSlider');
+            const mainSlider = document.getElementById('mainSlider');
+            
+            updateVolumeSlider(micSlider, 'micPercent');
+            updateVolumeSlider(mainSlider, 'mainPercent');
+            
+            // Initialize student view to show arrows
+            initializeStudentView();
+            
+            // Save volume when user starts dragging (before they drag to 0)
+            micSlider.addEventListener('mousedown', function() {
+                if (micSlider.value > 0) {
+                    micPreviousVolume = parseInt(micSlider.value);
+                }
+            });
+            micSlider.addEventListener('touchstart', function() {
+                if (micSlider.value > 0) {
+                    micPreviousVolume = parseInt(micSlider.value);
+                }
+            });
+            
+            mainSlider.addEventListener('mousedown', function() {
+                if (mainSlider.value > 0) {
+                    mainPreviousVolume = parseInt(mainSlider.value);
+                }
+            });
+            mainSlider.addEventListener('touchstart', function() {
+                if (mainSlider.value > 0) {
+                    mainPreviousVolume = parseInt(mainSlider.value);
+                }
+            });
+        });
+        
+        // Toggle student view demo with backtick key or by clicking building name
+        document.addEventListener('keydown', function(e) {
+            if (e.key === '`' || e.key === '~') {
+                toggleDemoView();
+            }
+        });
+    </script>
+</body>
+</html>
