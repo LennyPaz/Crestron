@@ -66,6 +66,40 @@ let projectorMode = 2; // 1 or 2 projectors (default 2)
                 document.querySelectorAll('.power-btn').forEach(btn => btn.classList.remove('selected'));
                 powerOffBtn.classList.add('selected');
                 resetSystem();
+            } else {
+                // Even if power is off, still need to reset selections and close menus
+                currentSource = null;
+                selectedDocCam = null;
+                
+                // Deselect all source buttons
+                document.querySelectorAll('.source-btn').forEach(btn => {
+                    btn.classList.remove('selected');
+                });
+                
+                // Close all menus
+                closeDocCamMenu();
+                closeBlurayMenu();
+                closeProjectControls();
+                closeHideControls();
+            }
+            
+            // Reset volume to 50% for both sliders
+            const micSlider = document.getElementById('micSlider');
+            const mainSlider = document.getElementById('mainSlider');
+            if (micSlider && mainSlider) {
+                micSlider.value = 50;
+                mainSlider.value = 50;
+                micPreviousVolume = 50;
+                mainPreviousVolume = 50;
+                updateVolumeSlider(micSlider, 'micPercent');
+                updateVolumeSlider(mainSlider, 'mainPercent');
+            }
+            
+            // Reset lights to ALL ON
+            document.querySelectorAll('.light-btn').forEach(btn => btn.classList.remove('active'));
+            const allOnBtn = document.querySelectorAll('.light-btn')[0]; // First light button is ALL ON
+            if (allOnBtn) {
+                allOnBtn.classList.add('active');
             }
             
             updateUIForProjectorMode();
