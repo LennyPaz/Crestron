@@ -1,4 +1,5 @@
 // State variables
+let projectorMode = 2; // 1 or 2 projectors (default 2)
         let currentSource = null;
         let selectedDocCam = null; // 'left' or 'right' when doc cam is selected
         let leftPreviewSource = null;
@@ -50,6 +51,134 @@
         function toggleDemoView() {
             const demoView = document.querySelector('.student-view-demo');
             demoView.classList.toggle('hidden');
+        }
+        
+        // PHASE 2: Switch projector modes
+        function switchProjectorMode(mode) {
+            if (mode === projectorMode) return; // Already in this mode
+            
+            projectorMode = mode;
+            
+            // Power off system and reset to avoid weird interactions
+            if (systemPower) {
+                systemPower = false;
+                const powerOffBtn = document.querySelectorAll('.power-btn')[1];
+                document.querySelectorAll('.power-btn').forEach(btn => btn.classList.remove('selected'));
+                powerOffBtn.classList.add('selected');
+                resetSystem();
+            }
+            
+            updateUIForProjectorMode();
+            
+            // Show toast notification
+            showModeToast(`Switched to ${mode} Projector Mode`);
+        }
+        
+        function showModeToast(message) {
+            // Create toast if it doesn't exist
+            let toast = document.getElementById('modeToast');
+            if (!toast) {
+                toast = document.createElement('div');
+                toast.id = 'modeToast';
+                toast.style.cssText = `
+                    position: fixed;
+                    top: 80px;
+                    left: 50%;
+                    transform: translateX(-50%);
+                    background: #425563;
+                    color: white;
+                    padding: 12px 24px;
+                    border-radius: 8px;
+                    font-weight: bold;
+                    z-index: 10000;
+                    opacity: 0;
+                    transition: opacity 0.3s ease;
+                `;
+                document.body.appendChild(toast);
+            }
+            
+            toast.textContent = message;
+            toast.style.opacity = '1';
+            
+            setTimeout(() => {
+                toast.style.opacity = '0';
+            }, 2000);
+        }
+        
+        function updateUIForProjectorMode() {
+            const demoView = document.querySelector('.student-view-demo');
+            const leftProjectorDisplay = document.getElementById('leftProjectorDisplay');
+            const rightProjectorContainer = document.querySelector('.student-projector:last-child');
+            
+            // PHASE 2: Find the projector screen control buttons (in bottom right)
+            const screenControlBtns = document.querySelectorAll('.projector-control-btn');
+            const leftScreenUpBtn = screenControlBtns[0]; // Left screen up
+            const rightScreenUpBtn = screenControlBtns[1]; // Right screen up
+            const leftScreenDownBtn = screenControlBtns[2]; // Left screen down
+            const rightScreenDownBtn = screenControlBtns[3]; // Right screen down
+            
+            // Find the screen controls grid
+            const screenControlsGrid = document.querySelector('.screen-controls-grid');
+            
+            if (projectorMode === 1) {
+                // 1 PROJECTOR MODE
+                // Update demo view to show "MAIN PROJECTOR" and hide right projector display
+                leftProjectorDisplay.previousElementSibling.textContent = 'MAIN PROJECTOR:';
+                if (rightProjectorContainer) rightProjectorContainer.style.display = 'none';
+                
+                // Hide right projector screen control buttons
+                if (rightScreenUpBtn) rightScreenUpBtn.style.display = 'none';
+                if (rightScreenDownBtn) rightScreenDownBtn.style.display = 'none';
+                
+                // Update left buttons to say "PROJECTOR SCREEN" instead of "LEFT SCREEN"
+                if (leftScreenUpBtn) {
+                    const textSpan = leftScreenUpBtn.querySelector('span:last-child');
+                    if (textSpan) textSpan.innerHTML = 'PROJECTOR<br>SCREEN<br>UP';
+                }
+                if (leftScreenDownBtn) {
+                    const textSpan = leftScreenDownBtn.querySelector('span:last-child');
+                    if (textSpan) textSpan.innerHTML = 'PROJECTOR<br>SCREEN<br>DOWN';
+                }
+                
+                // Make grid single column (1 button per row)
+                if (screenControlsGrid) {
+                    screenControlsGrid.style.gridTemplateColumns = '1fr';
+                }
+                
+                // Reset right-side states when switching to 1-projector
+                rightProjecting = false;
+                rightProjectSource = null;
+                rightMuted = false;
+                updateRoomView('left');
+                
+            } else {
+                // 2 PROJECTOR MODE
+                // Update demo view to show "LEFT PROJECTOR" and show right projector display
+                leftProjectorDisplay.previousElementSibling.textContent = 'LEFT PROJECTOR:';
+                if (rightProjectorContainer) rightProjectorContainer.style.display = 'flex';
+                
+                // Show right projector screen control buttons
+                if (rightScreenUpBtn) rightScreenUpBtn.style.display = 'flex';
+                if (rightScreenDownBtn) rightScreenDownBtn.style.display = 'flex';
+                
+                // Restore left buttons to say "LEFT SCREEN"
+                if (leftScreenUpBtn) {
+                    const textSpan = leftScreenUpBtn.querySelector('span:last-child');
+                    if (textSpan) textSpan.innerHTML = 'LEFT<br>SCREEN<br>UP';
+                }
+                if (leftScreenDownBtn) {
+                    const textSpan = leftScreenDownBtn.querySelector('span:last-child');
+                    if (textSpan) textSpan.innerHTML = 'LEFT<br>SCREEN<br>DOWN';
+                }
+                
+                // Restore grid to 2 columns
+                if (screenControlsGrid) {
+                    screenControlsGrid.style.gridTemplateColumns = 'repeat(2, 1fr)';
+                }
+                
+                updateRoomView('left');
+                updateRoomView('right');
+            }
         }
         
         // Initialize room view on page load
@@ -116,7 +245,9 @@
             const audioBtn = document.querySelector('.audio-btn');
             if (!audioBtn || !audioPlaying) return;
             
-            const bothMuted = leftMuted && rightMuted;
+            // PHASE 2: In 1-projector mode, check if main (left) projector is muted
+            // In 2-projector mode, check if both are muted
+            const shouldWarn = (projectorMode === 1) ? leftMuted : (leftMuted && rightMuted);
             const textSpan = audioBtn.querySelector('span:last-child');
             
             let sourceText = '';
@@ -126,13 +257,13 @@
                 sourceText = audioSource.toUpperCase();
             }
             
-            if (bothMuted) {
-                // Both muted - show warning state without changing text length
+            if (shouldWarn) {
+                // Show warning state (yellow)
                 audioBtn.style.background = '#FFC72C';
                 audioBtn.style.color = '#101820';
                 textSpan.textContent = `PLAYING AUDIO FROM: ${sourceText}`;
             } else {
-                // At least one screen is unmuted - normal state
+                // Normal state
                 audioBtn.style.background = '';
                 audioBtn.style.color = '';
                 textSpan.textContent = `PLAYING AUDIO FROM: ${sourceText}`;
@@ -392,15 +523,16 @@
                 }
             }
             
-            // BATCH 2 FIX #5: Check if both screens are muted
-            const bothMuted = leftMuted && rightMuted;
+            // BATCH 2 FIX #5: Check if screens are muted
+            // PHASE 2: In 1-projector mode, only check left. In 2-projector mode, check both
+            const shouldWarn = (projectorMode === 1) ? leftMuted : (leftMuted && rightMuted);
             
             // Switch to current source and play
             audioPlaying = true;
             audioSource = currentSource;
             audioDocCam = (currentSource === 'doccam') ? selectedDocCam : null;
             
-            if (bothMuted) {
+            if (shouldWarn) {
                 // Both muted - show different state (audio playing but nowhere to go)
                 element.classList.add('active');
                 element.style.background = '#FFC72C'; // Yellow warning color
@@ -535,6 +667,19 @@
                 return;
             }
             
+            // PHASE 2: In 1-projector mode, project directly without menu
+            if (projectorMode === 1) {
+                leftProjectSource = currentSource;
+                leftProjecting = true;
+                updateScreenDisplay('left');
+                updateRoomView('left');
+                
+                // Flash the button with gold color (same as menu-open style)
+                element.classList.add('menu-open');
+                setTimeout(() => element.classList.remove('menu-open'), 300);
+                return;
+            }
+            
             // Close hide menu but NOT doc cam menu
             closeHideControls();
             
@@ -630,6 +775,22 @@
             // Check if power is on first
             if (!systemPower) {
                 flashPowerWarning();
+                return;
+            }
+            
+            // PHASE 2: In 1-projector mode, toggle hide/mute directly
+            if (projectorMode === 1) {
+                leftMuted = !leftMuted;
+                updateRoomView('left');
+                
+                // Update button appearance to show persistent state
+                if (leftMuted) {
+                    element.classList.add('mute-active');
+                } else {
+                    element.classList.remove('mute-active');
+                }
+                
+                updateAudioButtonState();
                 return;
             }
             
@@ -1124,11 +1285,7 @@ Need more help? Contact IT Support at (850) 644-HELP`);
         }
         
         // ESC key to exit fullscreen (for development/testing only)
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape') {
-                exitFullscreen();
-            }
-        });
+        // MOVED TO COMBINED LISTENER AT END OF FILE
         
         // Initialize volume sliders on page load
         document.addEventListener('DOMContentLoaded', function() {
@@ -1176,9 +1333,27 @@ Need more help? Contact IT Support at (850) 644-HELP`);
             });
         });
         
-        // Toggle student view demo with backtick key or by clicking building name
+        // PHASE 2: Combined keyboard shortcuts listener
         document.addEventListener('keydown', function(e) {
+            // ESC to exit fullscreen
+            if (e.key === 'Escape') {
+                exitFullscreen();
+            }
+            
+            // Backtick to toggle demo view
             if (e.key === '`' || e.key === '~') {
                 toggleDemoView();
+            }
+            
+            // Shift+1 = 1 projector mode (use e.code to detect actual key, not shifted character)
+            if (e.shiftKey && e.code === 'Digit1') {
+                e.preventDefault(); // Prevent any default behavior
+                switchProjectorMode(1);
+            }
+            
+            // Shift+2 = 2 projector mode
+            if (e.shiftKey && e.code === 'Digit2') {
+                e.preventDefault(); // Prevent any default behavior
+                switchProjectorMode(2);
             }
         });

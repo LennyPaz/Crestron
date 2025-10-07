@@ -68,7 +68,7 @@
         
         .building-name:hover {
             color: #CEB888;
-            transform: scale(1.05);
+            text-shadow: 0 0 10px rgba(206, 184, 136, 0.5);
         }
         
         .time-display {
@@ -98,12 +98,12 @@
         }
         
         .start-class-btn:hover {
-            transform: translateY(-2px);
             box-shadow: 0 6px 16px rgba(0,0,0,0.4);
+            filter: brightness(1.05);
         }
         
         .start-class-btn:active {
-            transform: translateY(0);
+            filter: brightness(0.95);
         }
         
         /* Room View Demo Bar */
@@ -219,7 +219,7 @@
         }
         
         .screen:hover {
-            transform: scale(1.02);
+            box-shadow: 0 0 15px rgba(92, 184, 178, 0.4);
         }
         
         .screen img {
@@ -317,12 +317,12 @@
             border-radius: 8px;
             transition: all 0.2s ease;
             box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-            border: none;
+            border: 2px solid transparent;
         }
         
         .light-btn:hover {
-            transform: translateY(-2px);
             box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            filter: brightness(1.05);
         }
         
         .light-btn.active {
@@ -427,25 +427,25 @@
             justify-content: center;
             gap: 2px;
             text-align: center;
-            border: none;
+            border: 2px solid transparent;
             min-height: 0;
             height: auto;
         }
         
         .source-btn:hover {
-            transform: translateY(-2px);
             box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-            background: rgba(255, 255, 255, 0.9);
+            background: rgba(255, 255, 255, 0.95);
+            filter: brightness(1.05);
         }
         
         .source-btn:active {
-            transform: translateY(0);
+            filter: brightness(0.95);
         }
         
         .source-btn.selected {
             background: #425563;
             color: white;
-            border: 2px solid #CEB888;
+            border-color: #CEB888;
         }
         
         .btn-icon {
@@ -484,20 +484,20 @@
             flex-direction: column;
             align-items: center;
             gap: 2px;
-            border: none;
+            border: 2px solid transparent;
             min-height: 0;
             height: 100%;
         }
         
         .camera-btn:hover {
-            transform: translateY(-2px);
             box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            filter: brightness(1.05);
         }
         
         .camera-btn.selected {
             background: #425563;
             color: white;
-            border: 2px solid #CEB888;
+            border-color: #CEB888;
         }
         
         /* Middle section - Workflow controls */
@@ -575,19 +575,19 @@
             justify-content: center;
             gap: 6px;
             text-align: center;
-            border: none;
+            border: 2px solid transparent;
             min-height: 0;
             height: 100%;
         }
         
         .control-btn:hover {
-            transform: translateY(-2px);
             box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-            background: rgba(255, 255, 255, 0.9);
+            background: rgba(255, 255, 255, 0.95);
+            filter: brightness(1.05);
         }
         
         .control-btn:active {
-            transform: translateY(0);
+            filter: brightness(0.95);
         }
         
         .control-btn.preview-active {
@@ -638,15 +638,15 @@
             align-items: center;
             justify-content: center;
             gap: 6px;
-            border: none;
+            border: 2px solid transparent;
             text-align: center;
             min-height: 0;
             height: 100%;
         }
         
         .audio-btn:hover {
-            transform: translateY(-2px);
             box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            filter: brightness(1.05);
         }
         
         .audio-btn.active {
@@ -723,13 +723,13 @@
         }
         
         .doccam-option-btn:hover {
-            transform: translateY(-2px);
             box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-            background: rgba(255, 255, 255, 0.9);
+            background: rgba(255, 255, 255, 0.95);
+            filter: brightness(1.05);
         }
         
         .doccam-option-btn:active {
-            transform: translateY(0);
+            filter: brightness(0.95);
         }
         
         .doccam-option-btn.selected {
@@ -831,13 +831,13 @@
         }
         
         .bluray-btn:hover {
-            transform: translateY(-2px);
             box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-            background: rgba(255, 255, 255, 0.9);
+            background: rgba(255, 255, 255, 0.95);
+            filter: brightness(1.05);
         }
         
         .bluray-btn:active {
-            transform: translateY(0);
+            filter: brightness(0.95);
         }
         
         .bluray-btn-icon {
@@ -937,13 +937,13 @@
         }
         
         .project-option-btn:hover {
-            transform: translateY(-2px);
             box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-            background: rgba(255, 255, 255, 0.9);
+            background: rgba(255, 255, 255, 0.95);
+            filter: brightness(1.05);
         }
         
         .project-option-btn:active {
-            transform: translateY(0);
+            filter: brightness(0.95);
         }
         
         .project-option-btn.selected {
@@ -986,8 +986,8 @@
         }
         
         .close-menu-btn:hover {
-            transform: scale(1.1);
             box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            filter: brightness(1.1);
         }
         
         @keyframes slideDown {
@@ -1060,13 +1060,13 @@
         }
         
         .hide-option-btn:hover {
-            transform: translateY(-2px);
             box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-            background: rgba(255, 255, 255, 0.9);
+            background: rgba(255, 255, 255, 0.95);
+            filter: brightness(1.05);
         }
         
         .hide-option-btn:active {
-            transform: translateY(0);
+            filter: brightness(0.95);
         }
         
         .hide-option-btn.selected {
@@ -1109,8 +1109,8 @@
         }
         
         .close-hide-menu-btn:hover {
-            transform: scale(1.1);
             box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            filter: brightness(1.1);
         }
         
         /* Right section - Power and volume */
@@ -1175,19 +1175,19 @@
             align-items: center;
             justify-content: center;
             gap: 4px;
-            border: none;
+            border: 2px solid transparent;
             min-height: 0;
             height: 100%;
         }
         
         .projector-control-btn:hover {
-            transform: translateY(-2px);
             box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-            background: rgba(255, 255, 255, 0.9);
+            background: rgba(255, 255, 255, 0.95);
+            filter: brightness(1.05);
         }
         
         .projector-control-btn:active {
-            transform: translateY(0);
+            filter: brightness(0.95);
         }
         
         .projector-control-btn.active {
@@ -1223,17 +1223,17 @@
             align-items: center;
             justify-content: center;
             gap: 4px;
-            border: none;
+            border: 2px solid transparent;
         }
         
         .power-btn:hover {
-            transform: translateY(-2px);
             box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-            background: rgba(255, 255, 255, 0.9);
+            background: rgba(255, 255, 255, 0.95);
+            filter: brightness(1.05);
         }
         
         .power-btn:active {
-            transform: translateY(0);
+            filter: brightness(0.95);
         }
         
         .power-btn.selected {
@@ -1396,11 +1396,11 @@
             justify-content: center;
             transition: all 0.2s ease;
             box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-            border: none;
+            border: 2px solid transparent;
         }
         
         .mute-btn:hover {
-            transform: scale(1.1);
+            filter: brightness(1.1);
         }
         
         .mute-btn.active {
@@ -1420,15 +1420,15 @@
             align-items: center;
             justify-content: center;
             transition: all 0.3s ease;
-            border: none;
+            border: 2px solid transparent;
             border-radius: 8px;
             padding: 12px;
             flex-shrink: 0;
         }
         
         .help-btn:hover {
-            transform: translateY(-2px);
             box-shadow: 0 6px 16px rgba(0,0,0,0.5);
+            filter: brightness(1.05);
         }
         
         /* Power Off Confirmation Modal */
@@ -1511,12 +1511,12 @@
         }
         
         .modal-btn:hover {
-            transform: translateY(-2px);
             box-shadow: 0 6px 16px rgba(0,0,0,0.4);
+            filter: brightness(1.05);
         }
         
         .modal-btn:active {
-            transform: translateY(0);
+            filter: brightness(0.95);
         }
         
         .modal-btn-no {
