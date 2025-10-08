@@ -43,8 +43,7 @@
         <div class="middle-row">
             <div class="screen-container">
                 <div class="screen" id="leftScreen">
-                    <span>No Input Selected</span>
-                    <span class="screen-status" id="leftStatus">Ready</span>
+                    <span>Preview Screen</span>
                 </div>
             </div>
             
@@ -62,8 +61,7 @@
             
             <div class="screen-container">
                 <div class="screen" id="rightScreen">
-                    <span>No Input Selected</span>
-                    <span class="screen-status" id="rightStatus">Ready</span>
+                    <span>Preview Screen</span>
                 </div>
             </div>
         </div>
@@ -164,6 +162,10 @@
                         <button class="control-btn" onclick="openProjectControls(this)">
                             <img src="Icons/ProjectIcon.png" alt="Project" class="btn-icon">
                             <span>PROJECT</span>
+                        </button>
+                        <button class="control-btn" onclick="openFreezeControls(this)">
+                            <img src="Icons/FrozenIcon.png" alt="Freeze" class="btn-icon">
+                            <span>FREEZE</span>
                         </button>
                         <button class="control-btn" onclick="openHideControls(this)">
                             <img src="Icons/HideRightLeftIcon.png" alt="Hide" class="btn-icon">
@@ -312,6 +314,28 @@
                                 <button class="hide-option-btn" id="hideRightBtn" onclick="hideScreen('right')">
                                     <span class="hide-label-main">RIGHT</span>
                                     <span class="hide-label-sub">Hide &amp; Mute Right</span>
+                                </button>
+                            </div>
+                        </div>
+                            
+                            <!-- Freeze Controls Menu -->
+                            <div class="freeze-controls-menu" id="freezeControlsMenu">
+                            <button class="close-freeze-menu-btn" onclick="closeFreezeControls()">
+                                ✕
+                            </button>
+                            <div class="freeze-menu-label">FREEZE CONTROLS</div>
+                            <div class="freeze-options-row">
+                                <button class="freeze-option-btn" id="freezeLeftBtn" onclick="freezeScreen('left')">
+                                    <span class="freeze-label-main">LEFT</span>
+                                    <span class="freeze-label-sub">Freeze Left</span>
+                                </button>
+                                <button class="freeze-option-btn" id="freezeBothBtn" onclick="freezeScreen('both')">
+                                    <span class="freeze-label-main">BOTH</span>
+                                    <span class="freeze-label-sub">Freeze Both</span>
+                                </button>
+                                <button class="freeze-option-btn" id="freezeRightBtn" onclick="freezeScreen('right')">
+                                    <span class="freeze-label-main">RIGHT</span>
+                                    <span class="freeze-label-sub">Freeze Right</span>
                                 </button>
                             </div>
                         </div>

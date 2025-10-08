@@ -4,12 +4,16 @@ let projectorMode = 2; // 1 or 2 projectors (default 2)
         let selectedDocCam = null; // 'left' or 'right' when doc cam is selected
         let leftPreviewSource = null;
         let rightPreviewSource = null;
+        let leftDocCamSide = null;  // Track which doc cam is previewed on left screen
+        let rightDocCamSide = null; // Track which doc cam is previewed on right screen
         let leftProjectSource = null;  // What's actually being projected on left
         let rightProjectSource = null; // What's actually being projected on right
         let leftProjecting = false;
         let rightProjecting = false;
         let leftMuted = false;
         let rightMuted = false;
+        let leftFrozen = false;
+        let rightFrozen = false;
         let audioPlaying = false;
         let audioSource = null; // Track which source audio is playing from
         let audioDocCam = null; // Track which doc cam audio is playing from (left/right)
@@ -81,6 +85,7 @@ let projectorMode = 2; // 1 or 2 projectors (default 2)
                 closeBlurayMenu();
                 closeProjectControls();
                 closeHideControls();
+                closeFreezeControls();
             }
             
             // Reset volume to 50% for both sliders
@@ -306,7 +311,7 @@ let projectorMode = 2; // 1 or 2 projectors (default 2)
         
         // BATCH 3 FIX #7: Update hide button to stay yellow when screens are muted
         function updateHideButtonPersistentState() {
-            const hideBtn = document.querySelectorAll('.control-btn')[4]; // 5th button
+            const hideBtn = document.querySelectorAll('.control-btn')[5]; // 6th button - HIDE & MUTE
             if (hideBtn && !document.getElementById('hideControlsMenu').classList.contains('active')) {
                 // Only update if menu is closed
                 if (leftMuted || rightMuted) {
@@ -332,12 +337,12 @@ let projectorMode = 2; // 1 or 2 projectors (default 2)
                 // PHASE 5: Open Blu-ray controls menu
                 openBlurayMenu();
                 closeDocCamMenu();
-                selectedDocCam = null;
+                selectedDocCam = null; // Clear doc cam selection
             } else {
-                // Close both doc cam and bluray menus if switching to different source
+                // CRITICAL FIX: Close both doc cam and bluray menus if switching to different source
                 closeDocCamMenu();
                 closeBlurayMenu();
-                selectedDocCam = null;
+                selectedDocCam = null; // Clear doc cam selection when switching away
             }
         }
         
@@ -345,18 +350,26 @@ let projectorMode = 2; // 1 or 2 projectors (default 2)
         function updateRoomView(side) {
             const display = document.getElementById(side + 'ProjectorDisplay');
             const isMuted = side === 'left' ? leftMuted : rightMuted;
+            const isFrozen = side === 'left' ? leftFrozen : rightFrozen;
             const isProjecting = side === 'left' ? leftProjecting : rightProjecting;
             const projectSource = side === 'left' ? leftProjectSource : rightProjectSource;
             const screenDown = side === 'left' ? leftScreenDown : rightScreenDown;
             
-            display.classList.remove('blanked', 'projecting');
+            display.classList.remove('blanked', 'projecting', 'frozen');
             
             // PHASE 6: Show screen position with bigger arrow
             let screenIcon = screenDown ? ' ▼' : ' ▲';
             
-            if (isMuted && isProjecting) {
+            // PRIORITY ORDER: Mute > Freeze > Projecting > Nothing
+            // Mute ALWAYS takes highest priority - even if nothing is projecting!
+            if (isMuted) {
+                // Show BLANKED regardless of whether anything is projecting
                 display.textContent = 'BLANKED' + screenIcon;
                 display.classList.add('blanked');
+            } else if (isFrozen && isProjecting) {
+                // Freeze only shows if NOT muted AND something is projecting
+                display.textContent = 'FROZEN' + screenIcon;
+                display.classList.add('frozen');
             } else if (isProjecting && projectSource) {
                 // PHASE 4: Show which doc cam if doc cam is the source
                 if (projectSource === 'doccam' && selectedDocCam) {
@@ -379,9 +392,21 @@ let projectorMode = 2; // 1 or 2 projectors (default 2)
             
             if (side === 'left') {
                 leftPreviewSource = currentSource;
+                // NEW: Track doc cam side for this screen
+                if (currentSource === 'doccam') {
+                    leftDocCamSide = selectedDocCam;
+                } else {
+                    leftDocCamSide = null;
+                }
                 updateScreenDisplay('left');
             } else {
                 rightPreviewSource = currentSource;
+                // NEW: Track doc cam side for this screen
+                if (currentSource === 'doccam') {
+                    rightDocCamSide = selectedDocCam;
+                } else {
+                    rightDocCamSide = null;
+                }
                 updateScreenDisplay('right');
             }
             
@@ -449,57 +474,61 @@ let projectorMode = 2; // 1 or 2 projectors (default 2)
         // Update screen display (preview screens - NOT affected by mute/projection)
         function updateScreenDisplay(side) {
             const screen = document.getElementById(side + 'Screen');
-            const status = document.getElementById(side + 'Status');
             
-            if (!screen || !status) {
+            if (!screen) {
                 return;
             }
             
             const previewSource = side === 'left' ? leftPreviewSource : rightPreviewSource;
+            const docCamSide = side === 'left' ? leftDocCamSide : rightDocCamSide; // NEW: Get tracked doc cam side
             
             // Preview screens ONLY show previews, NOT mute or projection state
             if (previewSource) {
-                // Check if source is connected
-                const isConnected = isSourceConnected(previewSource);
+                // NEW: Use tracked doc cam side for this screen
+                const effectiveDocCam = (previewSource === 'doccam') ? docCamSide : null;
+                const isConnected = (previewSource === 'doccam' && effectiveDocCam === 'left') ? false : true;
+                
+                // Create more descriptive badge text with source name
+                let badgeText = 'Preview';
+                let displayText = previewSource.toUpperCase();
+                
+                if (previewSource === 'doccam' && effectiveDocCam) {
+                    displayText = `${effectiveDocCam.toUpperCase()} DOC CAM`;
+                    badgeText = `Preview: ${displayText}`;
+                } else {
+                    // Map source keys to friendly names for badge
+                    const sourceNames = {
+                        'desktop': 'Desktop PC',
+                        'mac': 'Mac',
+                        'laptop': 'Laptop',
+                        'wireless': 'Wireless',
+                        'bluray': 'Blu-ray',
+                        'camera': 'Camera'
+                    };
+                    badgeText = `Preview: ${sourceNames[previewSource] || displayText}`;
+                }
                 
                 if (!isConnected) {
                     // Show "No Input" badge for disconnected sources
-                    let displayText = previewSource.toUpperCase();
-                    if (previewSource === 'doccam' && selectedDocCam) {
-                        displayText = `${selectedDocCam.toUpperCase()} DOC CAM`;
-                    }
-                    screen.innerHTML = `<span style="color: #A6192E;">No Input Detected</span><span class="screen-status no-input" id="${side}Status">No Input</span>`;
+                    screen.innerHTML = `<span style="color: #A6192E;">No Input Detected</span><span class="screen-status no-input">${badgeText.replace('Preview:', 'No Input:')}</span>`;
                     screen.style.backgroundColor = '#000';
                 } else {
                     const wallpaper = sourceWallpapers[previewSource];
                     
                     if (wallpaper) {
-                        // Show wallpaper image
-                        screen.innerHTML = `<img src="${wallpaper}" alt="${previewSource}"><span class="screen-status" id="${side}Status">Preview</span>`;
+                        // Show wallpaper image with descriptive teal badge
+                        screen.innerHTML = `<img src="${wallpaper}" alt="${previewSource}"><span class="screen-status preview-badge">${badgeText}</span>`;
                     } else {
                         // Fallback to text for sources without wallpapers
-                        let displayText = previewSource.toUpperCase();
-                        if (previewSource === 'doccam' && selectedDocCam) {
-                            displayText = `${selectedDocCam.toUpperCase()} DOC CAM`;
-                        }
-                        screen.innerHTML = `<span>Preview: ${displayText}</span><span class="screen-status" id="${side}Status">Preview</span>`;
+                        screen.innerHTML = `<span>Preview: ${displayText}</span><span class="screen-status preview-badge">${badgeText}</span>`;
                     }
                     
                     screen.style.backgroundColor = '#425563';
-                    const newStatus = document.getElementById(side + 'Status');
-                    if (newStatus) {
-                        newStatus.style.background = 'rgba(92, 184, 178, 0.9)';
-                        newStatus.style.color = '#101820';
-                    }
                 }
             } else {
-                screen.innerHTML = `<span>No Input Selected</span><span class="screen-status" id="${side}Status">Ready</span>`;
+                // No preview source - show empty screen without status badge
+                screen.innerHTML = `<span>Preview Screen</span>`;
                 screen.style.backgroundColor = '#000';
-                const newStatus = document.getElementById(side + 'Status');
-                if (newStatus) {
-                    newStatus.style.background = 'rgba(206, 184, 136, 0.9)';
-                    newStatus.style.color = '#101820';
-                }
             }
         }
         
@@ -714,8 +743,9 @@ let projectorMode = 2; // 1 or 2 projectors (default 2)
                 return;
             }
             
-            // Close hide menu but NOT doc cam menu
+            // Close hide and freeze menus but NOT doc cam or bluray menus
             closeHideControls();
+            closeFreezeControls();
             
             // Update button states to reflect current projection state
             updateProjectButtonStates();
@@ -828,8 +858,9 @@ let projectorMode = 2; // 1 or 2 projectors (default 2)
                 return;
             }
             
-            // Close project menu but NOT doc cam menu
+            // Close project and freeze menus but NOT doc cam or bluray menus
             closeProjectControls();
+            closeFreezeControls();
             
             // Update button states to reflect current hide/mute state
             updateHideButtonStates();
@@ -903,6 +934,188 @@ let projectorMode = 2; // 1 or 2 projectors (default 2)
             
             // BATCH 2 FIX #5: Update audio button state when muting changes
             updateAudioButtonState();
+        }
+        
+        // Update freeze button persistent state
+        function updateFreezeButtonPersistentState() {
+            const freezeBtn = document.querySelectorAll('.control-btn')[4]; // 5th button (0-indexed) - after LEFT PREVIEW, RIGHT PREVIEW, PROJECT, FREEZE
+            if (freezeBtn && !document.getElementById('freezeControlsMenu').classList.contains('active')) {
+                // Only update if menu is closed
+                if (leftFrozen || rightFrozen) {
+                    freezeBtn.classList.add('freeze-active');
+                } else {
+                    freezeBtn.classList.remove('freeze-active');
+                }
+            }
+        }
+        
+        // Helper function to check if freeze is possible
+        function canFreeze(side) {
+            const isProjecting = side === 'left' ? leftProjecting : rightProjecting;
+            
+            return systemPower &&      // Power must be ON
+                   currentSource &&    // Source must be selected
+                   isProjecting;       // Content must be projecting (not just previewed)
+                                       // NOTE: Blanked screens CAN be frozen (freeze is hidden by blank)
+        }
+        
+        // Freeze warning flash (like source/power warnings)
+        function flashFreezeWarning(element) {
+            const originalBg = element.style.background || '';
+            const originalColor = element.style.color || '';
+            
+            // Flash gray to indicate "can't do this"
+            element.style.background = '#425563';
+            element.style.color = 'white';
+            
+            setTimeout(() => {
+                element.style.background = originalBg;
+                element.style.color = originalColor;
+            }, 300);
+        }
+        
+        // Project warning flash (gold) - shows when trying to freeze but nothing is projecting yet
+        function flashProjectWarning(element) {
+            // Flash exactly like the source warning - add/remove class for animation
+            element.classList.add('source-warning');
+            setTimeout(() => {
+                element.classList.remove('source-warning');
+            }, 1000);
+        }
+        
+        // Freeze Controls Menu Functions
+        function openFreezeControls(element) {
+            // Check if power is on first
+            if (!systemPower) {
+                flashPowerWarning();
+                return;
+            }
+            
+            // NEW: Check if anything is actually projecting
+            if (!leftProjecting && !rightProjecting) {
+                // Nothing projecting - flash the PROJECT button in gold to guide user
+                const projectBtn = document.querySelectorAll('.control-btn')[2]; // PROJECT button
+                if (projectBtn) {
+                    flashProjectWarning(projectBtn);
+                }
+                return;
+            }
+            
+            // PHASE 2: In 1-projector mode, toggle freeze directly
+            if (projectorMode === 1) {
+                // Only allow if left can be frozen
+                if (!canFreeze('left')) {
+                    // Flash warning if conditions not met
+                    flashFreezeWarning(element);
+                    return;
+                }
+                
+                leftFrozen = !leftFrozen;
+                updateRoomView('left'); // NEW: Update room view to show frozen state
+                
+                // Update button appearance to show persistent state
+                if (leftFrozen) {
+                    element.classList.add('freeze-active');
+                } else {
+                    element.classList.remove('freeze-active');
+                }
+                return;
+            }
+            
+            // Close project and hide menus when freeze opens
+            closeProjectControls();
+            closeHideControls();
+            
+            // Update button states to reflect current freeze state
+            updateFreezeButtonStates();
+            
+            // Highlight the FREEZE button with menu-open style
+            element.classList.add('freeze-menu-open');
+            
+            // Open the freeze controls menu
+            const menu = document.getElementById('freezeControlsMenu');
+            menu.classList.add('active');
+        }
+        
+        function closeFreezeControls() {
+            const menu = document.getElementById('freezeControlsMenu');
+            menu.classList.remove('active');
+            
+            // Find the freeze button
+            const freezeBtn = document.querySelector('.control-btn[onclick*="openFreezeControls"]');
+            
+            if (freezeBtn) {
+                // Always remove menu-open state first
+                freezeBtn.classList.remove('freeze-menu-open');
+                
+                // Only add freeze-active if at least one screen is actually frozen
+                freezeBtn.classList.remove('freeze-active');
+                if (leftFrozen || rightFrozen) {
+                    freezeBtn.classList.add('freeze-active');
+                }
+            }
+        }
+        
+        function updateFreezeButtonStates() {
+            const leftBtn = document.getElementById('freezeLeftBtn');
+            const rightBtn = document.getElementById('freezeRightBtn');
+            const bothBtn = document.getElementById('freezeBothBtn');
+            
+            // Remove all selected states
+            leftBtn.classList.remove('selected');
+            rightBtn.classList.remove('selected');
+            bothBtn.classList.remove('selected');
+            
+            // Add selected state based on current freeze state
+            if (leftFrozen) {
+                leftBtn.classList.add('selected');
+            }
+            if (rightFrozen) {
+                rightBtn.classList.add('selected');
+            }
+        }
+        
+        function freezeScreen(side) {
+            // Can freeze blanked screens - freeze is just hidden by the blank state
+            if (side === 'left') {
+                // Check if can freeze (power on, source selected, projecting)
+                // Blanked screens CAN be frozen
+                if (!leftFrozen && !canFreeze('left')) {
+                    return; // Can't freeze if not projecting
+                }
+                leftFrozen = !leftFrozen;
+                updateRoomView('left');
+                updateFreezeButtonStates();
+            } else if (side === 'right') {
+                // Check if can freeze
+                if (!rightFrozen && !canFreeze('right')) {
+                    return; // Can't freeze if not projecting
+                }
+                rightFrozen = !rightFrozen;
+                updateRoomView('right');
+                updateFreezeButtonStates();
+            } else if (side === 'both') {
+                // Toggle both - only affect screens that can be frozen
+                const shouldFreeze = !leftFrozen || !rightFrozen;
+                
+                if (shouldFreeze) {
+                    // Trying to freeze - only freeze screens that CAN be frozen
+                    if (canFreeze('left')) {
+                        leftFrozen = true;
+                    }
+                    if (canFreeze('right')) {
+                        rightFrozen = true;
+                    }
+                } else {
+                    // Trying to unfreeze - always allow
+                    leftFrozen = false;
+                    rightFrozen = false;
+                }
+                
+                updateRoomView('left');
+                updateRoomView('right');
+                updateFreezeButtonStates();
+            }
         }
         
         // Loading Screen Control
@@ -1040,7 +1253,7 @@ let projectorMode = 2; // 1 or 2 projectors (default 2)
             if (percent) {
                 // BATCH 3 FIX #8: Add warning above 90% volume for main volume
                 if (value > 90 && percentId === 'mainPercent') {
-                    percent.innerHTML = `${value}% <span style="color: #FFC72C; font-size: 9px; display: block; line-height: 1.2; margin-top: 2px;">⚠ HIGH</span>`;
+                    percent.innerHTML = `${value}% <span style="color: #FFC72C; font-size: 9px; margin-left: 4px;">⚠ HIGH</span>`;
                     percent.style.background = 'rgba(255, 199, 44, 0.3)';
                 } else {
                     percent.textContent = value + '%';
@@ -1185,6 +1398,8 @@ let projectorMode = 2; // 1 or 2 projectors (default 2)
             rightProjecting = false;
             leftMuted = false;
             rightMuted = false;
+            leftFrozen = false;
+            rightFrozen = false;
             audioPlaying = false;
             audioSource = null;
             audioDocCam = null;
@@ -1203,6 +1418,7 @@ let projectorMode = 2; // 1 or 2 projectors (default 2)
             closeBlurayMenu();
             closeProjectControls();
             closeHideControls();
+            closeFreezeControls();
             
             document.querySelectorAll('.control-btn').forEach(btn => {
                 btn.classList.remove('preview-active', 'project-active', 'mute-active', 'hide-menu-open');
@@ -1260,6 +1476,7 @@ Need more help? Contact IT Support at (850) 644-HELP`);
         function enterFullscreen(side) {
             const screen = document.getElementById(side + 'Screen');
             const previewSource = side === 'left' ? leftPreviewSource : rightPreviewSource;
+            const docCamSide = side === 'left' ? leftDocCamSide : rightDocCamSide; // NEW: Use tracked doc cam side
             const overlay = document.getElementById('fullscreenOverlay');
             const fullscreenImage = document.getElementById('fullscreenImage');
             const fullscreenText = document.getElementById('fullscreenText');
@@ -1273,29 +1490,35 @@ Need more help? Contact IT Support at (850) 644-HELP`);
                 fullscreenText.style.display = 'block';
                 fullscreenText.textContent = 'No Input Selected';
                 fullscreenText.classList.remove('no-input');
-            } else if (!isSourceConnected(previewSource)) {
-                // No input detected - show warning
-                fullscreenImage.style.display = 'none';
-                fullscreenText.style.display = 'block';
-                fullscreenText.textContent = 'No Input Detected';
-                fullscreenText.classList.add('no-input');
             } else {
-                // Show content
-                const wallpaper = sourceWallpapers[previewSource];
-                if (wallpaper) {
-                    fullscreenImage.src = wallpaper;
-                    fullscreenImage.style.display = 'block';
-                    fullscreenText.style.display = 'none';
-                } else {
-                    // Fallback text
+                // NEW: Use the tracked doc cam side for this specific screen
+                const effectiveDocCam = (previewSource === 'doccam') ? docCamSide : null;
+                const isConnected = (previewSource === 'doccam' && effectiveDocCam === 'left') ? false : true;
+                
+                if (!isConnected) {
+                    // No input detected - show warning with doc cam side info
                     fullscreenImage.style.display = 'none';
                     fullscreenText.style.display = 'block';
-                    let displayText = previewSource.toUpperCase();
-                    if (previewSource === 'doccam' && selectedDocCam) {
-                        displayText = `${selectedDocCam.toUpperCase()} DOC CAM`;
+                    fullscreenText.textContent = `${effectiveDocCam.toUpperCase()} DOC CAM - No Input Detected`;
+                    fullscreenText.classList.add('no-input');
+                } else {
+                    // Show content
+                    const wallpaper = sourceWallpapers[previewSource];
+                    if (wallpaper) {
+                        fullscreenImage.src = wallpaper;
+                        fullscreenImage.style.display = 'block';
+                        fullscreenText.style.display = 'none';
+                    } else {
+                        // Fallback text - use tracked doc cam side
+                        fullscreenImage.style.display = 'none';
+                        fullscreenText.style.display = 'block';
+                        let displayText = previewSource.toUpperCase();
+                        if (previewSource === 'doccam' && effectiveDocCam) {
+                            displayText = `${effectiveDocCam.toUpperCase()} DOC CAM`;
+                        }
+                        fullscreenText.textContent = `Preview: ${displayText}`;
+                        fullscreenText.classList.remove('no-input');
                     }
-                    fullscreenText.textContent = `Preview: ${displayText}`;
-                    fullscreenText.classList.remove('no-input');
                 }
             }
         }
