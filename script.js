@@ -1121,29 +1121,18 @@ let projectorMode = 2; // 1 or 2 projectors (default 2)
         // Loading Screen Control
         function showLoadingScreen(callback) {
             const overlay = document.getElementById('loadingOverlay');
-            const progressBar = document.getElementById('progressBar');
-            const progressPercentage = document.getElementById('progressPercentage');
             
             overlay.classList.add('active');
             
-            let progress = 0;
             const duration = 15000; // 15 seconds
-            const intervalTime = 100; // Update every 100ms
-            const totalSteps = duration / intervalTime;
-            const increment = 100 / totalSteps;
-            let interval;
+            let timeout;
             
             // Function to complete loading immediately
             function skipLoading() {
-                clearInterval(interval);
-                progress = 100;
-                progressBar.style.width = '100%';
-                progressPercentage.textContent = '100%';
+                clearTimeout(timeout);
                 
                 setTimeout(() => {
                     overlay.classList.remove('active');
-                    progressBar.style.width = '0%';
-                    progressPercentage.textContent = '0%';
                     document.removeEventListener('keydown', skipLoading);
                     
                     if (callback) callback();
@@ -1153,28 +1142,14 @@ let projectorMode = 2; // 1 or 2 projectors (default 2)
             // Add keyboard shortcut to skip loading
             document.addEventListener('keydown', skipLoading, { once: true });
             
-            interval = setInterval(() => {
-                progress += increment;
+            // Wait for duration then hide
+            timeout = setTimeout(() => {
+                overlay.classList.remove('active');
+                document.removeEventListener('keydown', skipLoading);
                 
-                if (progress >= 100) {
-                    progress = 100;
-                    clearInterval(interval);
-                    
-                    // Wait a brief moment at 100% then fade out
-                    setTimeout(() => {
-                        overlay.classList.remove('active');
-                        progressBar.style.width = '0%';
-                        progressPercentage.textContent = '0%';
-                        document.removeEventListener('keydown', skipLoading);
-                        
-                        // Execute callback after loading completes
-                        if (callback) callback();
-                    }, 500);
-                }
-                
-                progressBar.style.width = progress + '%';
-                progressPercentage.textContent = Math.round(progress) + '%';
-            }, intervalTime);
+                // Execute callback after loading completes
+                if (callback) callback();
+            }, duration);
         }
         
         // Power controls
@@ -1446,31 +1421,77 @@ let projectorMode = 2; // 1 or 2 projectors (default 2)
         
         // Help system
         function showHelp() {
-            alert(`FSU CLASSROOM CONTROL SYSTEM - QUICK START GUIDE
-
-GETTING STARTED:
-• Press "START CLASS" to quickly power on and setup Desktop PC on both screens
-• Or follow the 3-step process: Select Input → Preview (optional) → Project
-
-INPUT SOURCES:
-Select your content source from the left panel (Desktop PC, Document Camera, Laptop, etc.)
-
-SCREEN CONTROLS:
-• PREVIEW: See the input on screen before showing students
-• PROJECT: Display the input to students (preview optional)
-• HIDE: Blank the screen (students see black screen)
-
-AUDIO:
-Use "PLAY AUDIO FROM SELECTED INPUT" to route audio to classroom speakers
-
-LIGHTS:
-Control classroom lighting from the center panel
-
-POWER:
-Power On/Off controls all classroom equipment
-
-Need more help? Contact IT Support at (850) 644-HELP`);
+            const overlay = document.getElementById('helpOverlay');
+            overlay.classList.add('active');
+            
+            // Show main content, hide detail views
+            document.getElementById('helpMainContent').style.display = 'flex';
+            document.getElementById('helpTaskDetail').style.display = 'none';
+            document.getElementById('helpGuidebook').style.display = 'none';
         }
+        
+        function closeHelp() {
+            const overlay = document.getElementById('helpOverlay');
+            overlay.classList.remove('active');
+            
+            // Reset to main content view when closing
+            document.getElementById('helpMainContent').style.display = 'flex';
+            document.getElementById('helpTaskDetail').style.display = 'none';
+            document.getElementById('helpGuidebook').style.display = 'none';
+        }
+        
+        function showTaskDetail(taskType) {
+            // Hide main content, show task detail
+            document.getElementById('helpMainContent').style.display = 'none';
+            document.getElementById('helpTaskDetail').style.display = 'flex';
+            document.getElementById('helpGuidebook').style.display = 'none';
+            
+            const titleEl = document.getElementById('taskDetailTitle');
+            const stepsEl = document.getElementById('taskDetailSteps');
+            
+            // Define task content
+            const tasks = {
+                'project': {
+                    title: 'How to Project Content',
+                    steps: [
+                        { icon: 'Icons/PowerIcon.webp', text: 'Press POWER ON (bottom right corner)' },
+                        { icon: 'Icons/DeskTopIcon.png', text: 'Pick what you want to show from the left side (Desktop PC, Laptop, Document Camera, etc.)' },
+                        { icon: 'Icons/LeftPreviewIcon.png', text: 'Press PREVIEW to check it looks right on your screen first' },
+                        { icon: 'Icons/ProjectIcon.png', text: 'Press PROJECT to show it on the projector screens' },
+                        { icon: 'Icons/HideRightLeftIcon.png', text: 'To hide the screens from students, press HIDE & MUTE' }
+                    ]
+                },
+                'audio': {
+                    title: 'Play Sound Through Speakers',
+                    steps: [
+                        { icon: 'Icons/DeskTopIcon.png', text: 'First, pick what you want to play from the left side (Desktop PC, Mac, your Laptop, Document Camera, Blu-ray, or Wireless)' },
+                        { icon: 'Icons/PlayAudio.png', text: 'Press the PLAY AUDIO button in the middle section' },
+                        { icon: 'Icons/Unmuted.png', text: 'Use the volume sliders on the right to adjust MAIN VOLUME (speakers) or MIC VOLUME. Click the speaker icon below each slider to quickly mute/unmute' }
+                    ]
+                }
+            };
+            
+            const task = tasks[taskType];
+            titleEl.textContent = task.title;
+            
+            // Build steps HTML with icons
+            stepsEl.innerHTML = task.steps.map((step, index) => `
+                <div class="help-step">
+                    <div class="help-step-number">${index + 1}</div>
+                    ${step.icon ? `<img src="${step.icon}" alt="Step ${index + 1}" class="help-step-icon">` : '<div class="help-step-spacer"></div>'}
+                    <div class="help-step-text">${step.text}</div>
+                </div>
+            `).join('');
+        }
+        
+        function showGuidebook() {
+            // Hide main content, show guidebook
+            document.getElementById('helpMainContent').style.display = 'none';
+            document.getElementById('helpTaskDetail').style.display = 'none';
+            document.getElementById('helpGuidebook').style.display = 'block';
+        }
+        
+
         
         // Phase 1: Fullscreen functionality
         function enterFullscreen(side) {
@@ -1583,6 +1604,27 @@ Need more help? Contact IT Support at (850) 644-HELP`);
             // Initialize student view to show arrows
             initializeStudentView();
             
+            // Help system back button - goes back to main content if in detail/guidebook view
+            const helpBackBtn = document.getElementById('helpBackBtn');
+            if (helpBackBtn) {
+                // Remove the onclick from HTML and add smart behavior
+                helpBackBtn.onclick = null;
+                helpBackBtn.addEventListener('click', function(e) {
+                    const mainContent = document.getElementById('helpMainContent');
+                    const taskDetail = document.getElementById('helpTaskDetail');
+                    const guidebook = document.getElementById('helpGuidebook');
+                    
+                    // If we're in a detail view, go back to main content
+                    if (taskDetail.style.display !== 'none' || guidebook.style.display !== 'none') {
+                        mainContent.style.display = 'flex';
+                        taskDetail.style.display = 'none';
+                        guidebook.style.display = 'none';
+                    } else {
+                        // Otherwise close the help overlay
+                        closeHelp();
+                    }
+                });
+            }
             
             // Save volume when user starts dragging (before they drag to 0)
             micSlider.addEventListener('mousedown', function() {
@@ -1631,4 +1673,88 @@ Need more help? Contact IT Support at (850) 644-HELP`);
                 e.preventDefault(); // Prevent any default behavior
                 switchProjectorMode(2);
             }
+            
+            // Konami code tracking
+            konamiCodeTracker(e.key);
         });
+        
+        // Konami Code Easter Egg
+        let konamiCode = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'b', 'a'];
+        let konamiProgress = [];
+        
+        function konamiCodeTracker(key) {
+            konamiProgress.push(key);
+            
+            // Keep only the last 10 keys
+            if (konamiProgress.length > 10) {
+                konamiProgress.shift();
+            }
+            
+            // Check if the sequence matches
+            if (konamiProgress.length === 10) {
+                let matches = true;
+                for (let i = 0; i < 10; i++) {
+                    if (konamiProgress[i] !== konamiCode[i]) {
+                        matches = false;
+                        break;
+                    }
+                }
+                
+                if (matches) {
+                    activateKonamiEasterEgg();
+                    konamiProgress = []; // Reset
+                }
+            }
+        }
+        
+        function activateKonamiEasterEgg() {
+            // Create image element
+            const img = document.createElement('img');
+            img.src = 'Secret/lucas_nobackground_2.png';
+            img.id = 'konamiImage';
+            img.style.cssText = `
+                position: fixed;
+                bottom: -1000px;
+                right: -300px;
+                width: 200px;
+                height: auto;
+                z-index: 99999;
+                display: block;
+            `;
+            document.body.appendChild(img);
+            
+            // Play audio
+            const audio = new Audio('Secret/screeeching.mp3');
+            audio.play();
+            
+            // Animation sequence: bounce up, bounce down slightly, then slide across
+            const bounceDuration = 300;
+            const pauseBeforeSlide = 300;
+            const slideSpeed = 1700;
+            
+            // Calculate how far to slide (from current position to off-screen left)
+            const slideDistance = window.innerWidth + 400; // Past the left edge
+            
+            // Step 1: Bounce up to 0
+            setTimeout(() => {
+                img.style.transition = `bottom ${bounceDuration}ms ease-out`;
+                img.style.bottom = '0px';
+            }, 50);
+            
+            // Step 2: Bounce back down slightly
+            setTimeout(() => {
+                img.style.transition = `bottom ${bounceDuration}ms ease-out`;
+                img.style.bottom = '-30px';
+            }, 50 + bounceDuration);
+            
+            // Step 3: Slide across the screen
+            setTimeout(() => {
+                img.style.transition = `right ${slideSpeed}ms linear`;
+                img.style.right = slideDistance + 'px';
+            }, 50 + bounceDuration + bounceDuration + pauseBeforeSlide);
+            
+            // Remove after animation completes
+            setTimeout(() => {
+                img.remove();
+            }, 50 + bounceDuration + bounceDuration + pauseBeforeSlide + slideSpeed + 200);
+        }

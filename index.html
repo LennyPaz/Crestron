@@ -455,9 +455,7 @@
                 <div class="loading-message-tertiary">PROJECTORS ARE WARMING UP!</div>
             </div>
             <div class="progress-container">
-                <div class="progress-bar" id="progressBar">
-                    <span class="progress-percentage" id="progressPercentage">0%</span>
-                </div>
+                <div class="loading-spinner"></div>
             </div>
         </div>
     </div>
@@ -466,6 +464,189 @@
     <div class="fullscreen-overlay" id="fullscreenOverlay">
         <img class="fullscreen-content" id="fullscreenImage" alt="Fullscreen preview" style="display: none;">
         <div class="fullscreen-text" id="fullscreenText" style="display: none;"></div>
+    </div>
+    
+    <!-- Help System -->
+    <div class="help-overlay" id="helpOverlay">
+        <div class="help-modal">
+            <!-- Help Header -->
+            <div class="help-header">
+                <button class="help-back-btn" id="helpBackBtn" onclick="closeHelp()">
+                    <span>←</span>
+                    <span>BACK</span>
+                </button>
+                <h1 class="help-title">HELP CENTER</h1>
+                <button class="help-close-btn" onclick="closeHelp()">✕</button>
+            </div>
+            
+            <!-- Main Help Content - Common Tasks -->
+            <div class="help-content" id="helpMainContent">
+                <h2 class="help-section-title">COMMON TASKS</h2>
+                <div class="help-tasks-grid">
+                    <button class="help-task-btn" onclick="showTaskDetail('project')">
+                        <img src="Icons/ProjectIcon.png" alt="Project" class="help-task-icon">
+                        <span class="help-task-text">How to Project Content</span>
+                    </button>
+                    <button class="help-task-btn" onclick="showTaskDetail('audio')">
+                        <img src="Icons/PlayAudio.png" alt="Audio" class="help-task-icon">
+                        <span class="help-task-text">Play Sound Through Speakers</span>
+                    </button>
+                </div>
+                
+                <button class="help-guidebook-btn" onclick="showGuidebook()">
+                    <span>📖</span>
+                    <span>ICON GUIDEBOOK</span>
+                </button>
+            </div>
+            
+            <!-- Task Detail View -->
+            <div class="help-task-detail" id="helpTaskDetail" style="display: none;">
+                <h2 class="help-detail-title" id="taskDetailTitle">How to Project Content</h2>
+                <div class="help-detail-content">
+                    <div class="help-detail-steps" id="taskDetailSteps">
+                        <!-- Steps will be inserted here by JavaScript -->
+                    </div>
+                    <div class="help-detail-visual">
+                        <div class="help-gif-placeholder" id="taskDetailGif">
+                            <span>Animation Coming Soon</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Icon Guidebook View -->
+            <div class="help-guidebook" id="helpGuidebook" style="display: none;">
+                <h2 class="help-section-title">ICON GUIDEBOOK</h2>
+                <div class="help-guidebook-grid">
+                    <!-- Input Sources -->
+                    <div class="help-guidebook-section">
+                        <h3 class="help-guidebook-section-title">Input Sources</h3>
+                        <div class="help-icon-item">
+                            <img src="Icons/DeskTopIcon.png" alt="Desktop" class="help-icon">
+                            <div class="help-icon-text">
+                                <span class="help-icon-name">DESKTOP PC</span>
+                                <span class="help-icon-desc">Built-in classroom computer</span>
+                            </div>
+                        </div>
+                        <div class="help-icon-item">
+                            <img src="Icons/MacIcon.png" alt="Mac" class="help-icon">
+                            <div class="help-icon-text">
+                                <span class="help-icon-name">MAC</span>
+                                <span class="help-icon-desc">Built-in Apple computer (Mac Mini) already connected to the system</span>
+                            </div>
+                        </div>
+                        <div class="help-icon-item">
+                            <img src="Icons/LaptopIcon.webp" alt="Laptop" class="help-icon">
+                            <div class="help-icon-text">
+                                <span class="help-icon-name">LAPTOP</span>
+                                <span class="help-icon-desc">Use the HDMI or USB-C cable at the teaching station to connect your laptop</span>
+                            </div>
+                        </div>
+                        <div class="help-icon-item">
+                            <img src="Icons/DocCamIcon.svg" alt="Doc Cam" class="help-icon">
+                            <div class="help-icon-text">
+                                <span class="help-icon-name">DOC CAM</span>
+                                <span class="help-icon-desc">Document camera to show physical documents, books, or objects to students</span>
+                            </div>
+                        </div>
+                        <div class="help-icon-item">
+                            <img src="Icons/CameraIcon.png" alt="Camera" class="help-icon">
+                            <div class="help-icon-text">
+                                <span class="help-icon-name">CAMERA</span>
+                                <span class="help-icon-desc">Room camera with saved presets. Use these to quickly switch between different angles</span>
+                            </div>
+                        </div>
+                        <div class="help-icon-item">
+                            <img src="Icons/BluerayIcon.ico" alt="Blu-ray" class="help-icon">
+                            <div class="help-icon-text">
+                                <span class="help-icon-name">BLU-RAY</span>
+                                <span class="help-icon-desc">Play movies or videos from Blu-ray discs. Control playback with on-screen menu</span>
+                            </div>
+                        </div>
+                        <div class="help-icon-item">
+                            <img src="Icons/WirelessIcon.png" alt="Wireless" class="help-icon">
+                            <div class="help-icon-text">
+                                <span class="help-icon-name">WIRELESS STREAM</span>
+                                <span class="help-icon-desc">Share your screen wirelessly from your device without any cables</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Screen Controls -->
+                    <div class="help-guidebook-section">
+                        <h3 class="help-guidebook-section-title">Screen Controls</h3>
+                        <div class="help-icon-item">
+                            <img src="Icons/LeftPreviewIcon.png" alt="Preview" class="help-icon">
+                            <div class="help-icon-text">
+                                <span class="help-icon-name">PREVIEW</span>
+                                <span class="help-icon-desc">Check what content looks like on your screen before students can see it</span>
+                            </div>
+                        </div>
+                        <div class="help-icon-item">
+                            <img src="Icons/ProjectIcon.png" alt="Project" class="help-icon">
+                            <div class="help-icon-text">
+                                <span class="help-icon-name">PROJECT</span>
+                                <span class="help-icon-desc">Show your content on the student-facing projector screens at the front of the room</span>
+                            </div>
+                        </div>
+                        <div class="help-icon-item">
+                            <img src="Icons/HideRightLeftIcon.png" alt="Hide" class="help-icon">
+                            <div class="help-icon-text">
+                                <span class="help-icon-name">HIDE & MUTE</span>
+                                <span class="help-icon-desc">Hide the projector screens and mute audio (when all screens are hidden, audio is also muted)</span>
+                            </div>
+                        </div>
+                        <div class="help-icon-item">
+                            <img src="Icons/FrozenIcon.png" alt="Freeze" class="help-icon">
+                            <div class="help-icon-text">
+                                <span class="help-icon-name">FREEZE</span>
+                                <span class="help-icon-desc">Pause what students see while you prepare the next slide or page in private</span>
+                            </div>
+                        </div>
+                        <div class="help-icon-item">
+                            <img src="Icons/PlayAudio.png" alt="Audio" class="help-icon">
+                            <div class="help-icon-text">
+                                <span class="help-icon-name">PLAY AUDIO</span>
+                                <span class="help-icon-desc">Send sound from your selected source through the classroom speakers</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Power & Screens -->
+                    <div class="help-guidebook-section">
+                        <h3 class="help-guidebook-section-title">Power & Screens</h3>
+                        <div class="help-icon-item">
+                            <img src="Icons/PowerIcon.webp" alt="Power" class="help-icon">
+                            <div class="help-icon-text">
+                                <span class="help-icon-name">POWER</span>
+                                <span class="help-icon-desc">Turn all projectors and equipment on or off</span>
+                            </div>
+                        </div>
+                        <div class="help-icon-item">
+                            <img src="Icons/ScreenUp.png" alt="Screen Up" class="help-icon">
+                            <div class="help-icon-text">
+                                <span class="help-icon-name">SCREEN UP</span>
+                                <span class="help-icon-desc">Raise the physical projector screen to reveal the whiteboard or wall behind it</span>
+                            </div>
+                        </div>
+                        <div class="help-icon-item">
+                            <img src="Icons/ScreenDown.png" alt="Screen Down" class="help-icon">
+                            <div class="help-icon-text">
+                                <span class="help-icon-name">SCREEN DOWN</span>
+                                <span class="help-icon-desc">Lower the physical projector screen for projecting content to students</span>
+                            </div>
+                        </div>
+                        <div class="help-icon-item">
+                            <img src="Icons/Unmuted.png" alt="Mute Toggle" class="help-icon">
+                            <div class="help-icon-text">
+                                <span class="help-icon-name">MUTE</span>
+                                <span class="help-icon-desc">The speaker icons below the volume sliders toggle between muted and unmuted. Click to switch between the two states</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
     
     <script src="script.js"></script>
