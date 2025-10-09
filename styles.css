@@ -45,6 +45,13 @@
         .fsu-logo img {
             width: 65px;
             height: 65px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .fsu-logo img:hover {
+            transform: scale(1.05);
+            filter: brightness(1.1);
         }
         
         .building-info {
@@ -407,6 +414,17 @@
             50% {
                 border-color: #DFD1A7;
                 box-shadow: 0 0 30px rgba(223, 209, 167, 0.8);
+            }
+        }
+        
+        @keyframes freezePulse {
+            0%, 100% {
+                border-color: #5CB8B2;
+                box-shadow: 0 0 20px rgba(92, 184, 178, 0.6);
+            }
+            50% {
+                border-color: #7DD3CD;
+                box-shadow: 0 0 30px rgba(92, 184, 178, 0.8);
             }
         }
         
@@ -1806,6 +1824,105 @@
             100% { transform: rotate(360deg); }
         }
         
+        /* Technical Setup Overlay */
+        .technical-setup-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: linear-gradient(135deg, #782F40 0%, #572932 100%);
+            display: none;
+            z-index: 10002;
+        }
+        
+        .technical-setup-overlay.active {
+            display: block;
+        }
+        
+        .technical-setup-modal {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .technical-setup-header {
+            height: 8vh;
+            display: flex;
+            align-items: center;
+            padding: 0 30px;
+            background: transparent;
+        }
+        
+        .fsu-logo-tech {
+            color: #CEB888;
+            font-weight: bold;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            white-space: nowrap;
+        }
+        
+        .fsu-logo-tech img {
+            width: 65px;
+            height: 65px;
+        }
+        
+        .technical-setup-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 40px;
+            padding: 40px;
+        }
+        
+        .technical-setup-title {
+            color: white;
+            font-size: 28px;
+            font-weight: bold;
+            letter-spacing: 2px;
+            text-align: center;
+            position: absolute;
+            top: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+        
+        .technical-setup-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 70px;
+            width: 100%;
+            max-width: 600px;
+        }
+        
+        .tech-setup-btn {
+            background: #101820;
+            border: 2px solid #CEB888;
+            color: white;
+            padding: 30px 50px;
+            border-radius: 12px;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+        
+        .tech-setup-btn:hover {
+            background: #1a2530;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0,0,0,0.4);
+        }
+        
+        .tech-setup-btn:active {
+            transform: translateY(0);
+        }
+        
         /* Help System Styles */
         .help-overlay {
             position: fixed;
@@ -1830,7 +1947,7 @@
             border: 3px solid #CEB888;
             border-radius: 12px;
             width: 95vw;
-            max-width: 1400px;
+            max-width: 1600px;
             height: 90vh;
             max-height: 900px;
             display: flex;
@@ -2010,7 +2127,7 @@
         
         .help-detail-content {
             display: grid;
-            grid-template-columns: 1fr 1fr;
+            grid-template-columns: 450px 1fr;
             gap: 40px;
             flex: 1;
             min-height: 0;
@@ -2029,7 +2146,7 @@
         .help-step {
             display: flex;
             gap: 15px;
-            align-items: flex-start;
+            align-items: center;
         }
         
         .help-step-number {
@@ -2062,7 +2179,6 @@
             color: white;
             font-size: 18px;
             line-height: 1.6;
-            padding-top: 6px;
         }
         
         .help-detail-visual {
@@ -2073,7 +2189,7 @@
         
         .help-gif-placeholder {
             background: rgba(16, 24, 32, 0.7);
-            border: 3px dashed #CEB888;
+            border: 3px solid #CEB888;
             border-radius: 12px;
             width: 100%;
             height: 100%;
@@ -2083,6 +2199,13 @@
             color: #CEB888;
             font-size: 22px;
             font-weight: bold;
+            overflow: hidden;
+        }
+        
+        .help-gif-placeholder img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
         }
         
         /* Icon Guidebook */
@@ -2129,6 +2252,17 @@
             width: 50px;
             height: 50px;
             object-fit: contain;
+            flex-shrink: 0;
+        }
+        
+        .help-icon-play {
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            color: #CEB888;
             flex-shrink: 0;
         }
         

@@ -11,7 +11,7 @@
         <!-- Header -->
         <div class="header">
             <div class="fsu-logo">
-                <img src="Icons/FSULogo.svg" alt="FSU Logo">
+                <img src="Icons/FSULogo.svg" alt="FSU Logo" onclick="openTechnicalSetup()">
                 <span>FLORIDA STATE UNIVERSITY</span>
             </div>
             <div class="building-info">
@@ -466,6 +466,35 @@
         <div class="fullscreen-text" id="fullscreenText" style="display: none;"></div>
     </div>
     
+    <!-- Technical Setup Overlay -->
+    <div class="technical-setup-overlay" id="technicalSetupOverlay">
+        <div class="technical-setup-modal">
+            <!-- Header with just FSU logo and text -->
+            <div class="technical-setup-header">
+                <div class="fsu-logo-tech">
+                    <img src="Icons/FSULogo.svg" alt="FSU Logo">
+                    <span>FLORIDA STATE UNIVERSITY</span>
+                </div>
+            </div>
+            
+            <!-- Technical Setup Content -->
+            <div class="technical-setup-content">
+                <h1 class="technical-setup-title">Technical Setup</h1>
+                <div class="technical-setup-buttons">
+                    <button class="tech-setup-btn" onclick="alert('VEQ-4 configuration')">
+                        <span>VEQ-4</span>
+                    </button>
+                    <button class="tech-setup-btn" onclick="closeTechnicalSetup()">
+                        <span>Return To Main Page</span>
+                    </button>
+                    <button class="tech-setup-btn" onclick="alert('Overflow controls')">
+                        <span>Overflow Controls</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
     <!-- Help System -->
     <div class="help-overlay" id="helpOverlay">
         <div class="help-modal">
@@ -586,7 +615,7 @@
                             <img src="Icons/ProjectIcon.png" alt="Project" class="help-icon">
                             <div class="help-icon-text">
                                 <span class="help-icon-name">PROJECT</span>
-                                <span class="help-icon-desc">Show your content on the student-facing projector screens at the front of the room</span>
+                                <span class="help-icon-desc">Show your content on the projectors around the room</span>
                             </div>
                         </div>
                         <div class="help-icon-item">
@@ -607,7 +636,7 @@
                             <img src="Icons/PlayAudio.png" alt="Audio" class="help-icon">
                             <div class="help-icon-text">
                                 <span class="help-icon-name">PLAY AUDIO</span>
-                                <span class="help-icon-desc">Send sound from your selected source through the classroom speakers</span>
+                                <span class="help-icon-desc">Send sound from your selected input through the classroom speakers</span>
                             </div>
                         </div>
                     </div>
@@ -619,7 +648,14 @@
                             <img src="Icons/PowerIcon.webp" alt="Power" class="help-icon">
                             <div class="help-icon-text">
                                 <span class="help-icon-name">POWER</span>
-                                <span class="help-icon-desc">Turn all projectors and equipment on or off</span>
+                                <span class="help-icon-desc">Turn all projectors on or off</span>
+                            </div>
+                        </div>
+                        <div class="help-icon-item">
+                            <div class="help-icon-play">▶</div>
+                            <div class="help-icon-text">
+                                <span class="help-icon-name">START CLASS</span>
+                                <span class="help-icon-desc">Quickly power on, select desktop, preview on all screens, project to all screens, and play audio - all in one click</span>
                             </div>
                         </div>
                         <div class="help-icon-item">

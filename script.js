@@ -959,27 +959,22 @@ let projectorMode = 2; // 1 or 2 projectors (default 2)
                                        // NOTE: Blanked screens CAN be frozen (freeze is hidden by blank)
         }
         
-        // Freeze warning flash (like source/power warnings)
+        // Freeze warning flash (teal glow around button)
         function flashFreezeWarning(element) {
-            const originalBg = element.style.background || '';
-            const originalColor = element.style.color || '';
-            
-            // Flash gray to indicate "can't do this"
-            element.style.background = '#425563';
-            element.style.color = 'white';
-            
-            setTimeout(() => {
-                element.style.background = originalBg;
-                element.style.color = originalColor;
-            }, 300);
-        }
-        
-        // Project warning flash (gold) - shows when trying to freeze but nothing is projecting yet
-        function flashProjectWarning(element) {
-            // Flash exactly like the source warning - add/remove class for animation
-            element.classList.add('source-warning');
+            element.classList.add('source-warning'); // Reuse class but will have different animation
+            element.style.animation = 'freezePulse 0.5s ease-in-out 2';
             setTimeout(() => {
                 element.classList.remove('source-warning');
+                element.style.animation = '';
+            }, 1000);
+        }
+        
+        // Project warning flash (teal) - shows when trying to freeze but nothing is projecting yet
+        function flashProjectWarning(element) {
+            // Flash with teal glow animation (same as freeze warning)
+            element.style.animation = 'freezePulse 0.5s ease-in-out 2';
+            setTimeout(() => {
+                element.style.animation = '';
             }, 1000);
         }
         
@@ -1048,7 +1043,7 @@ let projectorMode = 2; // 1 or 2 projectors (default 2)
                 // Always remove menu-open state first
                 freezeBtn.classList.remove('freeze-menu-open');
                 
-                // Only add freeze-active if at least one screen is actually frozen
+                // Update freeze-active based on actual freeze state
                 freezeBtn.classList.remove('freeze-active');
                 if (leftFrozen || rightFrozen) {
                     freezeBtn.classList.add('freeze-active');
@@ -1073,6 +1068,17 @@ let projectorMode = 2; // 1 or 2 projectors (default 2)
             if (rightFrozen) {
                 rightBtn.classList.add('selected');
             }
+            
+            // Update the main freeze button persistent state if menu is open
+            const freezeBtn = document.querySelector('.control-btn[onclick*="openFreezeControls"]');
+            if (freezeBtn && document.getElementById('freezeControlsMenu').classList.contains('active')) {
+                // Menu is open - keep menu-open state but update freeze-active based on state
+                if (leftFrozen || rightFrozen) {
+                    freezeBtn.classList.add('freeze-active');
+                } else {
+                    freezeBtn.classList.remove('freeze-active');
+                }
+            }
         }
         
         function freezeScreen(side) {
@@ -1081,6 +1087,11 @@ let projectorMode = 2; // 1 or 2 projectors (default 2)
                 // Check if can freeze (power on, source selected, projecting)
                 // Blanked screens CAN be frozen
                 if (!leftFrozen && !canFreeze('left')) {
+                    // Flash the PROJECT button (not freeze) to indicate need to project first
+                    const projectBtn = document.querySelector('.control-btn[onclick*="openProjectControls"]');
+                    if (projectBtn) {
+                        flashProjectWarning(projectBtn);
+                    }
                     return; // Can't freeze if not projecting
                 }
                 leftFrozen = !leftFrozen;
@@ -1089,6 +1100,11 @@ let projectorMode = 2; // 1 or 2 projectors (default 2)
             } else if (side === 'right') {
                 // Check if can freeze
                 if (!rightFrozen && !canFreeze('right')) {
+                    // Flash the PROJECT button (not freeze) to indicate need to project first
+                    const projectBtn = document.querySelector('.control-btn[onclick*="openProjectControls"]');
+                    if (projectBtn) {
+                        flashProjectWarning(projectBtn);
+                    }
                     return; // Can't freeze if not projecting
                 }
                 rightFrozen = !rightFrozen;
@@ -1099,11 +1115,28 @@ let projectorMode = 2; // 1 or 2 projectors (default 2)
                 const shouldFreeze = !leftFrozen || !rightFrozen;
                 
                 if (shouldFreeze) {
-                    // Trying to freeze - only freeze screens that CAN be frozen
-                    if (canFreeze('left')) {
+                    // Trying to freeze - check if at least one screen CAN be frozen
+                    const canFreezeLeft = canFreeze('left');
+                    const canFreezeRight = canFreeze('right');
+                    
+                    // If clicking "both" but only one or neither can be frozen, show warning
+                    if (!canFreezeLeft || !canFreezeRight) {
+                        // At least one screen can't be frozen - flash PROJECT button
+                        const projectBtn = document.querySelector('.control-btn[onclick*="openProjectControls"]');
+                        if (projectBtn) {
+                            flashProjectWarning(projectBtn);
+                        }
+                        // If neither can be frozen, return early
+                        if (!canFreezeLeft && !canFreezeRight) {
+                            return;
+                        }
+                    }
+                    
+                    // Freeze the ones that can be frozen
+                    if (canFreezeLeft) {
                         leftFrozen = true;
                     }
-                    if (canFreeze('right')) {
+                    if (canFreezeRight) {
                         rightFrozen = true;
                     }
                 } else {
@@ -1396,7 +1429,7 @@ let projectorMode = 2; // 1 or 2 projectors (default 2)
             closeFreezeControls();
             
             document.querySelectorAll('.control-btn').forEach(btn => {
-                btn.classList.remove('preview-active', 'project-active', 'mute-active', 'hide-menu-open');
+                btn.classList.remove('preview-active', 'project-active', 'mute-active', 'hide-menu-open', 'freeze-active', 'freeze-menu-open');
             });
             
             document.querySelectorAll('.source-btn').forEach(btn => {
@@ -1417,6 +1450,17 @@ let projectorMode = 2; // 1 or 2 projectors (default 2)
                     textSpan.textContent = 'PLAY AUDIO FROM SELECTED INPUT';
                 }
             }
+        }
+        
+        // Technical Setup
+        function openTechnicalSetup() {
+            const overlay = document.getElementById('technicalSetupOverlay');
+            overlay.classList.add('active');
+        }
+        
+        function closeTechnicalSetup() {
+            const overlay = document.getElementById('technicalSetupOverlay');
+            overlay.classList.remove('active');
         }
         
         // Help system
@@ -1448,21 +1492,24 @@ let projectorMode = 2; // 1 or 2 projectors (default 2)
             
             const titleEl = document.getElementById('taskDetailTitle');
             const stepsEl = document.getElementById('taskDetailSteps');
+            const gifEl = document.getElementById('taskDetailGif');
             
             // Define task content
             const tasks = {
                 'project': {
                     title: 'How to Project Content',
+                    gif: 'Help/Project.gif',
                     steps: [
-                        { icon: 'Icons/PowerIcon.webp', text: 'Press POWER ON (bottom right corner)' },
+                        { icon: 'Icons/PowerIcon.webp', text: 'Press POWER ON' },
                         { icon: 'Icons/DeskTopIcon.png', text: 'Pick what you want to show from the left side (Desktop PC, Laptop, Document Camera, etc.)' },
                         { icon: 'Icons/LeftPreviewIcon.png', text: 'Press PREVIEW to check it looks right on your screen first' },
-                        { icon: 'Icons/ProjectIcon.png', text: 'Press PROJECT to show it on the projector screens' },
+                        { icon: 'Icons/ProjectIcon.png', text: 'Press PROJECT to show it on the projectors around the room' },
                         { icon: 'Icons/HideRightLeftIcon.png', text: 'To hide the screens from students, press HIDE & MUTE' }
                     ]
                 },
                 'audio': {
                     title: 'Play Sound Through Speakers',
+                    gif: 'Help/Audio.gif',
                     steps: [
                         { icon: 'Icons/DeskTopIcon.png', text: 'First, pick what you want to play from the left side (Desktop PC, Mac, your Laptop, Document Camera, Blu-ray, or Wireless)' },
                         { icon: 'Icons/PlayAudio.png', text: 'Press the PLAY AUDIO button in the middle section' },
@@ -1473,6 +1520,13 @@ let projectorMode = 2; // 1 or 2 projectors (default 2)
             
             const task = tasks[taskType];
             titleEl.textContent = task.title;
+            
+            // Show the GIF
+            if (task.gif) {
+                gifEl.innerHTML = `<img src="${task.gif}" alt="${task.title}">`;
+            } else {
+                gifEl.innerHTML = '<span>Animation Coming Soon</span>';
+            }
             
             // Build steps HTML with icons
             stepsEl.innerHTML = task.steps.map((step, index) => `
