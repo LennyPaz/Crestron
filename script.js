@@ -1705,6 +1705,8 @@ let projectorMode = 2; // 1 or 2 projectors (default 2)
         });
         
         // PHASE 2: Combined keyboard shortcuts listener
+        let wallpaperVisible = false;
+        
         document.addEventListener('keydown', function(e) {
             // ESC to exit fullscreen
             if (e.key === 'Escape') {
@@ -1714,6 +1716,12 @@ let projectorMode = 2; // 1 or 2 projectors (default 2)
             // Backtick to toggle demo view
             if (e.key === '`' || e.key === '~') {
                 toggleDemoView();
+            }
+            
+            // Alt key to toggle wallpaper view
+            if (e.key === 'Alt') {
+                e.preventDefault();
+                toggleWallpaperView();
             }
             
             // Shift+1 = 1 projector mode (use e.code to detect actual key, not shifted character)
@@ -1731,6 +1739,26 @@ let projectorMode = 2; // 1 or 2 projectors (default 2)
             // Konami code tracking
             konamiCodeTracker(e.key);
         });
+        
+        // Toggle wallpaper fullscreen view
+        function toggleWallpaperView() {
+            const overlay = document.getElementById('fullscreenOverlay');
+            const fullscreenImage = document.getElementById('fullscreenImage');
+            const fullscreenText = document.getElementById('fullscreenText');
+            
+            wallpaperVisible = !wallpaperVisible;
+            
+            if (wallpaperVisible) {
+                // Show wallpaper
+                overlay.classList.add('active');
+                fullscreenImage.src = 'Wallpapers/Original.jpeg';
+                fullscreenImage.style.display = 'block';
+                fullscreenText.style.display = 'none';
+            } else {
+                // Hide wallpaper
+                overlay.classList.remove('active');
+            }
+        }
         
         // Konami Code Easter Egg
         let konamiCode = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'b', 'a'];
