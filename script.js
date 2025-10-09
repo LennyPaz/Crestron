@@ -1718,8 +1718,8 @@ let projectorMode = 2; // 1 or 2 projectors (default 2)
                 toggleDemoView();
             }
             
-            // Alt key to toggle wallpaper view
-            if (e.key === 'Alt') {
+            // Alt+1 to toggle wallpaper view
+            if (e.altKey && e.code === 'Digit1') {
                 e.preventDefault();
                 toggleWallpaperView();
             }
