@@ -291,7 +291,7 @@ let projectorMode = 2; // 1 or 2 projectors (default 2)
             
             let sourceText = '';
             if (audioSource === 'doccam' && selectedDocCam) {
-                sourceText = `${selectedDocCam.toUpperCase()} DOC CAM`;
+                sourceText = `DOC CAM (${selectedDocCam.charAt(0).toUpperCase()})`;
             } else if (audioSource) {
                 sourceText = audioSource.toUpperCase();
             }
@@ -612,7 +612,7 @@ let projectorMode = 2; // 1 or 2 projectors (default 2)
             // Special handling for doc cam - show which doc cam
             let sourceText = '';
             if (currentSource === 'doccam' && selectedDocCam) {
-                sourceText = `${selectedDocCam.toUpperCase()} DOC CAM`;
+                sourceText = `DOC CAM (${selectedDocCam.charAt(0).toUpperCase()})`;
             } else {
                 sourceText = currentSource.toUpperCase();
             }

@@ -726,6 +726,14 @@
             object-fit: contain;
         }
         
+        .audio-btn span {
+            width: 100%;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            word-wrap: break-word;
+            line-height: 1.2;
+        }
+        
         /* PHASE 4: Doc Cam Selection Menu */
         .doccam-selection-menu {
             display: none;
