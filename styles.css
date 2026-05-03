@@ -761,10 +761,17 @@ body {
 }
 
 /* PHASE 4: Doc Cam Selection Menu */
-.doccam-selection-menu {
+/* Shared shell for the five action menus (Doc Cam, Blu-ray, Project,
+   Hide & Mute, Freeze). Each menu sets --menu-accent and --menu-tint
+   below; the label inherits --menu-accent automatically. */
+.doccam-selection-menu,
+.bluray-controls-menu,
+.project-controls-menu,
+.hide-controls-menu,
+.freeze-controls-menu {
   display: none;
-  background: rgba(92, 184, 178, 0.2);
-  border: 2px solid var(--c-teal);
+  background: var(--menu-tint);
+  border: 2px solid var(--menu-accent);
   border-radius: 8px;
   padding: 15px;
   gap: 10px;
@@ -777,18 +784,34 @@ body {
   max-width: 49%;
 }
 
-.doccam-selection-menu.active {
+.doccam-selection-menu.active,
+.bluray-controls-menu.active,
+.project-controls-menu.active,
+.hide-controls-menu.active,
+.freeze-controls-menu.active {
   display: flex;
 }
 
-.doccam-menu-label {
-  color: var(--c-teal);
+.doccam-menu-label,
+.bluray-menu-label,
+.project-menu-label,
+.hide-menu-label,
+.freeze-menu-label {
+  color: var(--menu-accent);
   font-size: 13px;
   font-weight: bold;
   letter-spacing: 1.5px;
 }
 
-.doccam-options-row {
+.doccam-selection-menu {
+  --menu-accent: var(--c-teal);
+  --menu-tint:   rgba(92, 184, 178, 0.2);
+}
+
+.doccam-options-row,
+.project-options-row,
+.hide-options-row,
+.freeze-options-row {
   display: flex;
   gap: 15px;
   align-items: center;
@@ -846,42 +869,27 @@ body {
   border-color: var(--c-gold-500);
 }
 
-.doccam-label-main {
+.doccam-label-main,
+.project-label-main,
+.hide-label-main,
+.freeze-label-main {
   font-size: 16px;
   font-weight: bold;
 }
 
-.doccam-label-sub {
+.doccam-label-sub,
+.project-label-sub,
+.hide-label-sub,
+.freeze-label-sub {
   font-size: 10px;
   opacity: 0.8;
 }
 
 /* PHASE 5: Blu-ray Controls Menu */
 .bluray-controls-menu {
-  display: none;
-  background: rgba(92, 184, 178, 0.2);
-  border: 2px solid var(--c-teal);
-  border-radius: 8px;
-  padding: 15px;
-  gap: 8px;
-  animation: slideDown 0.3s ease;
-  justify-content: flex-start;
-  align-items: center;
-  flex-direction: column;
-  position: relative;
-  flex: 1;
-  max-width: 49%;
-}
-
-.bluray-controls-menu.active {
-  display: flex;
-}
-
-.bluray-menu-label {
-  color: var(--c-teal);
-  font-size: 13px;
-  font-weight: bold;
-  letter-spacing: 1.5px;
+  --menu-accent: var(--c-teal);
+  --menu-tint:   rgba(92, 184, 178, 0.2);
+  gap: 8px; /* tighter than the other menus */
 }
 
 .bluray-controls-container {
@@ -980,24 +988,9 @@ body {
 
 /* PHASE 2: Project Controls Menu */
 .project-controls-menu {
-  display: none;
-  background: rgba(206, 184, 136, 0.2);
-  border: 2px solid var(--c-gold-500);
-  border-radius: 8px;
-  padding: 15px;
-  gap: 10px;
-  animation: slideDown 0.3s ease;
-  justify-content: flex-start;
-  align-items: center;
-  flex-direction: column;
-  position: relative;
-  flex: 1;
-  max-width: 49%;
+  --menu-accent: var(--c-gold-500);
+  --menu-tint:   rgba(206, 184, 136, 0.2);
   margin-left: auto;
-}
-
-.project-controls-menu.active {
-  display: flex;
 }
 
 /* PHASE 4: Wrapper for side-by-side layout */
@@ -1009,36 +1002,10 @@ body {
   align-items: stretch;
 }
 
-.project-menu-label {
-  color: var(--c-gold-500);
-  font-size: 13px;
-  font-weight: bold;
-  letter-spacing: 1.5px;
-}
-
-.project-options-row {
-  display: flex;
-  gap: 15px;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  position: relative;
-}
-
 .project-option-btn.selected {
   background: rgba(206, 184, 136, 0.9);
   color: var(--c-ink);
   border-color: var(--c-gold-500);
-}
-
-.project-label-main {
-  font-size: 16px;
-  font-weight: bold;
-}
-
-.project-label-sub {
-  font-size: 10px;
-  opacity: 0.8;
 }
 
 .close-menu-btn,
@@ -1092,40 +1059,9 @@ body {
 
 /* PHASE 3: Hide & Mute Controls Menu */
 .hide-controls-menu {
-  display: none;
-  background: rgba(255, 199, 44, 0.2);
-  border: 2px solid var(--c-yellow);
-  border-radius: 8px;
-  padding: 15px;
-  gap: 10px;
-  animation: slideDown 0.3s ease;
-  justify-content: flex-start;
-  align-items: center;
-  flex-direction: column;
-  position: relative;
-  flex: 1;
-  max-width: 49%;
+  --menu-accent: var(--c-yellow);
+  --menu-tint:   rgba(255, 199, 44, 0.2);
   margin-left: auto;
-}
-
-.hide-controls-menu.active {
-  display: flex;
-}
-
-.hide-menu-label {
-  color: var(--c-yellow);
-  font-size: 13px;
-  font-weight: bold;
-  letter-spacing: 1.5px;
-}
-
-.hide-options-row {
-  display: flex;
-  gap: 15px;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  position: relative;
 }
 
 .hide-option-btn.selected {
@@ -1134,68 +1070,17 @@ body {
   border-color: var(--c-yellow);
 }
 
-.hide-label-main {
-  font-size: 16px;
-  font-weight: bold;
-}
-
-.hide-label-sub {
-  font-size: 10px;
-  opacity: 0.8;
-}
-
 /* Freeze Controls Menu */
 .freeze-controls-menu {
-  display: none;
-  background: rgba(92, 184, 178, 0.2);
-  border: 2px solid var(--c-teal);
-  border-radius: 8px;
-  padding: 15px;
-  gap: 10px;
-  animation: slideDown 0.3s ease;
-  justify-content: flex-start;
-  align-items: center;
-  flex-direction: column;
-  position: relative;
-  flex: 1;
-  max-width: 49%;
+  --menu-accent: var(--c-teal);
+  --menu-tint:   rgba(92, 184, 178, 0.2);
   margin-left: auto;
-}
-
-.freeze-controls-menu.active {
-  display: flex;
-}
-
-.freeze-menu-label {
-  color: var(--c-teal);
-  font-size: 13px;
-  font-weight: bold;
-  letter-spacing: 1.5px;
-}
-
-.freeze-options-row {
-  display: flex;
-  gap: 15px;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  position: relative;
 }
 
 .freeze-option-btn.selected {
   background: rgba(92, 184, 178, 0.9);
   color: white;
   border-color: var(--c-teal);
-}
-
-.freeze-label-main {
-  font-size: 16px;
-  font-weight: bold;
-}
-
-.freeze-label-sub {
-  font-size: 10px;
-  opacity: 0.8;
 }
 
 /* Right section - Power and volume */
