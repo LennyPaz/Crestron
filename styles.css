@@ -510,31 +510,50 @@ body {
   align-content: start;
 }
 
-.source-btn {
+/* Shared shell for the white-card button family. Specificity (0,1,0)
+   so any per-class declaration below overrides this base by sitting
+   later in the cascade. */
+.source-btn,
+.camera-btn,
+.control-btn,
+.audio-btn,
+.power-btn,
+.projector-control-btn {
   background: white;
   color: var(--c-ink);
   font-weight: 600;
-  font-size: 10px;
   cursor: pointer;
   border-radius: 8px;
-  padding: 4px;
   transition: all var(--t-fast);
   box-shadow: var(--shadow-sm);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  border: 2px solid transparent;
+}
+
+.source-btn:hover,
+.camera-btn:hover,
+.control-btn:hover,
+.audio-btn:hover,
+.power-btn:hover,
+.projector-control-btn:hover {
+  box-shadow: var(--shadow-md);
+  filter: brightness(1.05);
+}
+
+.source-btn {
+  font-size: 10px;
+  padding: 4px;
   gap: 2px;
   text-align: center;
-  border: 2px solid transparent;
   min-height: 0;
   height: auto;
 }
 
 .source-btn:hover {
-  box-shadow: var(--shadow-md);
   background: rgba(255, 255, 255, 0.95);
-  filter: brightness(1.05);
 }
 
 .source-btn:active {
@@ -571,27 +590,11 @@ body {
 
 .camera-btn {
   flex: 1;
-  background: white;
-  color: var(--c-ink);
-  font-weight: 600;
   font-size: 14px;
-  cursor: pointer;
   padding: 6px;
-  border-radius: 8px;
-  transition: all var(--t-fast);
-  box-shadow: var(--shadow-sm);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
   gap: 2px;
-  border: 2px solid transparent;
   min-height: 0;
   height: 100%;
-}
-
-.camera-btn:hover {
-  box-shadow: var(--shadow-md);
-  filter: brightness(1.05);
 }
 
 .camera-btn:active {
@@ -664,30 +667,16 @@ body {
 }
 
 .control-btn {
-  background: white;
-  color: var(--c-ink);
-  font-weight: 600;
   font-size: 14px;
-  cursor: pointer;
-  border-radius: 8px;
   padding: 16px 12px;
-  transition: all var(--t-fast);
-  box-shadow: var(--shadow-sm);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
   gap: 6px;
   text-align: center;
-  border: 2px solid transparent;
   min-height: 0;
   height: 100%;
 }
 
 .control-btn:hover {
-  box-shadow: var(--shadow-md);
   background: rgba(255, 255, 255, 0.95);
-  filter: brightness(1.05);
 }
 
 .control-btn:active {
@@ -740,29 +729,12 @@ body {
 
 /* Audio button styling - part of the 5-button row */
 .audio-btn {
-  background: white;
-  color: var(--c-ink);
-  font-weight: 600;
   font-size: 14px;
-  cursor: pointer;
-  border-radius: 8px;
   padding: 16px 12px;
-  transition: all var(--t-fast);
-  box-shadow: var(--shadow-sm);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
   gap: 6px;
-  border: 2px solid transparent;
   text-align: center;
   min-height: 0;
   height: 100%;
-}
-
-.audio-btn:hover {
-  box-shadow: var(--shadow-md);
-  filter: brightness(1.05);
 }
 
 .audio-btn:active {
@@ -825,7 +797,13 @@ body {
   position: relative;
 }
 
-.doccam-option-btn {
+/* Shared shell for the four 130x130 option-card buttons used by the
+   Doc Cam, Project, Hide & Mute, and Freeze menus. Only the .selected
+   tint differs between them; defined per-class below. */
+.doccam-option-btn,
+.project-option-btn,
+.hide-option-btn,
+.freeze-option-btn {
   background: white;
   color: var(--c-ink);
   font-weight: 600;
@@ -845,13 +823,19 @@ body {
   gap: 6px;
 }
 
-.doccam-option-btn:hover {
+.doccam-option-btn:hover,
+.project-option-btn:hover,
+.hide-option-btn:hover,
+.freeze-option-btn:hover {
   box-shadow: var(--shadow-md);
   background: rgba(255, 255, 255, 0.95);
   filter: brightness(1.05);
 }
 
-.doccam-option-btn:active {
+.doccam-option-btn:active,
+.project-option-btn:active,
+.hide-option-btn:active,
+.freeze-option-btn:active {
   filter: brightness(0.95);
   transform: scale(0.94);
 }
@@ -1041,37 +1025,6 @@ body {
   position: relative;
 }
 
-.project-option-btn {
-  background: white;
-  color: var(--c-ink);
-  font-weight: 600;
-  font-size: 12px;
-  cursor: pointer;
-  border-radius: 8px;
-  padding: 20px;
-  transition: all var(--t-fast);
-  box-shadow: var(--shadow-sm);
-  border: 2px solid transparent;
-  width: 130px;
-  height: 130px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-}
-
-.project-option-btn:hover {
-  box-shadow: var(--shadow-md);
-  background: rgba(255, 255, 255, 0.95);
-  filter: brightness(1.05);
-}
-
-.project-option-btn:active {
-  filter: brightness(0.95);
-  transform: scale(0.94);
-}
-
 .project-option-btn.selected {
   background: rgba(206, 184, 136, 0.9);
   color: var(--c-ink);
@@ -1088,7 +1041,9 @@ body {
   opacity: 0.8;
 }
 
-.close-menu-btn {
+.close-menu-btn,
+.close-hide-menu-btn,
+.close-freeze-menu-btn {
   background: var(--c-red);
   color: white;
   font-weight: bold;
@@ -1111,12 +1066,16 @@ body {
   padding-left: 1px;
 }
 
-.close-menu-btn:hover {
+.close-menu-btn:hover,
+.close-hide-menu-btn:hover,
+.close-freeze-menu-btn:hover {
   box-shadow: var(--shadow-md);
   filter: brightness(1.1);
 }
 
-.close-menu-btn:active {
+.close-menu-btn:active,
+.close-hide-menu-btn:active,
+.close-freeze-menu-btn:active {
   transform: scale(0.92);
 }
 
@@ -1169,37 +1128,6 @@ body {
   position: relative;
 }
 
-.hide-option-btn {
-  background: white;
-  color: var(--c-ink);
-  font-weight: 600;
-  font-size: 12px;
-  cursor: pointer;
-  border-radius: 8px;
-  padding: 20px;
-  transition: all var(--t-fast);
-  box-shadow: var(--shadow-sm);
-  border: 2px solid transparent;
-  width: 130px;
-  height: 130px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-}
-
-.hide-option-btn:hover {
-  box-shadow: var(--shadow-md);
-  background: rgba(255, 255, 255, 0.95);
-  filter: brightness(1.05);
-}
-
-.hide-option-btn:active {
-  filter: brightness(0.95);
-  transform: scale(0.94);
-}
-
 .hide-option-btn.selected {
   background: rgba(255, 199, 44, 0.9);
   color: var(--c-ink);
@@ -1214,38 +1142,6 @@ body {
 .hide-label-sub {
   font-size: 10px;
   opacity: 0.8;
-}
-
-.close-hide-menu-btn {
-  background: var(--c-red);
-  color: white;
-  font-weight: bold;
-  font-size: 22px;
-  cursor: pointer;
-  border-radius: 8px;
-  width: 45px;
-  height: 45px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: none;
-  box-shadow: var(--shadow-sm);
-  transition: all var(--t-fast);
-  position: absolute;
-  top: 5px;
-  right: 5px;
-  line-height: 1;
-  padding-top: 2px;
-  padding-left: 1px;
-}
-
-.close-hide-menu-btn:hover {
-  box-shadow: var(--shadow-md);
-  filter: brightness(1.1);
-}
-
-.close-hide-menu-btn:active {
-  transform: scale(0.92);
 }
 
 /* Freeze Controls Menu */
@@ -1286,37 +1182,6 @@ body {
   position: relative;
 }
 
-.freeze-option-btn {
-  background: white;
-  color: var(--c-ink);
-  font-weight: 600;
-  font-size: 12px;
-  cursor: pointer;
-  border-radius: 8px;
-  padding: 20px;
-  transition: all var(--t-fast);
-  box-shadow: var(--shadow-sm);
-  border: 2px solid transparent;
-  width: 130px;
-  height: 130px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-}
-
-.freeze-option-btn:hover {
-  box-shadow: var(--shadow-md);
-  background: rgba(255, 255, 255, 0.95);
-  filter: brightness(1.05);
-}
-
-.freeze-option-btn:active {
-  filter: brightness(0.95);
-  transform: scale(0.94);
-}
-
 .freeze-option-btn.selected {
   background: rgba(92, 184, 178, 0.9);
   color: white;
@@ -1331,38 +1196,6 @@ body {
 .freeze-label-sub {
   font-size: 10px;
   opacity: 0.8;
-}
-
-.close-freeze-menu-btn {
-  background: var(--c-red);
-  color: white;
-  font-weight: bold;
-  font-size: 22px;
-  cursor: pointer;
-  border-radius: 8px;
-  width: 45px;
-  height: 45px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: none;
-  box-shadow: var(--shadow-sm);
-  transition: all var(--t-fast);
-  position: absolute;
-  top: 5px;
-  right: 5px;
-  line-height: 1;
-  padding-top: 2px;
-  padding-left: 1px;
-}
-
-.close-freeze-menu-btn:hover {
-  box-shadow: var(--shadow-md);
-  filter: brightness(1.1);
-}
-
-.close-freeze-menu-btn:active {
-  transform: scale(0.92);
 }
 
 /* Right section - Power and volume */
@@ -1413,29 +1246,15 @@ body {
 }
 
 .projector-control-btn {
-  background: white;
-  color: var(--c-ink);
-  font-weight: 600;
   font-size: 10px;
-  cursor: pointer;
-  border-radius: 8px;
   padding: 12px 8px;
-  transition: all var(--t-fast);
-  box-shadow: var(--shadow-sm);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
   gap: 4px;
-  border: 2px solid transparent;
   min-height: 0;
   height: 100%;
 }
 
 .projector-control-btn:hover {
-  box-shadow: var(--shadow-md);
   background: rgba(255, 255, 255, 0.95);
-  filter: brightness(1.05);
 }
 
 .projector-control-btn:active {
@@ -1461,28 +1280,14 @@ body {
 }
 
 .power-btn {
-  background: white;
-  color: var(--c-ink);
-  font-weight: 600;
   font-size: 13px;
-  cursor: pointer;
-  border-radius: 8px;
   padding: 10px;
   flex: 1;
-  transition: all var(--t-fast);
-  box-shadow: var(--shadow-sm);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
   gap: 4px;
-  border: 2px solid transparent;
 }
 
 .power-btn:hover {
-  box-shadow: var(--shadow-md);
   background: rgba(255, 255, 255, 0.95);
-  filter: brightness(1.05);
 }
 
 .power-btn:active {
