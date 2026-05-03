@@ -136,7 +136,7 @@ body {
 .building-name {
   color: white;
   font-weight: bold;
-  font-size: 28px;
+  font-size: clamp(20px, 1.46vw, 28px);
   text-align: center;
   letter-spacing: 2px;
   line-height: 1;
@@ -378,7 +378,7 @@ body {
 }
 
 .lights-panel {
-  width: 120px;
+  width: clamp(96px, 6.26vw, 120px);
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -854,8 +854,8 @@ body {
   transition: all var(--t-fast);
   box-shadow: var(--shadow-sm);
   border: 2px solid transparent;
-  width: 130px;
-  height: 130px;
+  width: clamp(100px, 6.78vw, 130px);
+  height: clamp(100px, 6.78vw, 130px);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -1109,7 +1109,7 @@ body {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  width: 150px;
+  width: clamp(120px, 7.82vw, 150px);
   flex-shrink: 0;
   height: 100%;
   min-height: 0;
@@ -1395,14 +1395,14 @@ body {
 }
 
 .modal-title {
-  font-size: 28px;
+  font-size: clamp(20px, 1.46vw, 28px);
   font-weight: bold;
   letter-spacing: 1px;
   color: var(--c-yellow);
 }
 
 .modal-text {
-  font-size: 18px;
+  font-size: clamp(14px, 0.94vw, 18px);
   line-height: 1.5;
   color: var(--c-gold-500);
 }
@@ -1499,19 +1499,19 @@ body {
 }
 
 .loading-message-primary {
-  font-size: 56px;
+  font-size: clamp(36px, 2.92vw, 56px);
   font-weight: bold;
   letter-spacing: 3px;
 }
 
 .loading-message-secondary {
-  font-size: 36px;
+  font-size: clamp(24px, 1.88vw, 36px);
   font-weight: 600;
   letter-spacing: 2px;
 }
 
 .loading-message-tertiary {
-  font-size: 32px;
+  font-size: clamp(22px, 1.67vw, 32px);
   font-weight: 500;
   letter-spacing: 1px;
 }
@@ -1592,7 +1592,7 @@ body {
 
 .technical-setup-title {
   color: white;
-  font-size: 28px;
+  font-size: clamp(20px, 1.46vw, 28px);
   font-weight: bold;
   letter-spacing: 2px;
   text-align: center;
@@ -1614,9 +1614,9 @@ body {
   background: var(--c-ink);
   border: 2px solid var(--c-gold-500);
   color: white;
-  padding: 30px 50px;
+  padding: clamp(18px, 1.57vw, 30px) clamp(28px, 2.61vw, 50px);
   border-radius: 12px;
-  font-size: 28px;
+  font-size: clamp(20px, 1.46vw, 28px);
   font-weight: bold;
   cursor: pointer;
   transition: all var(--t-fast);
@@ -1699,7 +1699,7 @@ body {
 
 .help-title {
   color: white;
-  font-size: 38px;
+  font-size: clamp(24px, 1.98vw, 38px);
   font-weight: bold;
   text-align: center;
   letter-spacing: 2px;
@@ -1737,7 +1737,7 @@ body {
 
 .help-section-title {
   color: var(--c-gold-500);
-  font-size: 28px;
+  font-size: clamp(20px, 1.46vw, 28px);
   font-weight: bold;
   text-align: center;
   letter-spacing: 2px;
@@ -1757,9 +1757,9 @@ body {
   background: white;
   color: var(--c-ink);
   border: 3px solid transparent;
-  padding: 35px;
+  padding: clamp(20px, 1.83vw, 35px);
   border-radius: 12px;
-  font-size: 24px;
+  font-size: clamp(18px, 1.26vw, 24px);
   font-weight: bold;
   cursor: pointer;
   transition: all var(--t-fast);
@@ -1834,7 +1834,7 @@ body {
 
 .help-detail-title {
   color: white;
-  font-size: 32px;
+  font-size: clamp(22px, 1.67vw, 32px);
   font-weight: bold;
   text-align: center;
   letter-spacing: 1px;
