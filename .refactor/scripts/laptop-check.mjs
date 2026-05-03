@@ -12,12 +12,15 @@ await fs.mkdir(outDir, { recursive: true });
 const tag = process.argv[2] || 'shot';
 const indexUrl = pathToFileURL(path.join(repoRoot, 'index.html')).href;
 
+const width = parseInt(process.env.W || '1366', 10);
+const height = parseInt(process.env.H || '768', 10);
 const browser = await chromium.launch();
 const context = await browser.newContext({
-  viewport: { width: 1366, height: 768 },
+  viewport: { width, height },
   deviceScaleFactor: 1,
   reducedMotion: 'reduce',
 });
+console.log(`Viewport: ${width}x${height}`);
 
 async function shot(name, setup) {
   const page = await context.newPage();
