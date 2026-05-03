@@ -49,7 +49,7 @@
             
             <div class="lights-panel">
                 <div class="lights-header">
-                    <img src="Icons/Lightbulb.png" alt="Lights" style="width: 20px; height: 20px;">
+                    <img src="Icons/Lightbulb.png" alt="Lights">
                     <span>LIGHTS</span>
                 </div>
                 <button class="light-btn active" onclick="toggleLight(this)">ALL ON</button>
@@ -92,7 +92,7 @@
                     </div>
                 </div>
                 
-                <div class="control-card" style="flex: 1; padding-bottom: 4px; display: flex; flex-direction: column; min-height: 0;">
+                <div class="control-card control-card--input">
                     <div class="card-title">
                         <span>INPUT SOURCES</span>
                     </div>
@@ -128,7 +128,7 @@
                     </div>
                 </div>
                 
-                <div class="control-card" style="display: flex; flex-direction: column; min-height: 0; flex-shrink: 0;">
+                <div class="control-card control-card--shrink">
                     <div class="card-title">
                         <span>CAMERA PRESETS</span>
                     </div>
@@ -147,7 +147,7 @@
             
             <!-- Middle section - Workflow controls -->
             <div class="middle-section">
-                <div class="control-card" style="flex: 1;">
+                <div class="control-card control-card--grow">
                     <div class="card-title">
                         <span>SCREEN CONTROLS</span>
                     </div>
@@ -161,7 +161,7 @@
                             <span>RIGHT PREVIEW</span>
                         </button>
                         <button class="audio-btn" onclick="toggleAudio(this)">
-                            <img src="Icons/PlayAudio.png" alt="Play Audio" class="btn-icon" style="width: 60px; height: 60px;">
+                            <img src="Icons/PlayAudio.png" alt="Play Audio" class="btn-icon">
                             <span>PLAY AUDIO FROM SELECTED INPUT</span>
                         </button>
                         <button class="control-btn" onclick="openProjectControls(this)">
@@ -377,27 +377,27 @@
                         </div>
                         <div class="screen-controls-grid">
                             <button class="projector-control-btn" onclick="toggleScreen(this, 'left', 'up')">
-                            <img src="Icons/ScreenUp.png" alt="Screen Up" class="btn-icon" style="width: 30px; height: 30px;">
+                            <img src="Icons/ScreenUp.png" alt="Screen Up" class="btn-icon">
                             <span>LEFT<br>SCREEN<br>UP</span>
                             </button>
                             <button class="projector-control-btn" onclick="toggleScreen(this, 'right', 'up')">
-                            <img src="Icons/ScreenUp.png" alt="Screen Up" class="btn-icon" style="width: 30px; height: 30px;">
+                            <img src="Icons/ScreenUp.png" alt="Screen Up" class="btn-icon">
                             <span>RIGHT<br>SCREEN<br>UP</span>
                             </button>
                             <button class="projector-control-btn" onclick="toggleScreen(this, 'left', 'down')">
-                            <img src="Icons/ScreenDown.png" alt="Screen Down" class="btn-icon" style="width: 30px; height: 30px;">
+                            <img src="Icons/ScreenDown.png" alt="Screen Down" class="btn-icon">
                             <span>LEFT<br>SCREEN<br>DOWN</span>
                             </button>
                             <button class="projector-control-btn" onclick="toggleScreen(this, 'right', 'down')">
-                            <img src="Icons/ScreenDown.png" alt="Screen Down" class="btn-icon" style="width: 30px; height: 30px;">
+                            <img src="Icons/ScreenDown.png" alt="Screen Down" class="btn-icon">
                             <span>RIGHT<br>SCREEN<br>DOWN</span>
                             </button>
                         </div>
                     </div>
                 </div>
                 
-                <div style="display: flex; flex-direction: column; gap: 8px; flex: 1; min-height: 0;">
-                <div class="control-card" style="flex: 1; display: flex; flex-direction: column;">
+                <div class="volume-help-column">
+                <div class="control-card control-card--fill">
                     <div class="card-title">
                         <span>VOLUME</span>
                     </div>
@@ -411,7 +411,7 @@
                             </div>
                             <div class="volume-percentage" id="micPercent">50%</div>
                             <button class="mute-btn" onclick="toggleMute(this, 'mic')">
-                                <img src="Icons/Muted.png" alt="Mute" style="width: 28px; height: 28px;">
+                                <img src="Icons/Muted.png" alt="Mute">
                             </button>
                         </div>
                         
@@ -424,7 +424,7 @@
                             </div>
                             <div class="volume-percentage" id="mainPercent">50%</div>
                             <button class="mute-btn" onclick="toggleMute(this, 'main')">
-                                <img src="Icons/Muted.png" alt="Mute" style="width: 28px; height: 28px;">
+                                <img src="Icons/Muted.png" alt="Mute">
                             </button>
                         </div>
                     </div>
@@ -528,7 +528,7 @@
                 </div>
                 
                 <button class="help-guidebook-btn" onclick="showGuidebook()">
-                    <img src="Icons/Book.png" alt="Guidebook" style="width: 20px; height: 20px;">
+                    <img src="Icons/Book.png" alt="Guidebook">
                     <span>ICON GUIDEBOOK</span>
                 </button>
             </div>
