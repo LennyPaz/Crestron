@@ -1,4 +1,24 @@
 /* ============================================================
+   FSU Crestron Interface — styles.css
+
+   Table of contents
+     1. Tokens (custom properties)             :root
+     2. Reset & base                           *, body, .interface
+     3. Header                                 .header, .fsu-logo, .building-*, .start-class-btn
+     4. Demo bar                               .student-view-demo
+     5. Middle row                             .middle-row, .screen-*, .lights-*, .light-btn, fullscreen overlay
+     6. Bottom row + cards                     .bottom-row, .control-card (+ modifiers), .card-title
+     7. Left section: input sources & cameras  .sources-grid, .source-btn, .camera-btn
+     8. Middle section: workflow controls      .workflow-*, .controls-grid, .control-btn, .audio-btn
+     9. Action menus (shared shell)            .doccam/.bluray/.project/.hide/.freeze-* + close-X
+    10. Right section: power, screens, volume  .right-section, .power-btn, .projector-control-btn,
+                                               .screen-controls-grid, .volume-*, .mute-btn, .help-btn
+    11. Overlays                               .power-off-modal, .loading-overlay, .technical-setup-*, .help-*
+    12. Animations                             @keyframes (powerPulse, sourcePulse, freezePulse, slideDown, spin)
+    13. Responsive overrides                   @media queries
+   ============================================================ */
+
+/* ============================================================
    Design tokens
    ============================================================ */
 :root {
@@ -485,42 +505,6 @@ body {
   animation: sourcePulse 0.5s ease-in-out 2;
 }
 
-@keyframes powerPulse {
-  0%,
-  100% {
-    border-color: var(--c-red);
-    box-shadow: 0 0 20px rgba(166, 25, 46, 0.6);
-  }
-  50% {
-    border-color: var(--c-yellow);
-    box-shadow: 0 0 30px rgba(255, 199, 44, 0.8);
-  }
-}
-
-@keyframes sourcePulse {
-  0%,
-  100% {
-    border-color: var(--c-gold-500);
-    box-shadow: 0 0 20px rgba(206, 184, 136, 0.6);
-  }
-  50% {
-    border-color: var(--c-gold-300);
-    box-shadow: 0 0 30px rgba(223, 209, 167, 0.8);
-  }
-}
-
-@keyframes freezePulse {
-  0%,
-  100% {
-    border-color: var(--c-teal);
-    box-shadow: 0 0 20px rgba(92, 184, 178, 0.6);
-  }
-  50% {
-    border-color: var(--c-teal-light);
-    box-shadow: 0 0 30px rgba(92, 184, 178, 0.8);
-  }
-}
-
 .card-title {
   color: var(--c-gold-500);
   font-size: 12px;
@@ -613,12 +597,6 @@ body {
 }
 
 /* Scale down icons on shorter screens */
-@media (max-height: 800px) {
-  .btn-icon {
-    width: 32px;
-    height: 32px;
-  }
-}
 
 .camera-controls {
   display: flex;
@@ -1083,17 +1061,6 @@ body {
 .close-hide-menu-btn:active,
 .close-freeze-menu-btn:active {
   transform: scale(0.92);
-}
-
-@keyframes slideDown {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
 }
 
 /* PHASE 3: Hide & Mute Controls Menu */
@@ -1567,15 +1534,6 @@ body {
   animation: spin 1s linear infinite;
 }
 
-@keyframes spin {
-  0% {
-    transform: rotate(0deg);
-  }
-  100% {
-    transform: rotate(360deg);
-  }
-}
-
 /* Technical Setup Overlay */
 .technical-setup-overlay {
   position: fixed;
@@ -2039,4 +1997,76 @@ body {
   color: var(--c-gold-500);
   font-size: 13px;
   line-height: 1.4;
+}
+
+
+/* ============================================================
+   Animations
+   ============================================================ */
+
+@keyframes powerPulse {
+  0%,
+  100% {
+    border-color: var(--c-red);
+    box-shadow: 0 0 20px rgba(166, 25, 46, 0.6);
+  }
+  50% {
+    border-color: var(--c-yellow);
+    box-shadow: 0 0 30px rgba(255, 199, 44, 0.8);
+  }
+}
+
+@keyframes sourcePulse {
+  0%,
+  100% {
+    border-color: var(--c-gold-500);
+    box-shadow: 0 0 20px rgba(206, 184, 136, 0.6);
+  }
+  50% {
+    border-color: var(--c-gold-300);
+    box-shadow: 0 0 30px rgba(223, 209, 167, 0.8);
+  }
+}
+
+@keyframes freezePulse {
+  0%,
+  100% {
+    border-color: var(--c-teal);
+    box-shadow: 0 0 20px rgba(92, 184, 178, 0.6);
+  }
+  50% {
+    border-color: var(--c-teal-light);
+    box-shadow: 0 0 30px rgba(92, 184, 178, 0.8);
+  }
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* ============================================================
+   Responsive overrides
+   ============================================================ */
+
+@media (max-height: 800px) {
+  .btn-icon {
+    width: 32px;
+    height: 32px;
+  }
 }
