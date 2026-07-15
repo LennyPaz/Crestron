@@ -1671,7 +1671,7 @@ function lcRenderCountdowns() {
     document.getElementById('lcConfirmRecNow').style.display = started ? 'none' : '';
     document.getElementById('lcConfirmStatus').textContent = started ?
         'The scheduled start has passed. You can still start recording at any point.' :
-        'It records only if you confirm it';
+        'It records only if you confirm it. You can also start your own recording, as long as it ends before this one begins.';
 }
 
 // 1-second tick: elapsed timer, countdowns, and idle clock stay live
