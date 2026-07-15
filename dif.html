@@ -1,0 +1,2679 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FSU Crestron Interface — DIF</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+      /* ============================================================
+         DIF room-specific rules. Everything below is scoped to this
+         page and built from the design tokens in styles.css.
+         Main-page overrides: 2 (controls-grid columns, power card fill).
+         All new classes are lc-* and belong to the Lecture Capture page.
+         ============================================================ */
+
+      /* DIF has 4 screen-control buttons (WJB has 6) */
+      .controls-grid {
+        grid-template-columns: repeat(4, 1fr);
+      }
+
+      /* DIF has no projector-screen motor card; let POWER fill the column */
+      .power-card {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+      }
+
+      /* ============================================================
+         Lecture Capture page — state-driven KIOSK.
+         One dominant center STAGE (~2/3 width) that flips WHOLESALE
+         per recorder state. Each stage page = a VT Pro-e subpage on a
+         visibility-join combo: fixed boxes, show/hide + text/color
+         changes only — no reflow, no scroll, no animation beyond that.
+         TYPE RAMP v2: every non-interactive text element uses exactly
+         ONE of FIVE styles (lc-t-headline 48 bold / lc-t-title 32 bold /
+         lc-t-big 96 bold / lc-t-body 26 REGULAR / lc-t-caption 22
+         semibold), one family (the design system's Segoe UI); weight is
+         the second hierarchy axis. Ancillary 18px note/chip tier for
+         in-button notes, preview chips, hints — NOTHING under 18px
+         anywhere (dev strip exempt). ZONE GRID: every state page
+         shares one fixed row template (headline / title / big-info /
+         actions / caption) so state flips never move a box; previews +
+         today + camera control live in the monitoring RAIL.
+         Kiosk floors: readable text >= 22px (18px note tier), primary
+         targets >= 100px tall, secondary >= 64px, >= 16px gaps, buttons
+         content-sized and CENTERED (never full-width planks).
+         (1rem = 16px at full panel size; whole sheet scales.)
+         ============================================================ */
+      .lecture-capture-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100dvw;
+        height: 100dvh;
+        background: var(--bg-app);
+        display: none;
+        flex-direction: column;
+        z-index: 9998;
+      }
+
+      .lecture-capture-overlay.active {
+        display: flex;
+      }
+
+      .lc-back-btn {
+        font-size: 1.25rem;
+        padding: 1rem 1.5rem;
+        min-height: 4rem;
+      }
+
+      .lc-header-actions {
+        justify-self: end;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+      }
+
+      /* LC header HELP — reuses the main page's .help-btn style at
+         header-button scale */
+      .lc-help-btn {
+        font-size: 1.25rem;
+        padding: 1rem 1.5rem;
+        min-height: 4rem;
+        min-width: 7rem;
+      }
+
+      .lc-body {
+        flex: 1;
+        display: flex;
+        padding: 0.5rem 1.875rem;
+        gap: 1.25rem;
+        min-height: 0;
+      }
+
+      /* --- THE STAGE: exactly one .lc-stage-page is .active --- */
+      .lc-stage {
+        flex: 2.1;
+        position: relative;
+        min-width: 0;
+        min-height: 0;
+      }
+
+      .lc-stage-page {
+        position: absolute;
+        inset: 0;
+        display: none;
+        text-align: center;
+        color: white;
+        padding: 1.5rem 2.5rem;
+        background: var(--surface-card-faint);
+        border: 2px solid rgba(206, 184, 136, 0.25);
+        border-radius: 0.75rem;
+      }
+
+      /* Active page = THE ZONE GRID. Identical fixed row template on
+         EVERY state page, so a state flip never moves a text box
+         (VT Pro-e: fixed absolute boxes shared across subpages):
+           Z1 headline / Z2 title / Z3 big-info / Z4 action row /
+           Z5 caption. (Z6 media is GONE — previews + next-class strip
+         live in the monitoring rail now; the freed height became the
+         symmetric frame around the centered content block.) */
+      .lc-stage-page.active {
+        display: grid;
+        grid-template-rows: 3.5rem 8rem 10rem 10.5rem 4.5rem;
+        grid-template-columns: 100%;
+        row-gap: 1rem;
+        align-content: center;
+        justify-items: center;
+      }
+
+      .lc-zone-headline {
+        grid-row: 1;
+        align-self: center;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.75rem;
+      }
+
+      .lc-zone-title {
+        grid-row: 2;
+        align-self: center;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.375rem;
+      }
+
+      .lc-zone-big {
+        grid-row: 3;
+        align-self: center;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.25rem;
+      }
+
+      .lc-zone-actions {
+        grid-row: 4;
+        align-self: center;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 1.5rem;
+      }
+
+      /* THE Z4 RULE: one action-button height — EXACTLY 8.5rem (136px) —
+         across every state page. Notes render INSIDE the fixed face and
+         never grow the button (VT Pro-e: fixed rectangles, one baseline). */
+      .lc-zone-actions > button {
+        height: 8.5rem;
+        min-height: 8.5rem;
+        max-height: 8.5rem;
+      }
+
+      .lc-zone-caption {
+        grid-row: 5;
+        align-self: center;
+        max-width: 56rem;             /* v4.1: fits the two-sentence captions on
+                                         one line each (no orphaned last words);
+                                         UP NEXT carries two caption lines */
+      }
+
+      /* ENDED-only: the caption rides Z4 (its action row is empty) so it
+         sits directly under the teal check instead of stranding below —
+         a fixed ENDED-specific box is legal (no shared-role text moves). */
+      .lc-zone-caption--z4 {
+        grid-row: 4;
+        align-self: start;
+        padding-top: 0.5rem;
+      }
+
+      .lc-zone-form {
+        grid-row: 2 / 6;
+        align-self: start;            /* v4.5: top-anchored — the grown 72px
+                                         fields overflow the cell downward into
+                                         the stage's empty lower frame, never
+                                         upward into the Z1 headline band */
+      }
+
+      /* Amber variant for RECORDING ON HOLD */
+      .lc-stage-page--hold {
+        border-color: var(--c-yellow);
+        background: rgba(255, 199, 44, 0.1);
+      }
+
+      /* --- TYPE RAMP: exactly FIVE text styles, one family (the
+             design system's Segoe UI, inherited from body). Every
+             non-interactive text element on this page carries exactly
+             one. Color comes from separate modifier classes below —
+             never from the ramp itself. --- */
+      .lc-t-headline {                /* state headline */
+        font-size: 3rem;              /* 48px */
+        font-weight: bold;
+        line-height: 1.1;
+      }
+
+      .lc-t-title {                   /* class title */
+        font-size: 2rem;              /* 32px */
+        font-weight: bold;
+        line-height: 1.2;
+      }
+
+      .lc-t-big {                     /* timer / countdown hero */
+        font-size: 6rem;              /* 96px */
+        font-weight: bold;
+        line-height: 1;
+        letter-spacing: 0.125rem;
+        font-variant-numeric: tabular-nums;
+      }
+
+      .lc-t-body {                    /* supporting line */
+        font-size: 1.625rem;          /* 26px — ramp v2: a real step off the
+                                         22px caption (1.18×) and off the
+                                         32px title (1.23×) */
+        font-weight: 400;             /* weight is the second hierarchy axis:
+                                         headlines/titles bold, body regular,
+                                         captions semibold */
+        line-height: 1.4;
+      }
+
+      .lc-t-caption {                 /* labels / status / notes */
+        font-size: 1.375rem;          /* 22px */
+        font-weight: 600;
+        line-height: 1.3;
+      }
+
+      /* Color modifiers (typography lives in the ramp only) */
+      .lc-dim {
+        color: var(--c-gold-300);
+      }
+
+      .lc-teal {
+        color: var(--c-teal-light);
+      }
+
+      .lc-amber {
+        color: var(--c-yellow);
+      }
+
+      /* Rec lamp on the main-page LECTURE CAPTURE source button
+         (lit while anything records; panel version = StopReady_Fb) */
+      .lc-src-host {
+        position: relative;
+      }
+
+      .lc-src-reclamp {
+        position: absolute;
+        top: 0.375rem;
+        right: 0.375rem;
+        width: 0.625rem;
+        height: 0.625rem;
+        border-radius: 50%;
+        background: var(--c-red);
+        animation: recPulse 1.2s ease-in-out infinite;
+        display: none;
+      }
+
+      /* --- Kiosk buttons: sized to content + generous padding,
+             centered — never stretched full-width --- */
+      .lc-btn-primary {
+        position: relative;           /* v4.9: containing block for the CONFIRM
+                                         overlay sub (same as the lamp-host on the
+                                         NEW RECORDING faces) — keeps the main
+                                         label flex-centered */
+        background: var(--bg-accent);
+        color: var(--c-ink);
+        border: none;
+        border-radius: 0.75rem;
+        min-width: 25rem;             /* ~400px */
+        min-height: 8.5rem;           /* ~136px — THE Z4 height */
+        padding: 1rem 3rem;
+        font-size: 2.25rem;           /* 36px */
+        font-weight: bold;
+        letter-spacing: 0.0625rem;
+        cursor: pointer;
+        box-shadow: var(--shadow-xl);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 0.375rem;
+        transition: all var(--t-fast);
+      }
+
+      .lc-btn-primary:hover {
+        filter: brightness(1.05);
+        box-shadow: var(--shadow-xl-strong);
+      }
+
+      .lc-btn-primary:active {
+        transform: scale(0.97);
+        filter: brightness(0.95);
+      }
+
+      /* v4.10 (as-built sync 2026-07-13): .lc-btn-primary--resume is
+         RETIRED — the PAUSED trio now MIRRORS the REC trio (owner
+         2026-07-12), so RESUME became a .lc-rec-btn--resume in PAUSE's
+         304px slot (see the REC-trio family below). */
+
+      .lc-btn-primary--form {
+        min-width: 24rem;
+        min-height: 6.25rem;          /* 100px primary floor */
+        font-size: 1.875rem;
+      }
+
+      .lc-btn-sub {
+        font-size: 1.375rem;          /* 22px */
+        font-weight: 600;
+        opacity: 0.8;
+        letter-spacing: 0;
+        line-height: 1.75rem;         /* fixed line box — sibling decks stay
+                                         optically aligned at any sub size */
+      }
+
+      /* v4.8 (owner): the lone-secondary NEW RECORDING faces (IDLE +
+         UP NEXT) carry a CONFIRM-pattern 22px sub, but as a BOTTOM
+         OVERLAY (the .lc-btn-note idiom), NOT an in-flow deck line —
+         an in-flow sub would push the main label ~17px above vertical
+         center (the v4.3a mis-centering lesson). The main label stays
+         flex-centered; measured midline delta 0.0px. VT Pro-e: a
+         joinless static Simple Label layered in the face's lower band
+         (C5 press-through), same mechanism as the CONFIRM sub-deck
+         split (P1). */
+      .lc-btn-sub--overlay {
+        position: absolute;
+        bottom: 0.75rem;
+        left: 0;
+        right: 0;
+        pointer-events: none;
+      }
+
+      .lc-btn-secondary {
+        background: white;
+        color: var(--c-ink);
+        border: 2px solid transparent;
+        border-radius: 0.75rem;
+        min-width: 16rem;
+        min-height: 4.5rem;           /* 72px */
+        padding: 0.75rem 2rem;
+        font-size: 1.5rem;            /* 24px */
+        font-weight: bold;
+        cursor: pointer;
+        box-shadow: var(--shadow-md);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.75rem;
+        transition: all var(--t-fast);
+      }
+
+      .lc-btn-secondary:hover {
+        filter: brightness(1.05);
+        box-shadow: var(--shadow-lg);
+      }
+
+      .lc-btn-secondary:active {
+        transform: scale(0.96);
+        filter: brightness(0.95);
+      }
+
+      .lc-btn-danger-sm {
+        background: var(--c-red);
+        color: white;
+      }
+
+      /* Buttons sharing a row share the one Z4 height — hierarchy comes
+         from width + color, never a size mismatch (VT Pro-e reality:
+         fixed rectangles on one baseline). */
+      .lc-zone-actions .lc-btn-secondary {
+        flex-direction: column;
+        gap: 0.375rem;
+        min-width: 15rem;             /* 240px vs the primary's 400px */
+      }
+
+      /* ICON POLICY (owner v4.2, AMENDED v4.7, AMENDED AGAIN v4.10): button
+         faces are TEXT-ONLY, perfectly centered — EXCEPT the REC trio
+         (PAUSE / ADD 5 MINUTES / END RECORDING) + the whole PAUSED trio,
+         which carry a leading action glyph. v4.10 (as-built sync
+         2026-07-13): the PAUSED trio MIRRORS the REC trio (owner
+         2026-07-12), and RESUME gained a leading play glyph with the
+         mirror — v4.7's "RESUME RECORDING stays text-only" call was
+         reversed at build (panel asset play_black_36). Other glyphs live
+         only as corner-lamp overlays, headline companions (rec dot, pause
+         glyph), or popup title marks; popup buttons stay text-only.
+         Semantics still carry through color (red destructive, gold
+         primary, amber resume). */
+      .lc-btn-main {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.75rem;
+      }
+
+      /* v4.7 (owner item C): the leading action glyphs. CSS-drawn in the
+         mock (currentColor tracks the face's ink/white/disabled colors);
+         panel = generated PNGs in assets/ (pause_black_36 / plus_black_36 /
+         stop_white_36) baked into the face image OR layered as a joinless
+         Image Object (C5 press-through check). Label stays dominant; the
+         icon+label group centers as one; button rectangles unchanged. */
+      .lc-btn-ico {
+        flex: 0 0 auto;
+        pointer-events: none;
+        position: relative;
+      }
+
+      .lc-btn-ico--pause {                /* two 8px bars, 7px gap, 28px tall */
+        width: 1.4375rem;
+        height: 1.75rem;
+      }
+
+      .lc-btn-ico--pause::before,
+      .lc-btn-ico--pause::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        width: 0.5rem;
+        background: currentColor;
+        border-radius: 0.125rem;
+      }
+
+      .lc-btn-ico--pause::before { left: 0; }
+      .lc-btn-ico--pause::after { right: 0; }
+
+      .lc-btn-ico--plus {                 /* 28px cross, 6px arms */
+        width: 1.75rem;
+        height: 1.75rem;
+      }
+
+      .lc-btn-ico--plus::before,
+      .lc-btn-ico--plus::after {
+        content: '';
+        position: absolute;
+        background: currentColor;
+        border-radius: 0.125rem;
+      }
+
+      .lc-btn-ico--plus::before {
+        left: 0;
+        right: 0;
+        top: 50%;
+        height: 0.375rem;
+        transform: translateY(-50%);
+      }
+
+      .lc-btn-ico--plus::after {
+        top: 0;
+        bottom: 0;
+        left: 50%;
+        width: 0.375rem;
+        transform: translateX(-50%);
+      }
+
+      .lc-btn-ico--stop {                 /* 26px filled square (solid shapes
+                                             read larger — optical parity with
+                                             the 28px outline glyphs) */
+        width: 1.625rem;
+        height: 1.625rem;
+        background: currentColor;
+        border-radius: 0.1875rem;
+      }
+
+      .lc-btn-ico--play {                 /* v4.10 (as-built sync 2026-07-13):
+                                             RESUME's leading play triangle —
+                                             the PAUSED trio mirrors the REC
+                                             trio (owner 2026-07-12; panel
+                                             asset play_black_36). 24×28 solid
+                                             triangle in currentColor, same
+                                             weight family as its siblings. */
+        width: 1.5rem;
+        height: 1.75rem;
+        background: currentColor;
+        clip-path: polygon(0 0, 100% 50%, 0 100%);
+      }
+
+      /* Record lamp (owner pattern): the label stays perfectly centered;
+         the red dot is a small separate overlay in the button's corner —
+         the main page's LC-tile rec-lamp pattern (VT Pro-e: button +
+         non-interactive graphic layered on top). */
+      .lc-btn-lamp-host {
+        position: relative;
+      }
+
+      .lc-btn-lamp {
+        position: absolute;
+        top: 0.625rem;
+        right: 0.625rem;
+        width: 0.875rem;
+        height: 0.875rem;
+        border-radius: 50%;
+        background: var(--c-red);
+        pointer-events: none;
+      }
+
+      .lecture-capture-overlay button:disabled .lc-btn-lamp {
+        background: rgba(255, 255, 255, 0.4);   /* lamp quiet until armed */
+      }
+
+      /* v4.7 (owner item B): the old .lc-btn-isolate destructive-separation
+         margin is RETIRED — the REC/PAUSED trios use the standard 24px deck
+         gap throughout; the two-step END RECORDING popup is the misfire guard. */
+
+      /* A LONE secondary in the action row IS that state's main action (NEW RECORDING on
+         IDLE/UP NEXT — v4.8 unified name — START NOW INSTEAD on CONFIRMED) — its label
+         matches the primary's 36px, not the 24px secondary base (user catch: height was
+         unified, font wasn't). */
+      .lc-zone-actions .lc-btn-secondary:only-child {
+        font-size: 2.25rem;
+        letter-spacing: 0.0625rem;
+      }
+
+      /* Deck secondary (START NOW beside CONFIRM): the primary's 36px
+         main-label scale so the pair reads as siblings. v4.8 (owner):
+         its "Starts recording now" sub is REMOVED on both pages (the
+         face is self-explanatory; don't over-clarify) — single-line
+         face, flex-centered in the same rectangle; CONFIRM's own sub
+         stays (it carries the scheduled time). */
+      .lc-btn-secondary--deck {
+        font-size: 2.25rem;           /* main deck = the primary's 36px */
+        letter-spacing: 0.0625rem;
+        padding: 1rem 1.5rem;
+        min-width: 16rem;             /* ~256px vs the primary's ~400px */
+      }
+
+      .lc-btn-danger-sm:hover {
+        background: var(--c-red-dark);
+      }
+
+      /* --- LIVE PREVIEW thumbnails (monitoring rail, all states).
+             TWO labeled thumbs STACKED — v4.4: they live in the TODAY
+             card's SHARED lower area, swapping with TODAY rows 4–8 on
+             the user's own SHOW/HIDE press (complementary visibility).
+             v4.6 (owner item A): SCREEN first (content channel), CAMERA
+             below — the CAMERA frame now sits directly above the CAMERA
+             VIEW card that switches it (better grouping). OFF = the
+             whole cluster is visibility-hidden IN PLACE and the lower
+             TODAY rows show instead; no ghost frames. Panel build: the
+             cluster's objects ride PreviewOn_Fb, rows 4–8 ride NOT
+             PreviewOn_Fb (one SIMPL NOT symbol, shared with the hint).
+             Panel version = two Dynamic Graphics polling the Pearl's
+             channel-preview JPEGs — grounding in translation_map.md. --- */
+      .lc-preview {
+        position: relative;
+        flex: 0 0 auto;               /* v4.6 (owner item B): FIXED equal
+                                         rectangles — the in-region caveat moved
+                                         to the hint line under SHOW PREVIEW,
+                                         freeing the shared area for the largest
+                                         equal integer 16:9 pair that fits:
+                                         352 × 198 each, 8px inter-frame gap,
+                                         pair centered in the area */
+        width: 22rem;                 /* 352px; 198px tall via aspect-ratio */
+        aspect-ratio: 16 / 9;
+        background: #10161c;
+        border: 2px solid rgba(206, 184, 136, 0.35);
+        border-radius: 0.5rem;
+        overflow: hidden;
+        box-shadow: var(--shadow-md);
+      }
+
+      .lc-preview-region {
+        position: absolute;           /* v4.4: overlaps TODAY's lower rows in
+                                         the card's shared area (complementary
+                                         visibility — vis = PreviewOn_Fb) */
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;      /* v4.6: the fixed 352×198 pair centers
+                                         in the freed shared area */
+        gap: 0.5rem;                  /* 8px inter-frame gap (item B floor) */
+        min-height: 0;
+      }
+
+      /* Preview OFF (v4.2): the region hides IN PLACE — space stays
+         reserved so nothing above or below ever moves (VT Pro-e: fixed
+         rectangles, visibility joins on PreviewOn_Fb); what shows is
+         clean rail background, never ghost frames. */
+      .lc-preview-region.off {
+        visibility: hidden;
+      }
+
+      /* Hint line under the SHOW PREVIEW toggle (v4.2 plain line; v4.6
+         item B: STATE-SWAP — preview off = "See what's being recorded."
+         / on = the relocated caveat "Updates about once a second. The
+         recording is not affected."). Same reserved one-line box in both
+         states; panel-side = two overlapping static labels on the
+         EXISTING PreviewOn_Fb + its NOT — zero new joins, nothing above
+         or below ever moves. */
+      .lc-preview-hintline {
+        color: var(--c-gold-300);     /* typography = lc-t-caption scale-down:
+                                         18px note tier, quiet invitation */
+        font-size: 1.125rem;
+        font-weight: 600;
+        line-height: 1.3;
+        height: 1.5rem;               /* fixed one-line box, both states */
+        width: 100%;                  /* fixed rectangle — only the text swaps */
+        white-space: nowrap;          /* both texts fit the 544px rail width */
+        text-align: center;
+        align-self: center;
+        flex-shrink: 0;               /* v4.2 item 7: standalone rail child */
+      }
+
+      /* SHOW PREVIEW toggle — lives with the region (P+F button;
+         lit face = preview open, a press always closes it) */
+      .lc-preview-toggle {
+        width: 24rem;                 /* width-matched to the thumbs it reveals */
+        align-self: center;
+        flex-shrink: 0;               /* v4.2 item 7: standalone rail child */
+        height: 3.75rem;              /* 60px — a wide bar; target area far
+                                         exceeds the touch floor */
+        background: white;
+        color: var(--c-ink);
+        border: 2px solid transparent;
+        border-radius: 0.5rem;
+        font-size: 1.25rem;
+        font-weight: bold;
+        letter-spacing: 0.0625rem;
+        cursor: pointer;
+        box-shadow: var(--shadow-sm);
+        transition: all var(--t-fast);
+      }
+
+      .lc-preview-toggle:hover {
+        filter: brightness(1.05);
+      }
+
+      .lc-preview-toggle:active {
+        transform: scale(0.97);
+      }
+
+      .lc-preview-toggle.on {
+        background: var(--bg-accent);
+      }
+
+      /* (v4.6 item B: the old in-region .lc-preview-caveat is GONE — its
+         honesty text now state-swaps into .lc-preview-hintline above,
+         and the freed region height went to the wider frames.) */
+
+      /* Purpose caption inside the CAMERA VIEW card — module truth: the
+         cameras-channel layout also feeds Pearl HDMI out → room PC →
+         Zoom, so the control names both audiences. */
+      .lc-cam-caption {
+        color: var(--c-gold-300);
+        font-size: 1.125rem;          /* 18px note tier — one line at card width */
+        font-weight: 600;
+        line-height: 1.2;
+      }
+
+      /* Camera segmented control — one control, three equal segments,
+         2px gaps, outer corners rounded only; selected = gold fill +
+         ink + leading check (P9: unmistakable + non-color cue).
+         v4.2 item 7: fills the CAMERA VIEW card's inner width with
+         larger faces — the control owns the card, it doesn't float. */
+      .lc-cam-seg {
+        display: flex;
+        gap: 2px;
+        width: 100%;
+      }
+
+      .lc-cam-btn {
+        flex: 1;
+        height: 4.5rem;               /* 72px — card-owning scale */
+        padding: 0;
+        background: white;
+        color: var(--c-ink);
+        border: none;
+        border-radius: 0;
+        font-size: 1.5rem;            /* 24px interactive face */
+        font-weight: 600;
+        cursor: pointer;
+        box-shadow: var(--shadow-sm);
+        transition: all var(--t-fast);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.375rem;
+      }
+
+      .lc-cam-btn:first-child {
+        border-radius: 0.5rem 0 0 0.5rem;
+      }
+
+      .lc-cam-btn:last-child {
+        border-radius: 0 0.5rem 0.5rem 0;
+      }
+
+      .lc-cam-btn:hover {
+        filter: brightness(1.05);
+      }
+
+      .lc-cam-btn:active {
+        transform: scale(0.97);
+      }
+
+      .lc-cam-btn.selected {
+        background: var(--bg-accent);
+        color: var(--c-ink);
+        font-weight: bold;
+      }
+
+      .lc-seg-check {
+        display: none;
+        font-size: 1.125rem;
+        line-height: 1;
+      }
+
+      .lc-cam-btn.selected .lc-seg-check {
+        display: inline;
+      }
+
+      .lc-preview-scene {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+      }
+
+      .lc-preview-chip {
+        position: absolute;
+        top: 0.5rem;
+        left: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.375rem;
+        background: rgba(0, 0, 0, 0.65);
+        border-radius: 0.25rem;
+        padding: 0.125rem 0.625rem;
+        color: white;
+        font-size: 1.125rem;          /* 18px — nothing under 18 anywhere */
+        font-weight: bold;
+        letter-spacing: 0.09375rem;
+      }
+
+      .lc-preview-chip::before {
+        content: '';
+        width: 0.5rem;
+        height: 0.5rem;
+        border-radius: 50%;
+        background: var(--c-red);
+        animation: recPulse 1.2s ease-in-out infinite;
+      }
+
+      /* HOLD chips: channel label only — no pulsing live dot on the splash */
+      .lc-preview-chip--plain::before {
+        display: none;
+      }
+
+      /* Pause splash overlay (what viewers get while paused) — covers
+         the live scene on BOTH thumbs while the recording is paused */
+      .lc-preview-splash {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 0.375rem;
+        color: var(--c-yellow);
+        background: #17130c;
+      }
+
+      .lc-preview-splash-glyph {
+        font-size: 2.25rem;
+        line-height: 1;
+      }
+
+      .lc-preview-splash-text {
+        font-size: 1.125rem;          /* 18px floor */
+        font-weight: bold;
+        letter-spacing: 0.15rem;
+      }
+
+      /* --- NEXT-CLASS CONFIRM STRIP (monitoring rail — v4.5: pinned to
+             the TODAY card's BOTTOM EDGE, below the shared area; it IS
+             today-in-this-room information but never interrupts the
+             schedule mid-list). A REAL control in the secondary family:
+             compact WHITE button, one line, proper shadow — clearly
+             tappable but never the gold primary treatment. Tap = 2-tap
+             flow (opens the confirm popup); confirmed variant flips to
+             a quiet teal-check passive chip (non-interactive). Visible
+             only during REC/HOLD, but its RECTANGLE is always reserved
+             (visibility-hide, the VT Pro-e fixed box): when hidden the
+             card ends with quiet padding — no reflow, nothing ever
+             moves, and preview on/off shows the strip at the identical
+             position. --- */
+      .lc-next-strip {
+        width: 100%;
+        height: 4rem;                 /* 64px secondary floor */
+        flex-shrink: 0;               /* v4.5: fixed slot pinned at the card's
+                                         bottom edge (was below the top rows) */
+        margin-top: 0.5rem;           /* clearance from the rows/frames above */
+        padding: 0 0.75rem;
+        background: white;
+        color: var(--c-ink);
+        border: 2px solid transparent;
+        border-radius: 0.5rem;
+        font-size: 1.1875rem;         /* interactive face — not ramp */
+        font-weight: bold;
+        cursor: pointer;
+        display: flex;
+        visibility: hidden;           /* hidden IN PLACE — slot reserved */
+        align-items: center;
+        justify-content: center;
+        font-family: inherit;
+        box-shadow: var(--shadow-md);
+        transition: background var(--t-fast), color var(--t-fast),
+                    box-shadow var(--t-fast), filter var(--t-fast),
+                    transform var(--t-fast);
+                                      /* NOT `all`: visibility must flip
+                                         instantly (a transitioned hide keeps
+                                         the strip tappable ~150ms) */
+      }
+
+      .lc-next-strip.on {
+        visibility: visible;
+      }
+
+      .lc-next-strip > span {
+        white-space: nowrap;          /* single line, always */
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .lc-next-strip:hover {
+        filter: brightness(1.05);
+        box-shadow: var(--shadow-lg);
+      }
+
+      .lc-next-strip:active {
+        transform: scale(0.96);
+        filter: brightness(0.95);
+      }
+
+      .lc-next-strip.confirmed {
+        pointer-events: none;         /* passive chip once confirmed */
+        background: var(--surface-card-soft);
+        color: var(--c-gold-300);
+        border-color: rgba(92, 184, 178, 0.6);
+        font-weight: 600;
+        box-shadow: var(--shadow-sm);
+      }
+
+      .lc-rec-btn {
+        width: 19rem;                 /* equal widths — one deliberate group;
+                                         fits ADD 5 MINUTES at the v4.1 face size */
+        padding: 0.75rem 0.75rem;
+        background: white;
+        color: var(--c-ink);
+        border: 2px solid transparent;
+        border-radius: 0.75rem;
+        font-size: 1.875rem;          /* 30px — v4.1: faces read under-filled
+                                         without their old sub-notes at 26px */
+        font-weight: bold;
+        cursor: pointer;
+        box-shadow: var(--shadow-md);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 0.375rem;
+        transition: all var(--t-fast);
+        position: relative;           /* v4.3a: the in-face note is an overlay */
+      }
+
+      .lc-rec-btn:hover {
+        filter: brightness(1.05);
+        box-shadow: var(--shadow-lg);
+      }
+
+      .lc-rec-btn:active {
+        transform: scale(0.96);
+        filter: brightness(0.95);
+      }
+
+      .lc-rec-btn--stop {
+        background: var(--c-red);
+        color: white;
+        width: auto;                  /* v4.1: END RECORDING content-sizes —
+                                         still red; v4.7: standard 24px gap
+                                         (isolation retired, owner item B) */
+        min-width: 19rem;
+        padding: 0.75rem 1.75rem;
+      }
+
+      .lc-rec-btn--stop:hover {
+        background: var(--c-red-dark);
+      }
+
+      /* v4.10 (as-built sync 2026-07-13): the PAUSED trio MIRRORS the REC
+         trio (owner 2026-07-12 — nothing moves on pause/resume). RESUME is
+         an amber REC-trio button in PAUSE's 304px slot (panel P7 =
+         resume_amber_304x136 + play glyph, label "RESUME" 32 Bold — the
+         short label is an owner call); ADD 5 MINUTES + its note are KEPT
+         during a hold (the old mock dropping extend on pause was ruled an
+         OVERSIGHT — extend is valid mid-hold, the joins are
+         state-agnostic); END RECORDING never moves. Replaces the retired
+         400px text-only .lc-btn-primary--resume. */
+      .lc-rec-btn--resume {
+        background: var(--c-yellow);
+        font-size: 2rem;              /* 32px — the as-built P7 face size */
+      }
+
+      .lc-rec-btn.flash {
+        background: var(--c-teal);
+        color: white;
+      }
+
+      /* v4.1: amber ⏸ beside the PAUSED headline — the REC page's
+         dot-beside-"Recording" corner of the same pattern (glyph is
+         part of the state lamp, not a leading action icon) */
+      .lc-pause-glyph {
+        font-size: 2.5rem;            /* 40px against the 48px headline */
+        line-height: 1;
+        margin-top: 0.25rem;          /* optically center on cap height */
+      }
+
+      /* v4.3a: the note is a BOTTOM OVERLAY, not a flow child — the old
+         reserved in-flow box pushed every label above vertical center
+         once the sub-lines were removed. Labels now flex-center truly;
+         the note (only ADD 5 MINUTES uses one) rides the face bottom.
+         VT Pro-e analog: a small text object layered on the button. */
+      .lc-btn-note {
+        position: absolute;
+        bottom: 0.5rem;
+        left: 0;
+        right: 0;
+        text-align: center;
+        font-size: 1.125rem;          /* 18px floor — smaller + dimmer, inside the face */
+        font-weight: 600;
+        opacity: 0.7;
+        line-height: 1.2;
+        white-space: nowrap;
+      }
+
+      .lc-hold-pending {
+        animation: sourcePulse 1s ease-in-out infinite;
+      }
+
+      .lc-live-dot {
+        width: 1.25rem;
+        height: 1.25rem;
+        border-radius: 50%;
+        background: var(--c-red);
+        flex-shrink: 0;
+        margin-right: 0.5rem;         /* explicit clearance from the headline glyphs (gap alone read as touching) */
+        margin-top: 0.375rem;         /* optically center on cap height (flex centers on the full line box) */
+        animation: recPulse 1.2s ease-in-out infinite;
+      }
+
+      /* A record light must never DIM (mid-fade reads as a smudge / a dying lamp) —
+         it breathes via GLOW only, full opacity throughout. */
+      @keyframes recPulse {
+        0%, 100% { box-shadow: 0 0 3px rgba(166, 25, 46, 0.4); }
+        50%      { box-shadow: 0 0 14px rgba(230, 57, 70, 0.95); }
+      }
+
+      /* --- WALK-UP form (focused stage page; its own fixed boxes,
+             compacted to fit rows Z2–Z5) --- */
+      .lc-walkup-form {
+        display: flex;
+        flex-direction: column;
+        gap: 0.375rem;
+        width: 100%;
+        max-width: 46rem;
+        text-align: left;
+        align-items: stretch;
+      }
+
+      .lc-field-label {
+        color: var(--c-gold-500);     /* typography = lc-t-caption */
+        letter-spacing: 0.0625rem;
+      }
+
+      /* v4.15 (as-shipped sync 2026-07-15): ~24px EXTRA gap before the
+         DURATION OF RECORDING section — a deliberate break; the rest of
+         the form keeps its tight 6px flex-gap rhythm unchanged. */
+      .lc-field-label--break {
+        margin-top: 1.5rem;
+      }
+
+      .lc-field {
+        background: white;
+        color: var(--c-ink);
+        border: 3px solid transparent;
+        border-radius: 0.75rem;
+        height: 4.5rem;               /* 72px */
+        padding: 0 1.25rem;
+        font-size: 1.75rem;           /* 28px */
+        font-weight: 600;
+        font-family: inherit;
+        width: 100%;
+        box-shadow: var(--shadow-sm);
+        transition: all var(--t-fast);
+      }
+
+      .lc-field:focus {
+        outline: none;
+        border-color: var(--c-gold-500);
+      }
+
+      .lc-field::placeholder {
+        color: var(--c-slate);
+        opacity: 0.7;
+      }
+
+      /* v4.5 (owner): NO slim field variant — every text field on the
+         walk-up page is a full 72px touch rectangle (in VT Pro-e the
+         TextEntry object rect IS the touch area; size it like one). */
+
+      .lc-field-row {
+        display: flex;
+        gap: 1rem;
+      }
+
+      .lc-verify-btn {
+        flex: 0 0 auto;
+        min-width: 11rem;
+        height: 4.5rem;               /* matches the FSUID field */
+        min-height: 0;
+        font-size: 1.5rem;
+      }
+
+      .lc-verify-btn.selected {
+        background: var(--c-teal);
+        color: white;
+      }
+
+      .lc-user-name {
+        position: relative;           /* v4.15: containing block for the
+                                         checkmark gutter overlay below */
+        color: var(--c-teal-light);   /* typography = lc-t-title */
+        min-height: 2.25rem;          /* reserved box — no reflow on verify */
+        line-height: 1.1;
+      }
+
+      /* v4.15 (as-shipped sync 2026-07-15, panel W6/W7 gutter fix): the
+         verified checkmark is a small overlay in a gutter LEFT of the name
+         text (outside its own box, mirrors the TODAY row's reserved-dot
+         idiom) — "Recording as: {name}" stays flush at the form column's
+         own left edge (the same edge every field/label shares) whether or
+         not the checkmark shows, so an unchecked line here (e.g.
+         "Checking...") never reads more indented than a verified one. */
+      .lc-user-check {
+        position: absolute;
+        left: -1.375rem;
+        top: 0.0625rem;
+      }
+
+      .lc-dur-row {
+        display: flex;
+        gap: 1rem;
+      }
+
+      .lc-dur-btn {
+        flex: 1;
+        min-height: 4rem;             /* 64px floor */
+        background: white;
+        color: var(--c-ink);
+        border: 3px solid transparent;
+        border-radius: 0.75rem;
+        font-size: 1.5rem;            /* 24px */
+        font-weight: bold;
+        cursor: pointer;
+        box-shadow: var(--shadow-sm);
+        transition: all var(--t-fast);
+      }
+
+      .lc-dur-btn:hover {
+        filter: brightness(1.05);
+      }
+
+      .lc-dur-btn:active {
+        transform: scale(0.96);
+      }
+
+      .lc-dur-btn.active {
+        background: var(--c-slate);
+        color: white;
+        border-color: var(--c-gold-500);
+      }
+
+      .lc-custom-row {
+        display: flex;
+        gap: 1rem;
+        align-items: center;
+        height: 4.5rem;               /* box reserved even when hidden — v4.5:
+                                         grown to the full 72px field height */
+        margin-top: 0.625rem;         /* + the 6px form gap = 16px clear of the
+                                         duration segments (anti-mis-tap) */
+      }
+
+      .lc-custom-row.lc-hidden {
+        visibility: hidden;           /* fixed box, VT Pro-e style hide */
+      }
+
+      .lc-custom-row .lc-field {
+        width: 13rem;                 /* narrower by design (minutes-sized) —
+                                         v4.5: same 72px touch height as every
+                                         other field */
+        text-align: center;
+      }
+
+      .lc-field-error {
+        color: var(--c-yellow);       /* typography = lc-t-caption */
+        min-height: 1.75rem;          /* reserved */
+      }
+
+      .lc-walkup-actions {
+        display: flex;
+        justify-content: center;
+        margin-top: 0.125rem;
+      }
+
+      /* Reserved helper line under START RECORDING — states the unmet
+         condition while the button is disabled (B4 disabled spec) */
+      .lc-walkup-helper {
+        min-height: 1.75rem;
+        text-align: center;
+      }
+
+      .lc-stage-back {
+        position: absolute;
+        top: 1rem;
+        left: 1rem;
+        min-width: 10rem;
+        min-height: 4rem;             /* 64px secondary floor */
+        background: rgba(206, 184, 136, 0.2);
+        color: var(--c-gold-500);
+        border: 2px solid var(--c-gold-500);
+        border-radius: 0.5rem;
+        font-size: 1.25rem;
+        font-weight: bold;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        transition: all var(--t-fast);
+      }
+
+      .lc-stage-back:hover {
+        background: rgba(206, 184, 136, 0.3);
+      }
+
+      .lc-stage-back:active {
+        transform: scale(0.96);
+      }
+
+      /* v4.6 (owner item D), REVISED v4.7 (owner item A) + v4.8: compact
+         walk-up entry on the CONFIRM + CONFIRMED pages. The confirm
+         window opens ~30-45 min before the scheduled start, and a short
+         ad-hoc recording inside that gap is legitimate (the device 409s
+         only actual overlap). v4.7 destination-named the face + removed
+         the red corner lamp; v4.8 (owner): ONE entry name panel-wide —
+         the face reads "NEW RECORDING" like the IDLE/UP NEXT entries
+         (sub-less compact tertiary; still no lamp). Quiet TERTIARY
+         treatment kept (the lc-stage-back family: outlined gold, 64px,
+         corner-anchored, grows leftward off the right anchor) so it
+         never competes with the 136px CONFIRM/START NOW deck. Fixed
+         absolute box in the stage's bottom-right frame — outside the
+         zone grid, nothing reflows. Panel: same press join as every
+         walk-up entry (latch; one join, ONE label — subs vary only on
+         the big IDLE/UP NEXT entries). */
+      .lc-stage-recnow {
+        position: absolute;
+        right: 1.5rem;
+        bottom: 1.5rem;
+        width: 15rem;                 /* v4.8: fixed 240px rectangle —
+                                         tightened from v4.7's 292px for the
+                                         shorter unified "NEW RECORDING" face
+                                         (label 187px at the kept 20px bold,
+                                         ~26px comfortable side padding) */
+        padding: 0 1rem;
+        height: 4rem;                 /* 64px secondary floor */
+        background: rgba(206, 184, 136, 0.15);
+        color: var(--c-gold-500);
+        border: 2px solid rgba(206, 184, 136, 0.6);
+        border-radius: 0.5rem;
+        font-size: 1.25rem;
+        font-weight: bold;
+        letter-spacing: 0.0625rem;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all var(--t-fast);
+      }
+
+      .lc-stage-recnow:hover {
+        background: rgba(206, 184, 136, 0.25);
+      }
+
+      .lc-stage-recnow:active {
+        transform: scale(0.96);
+      }
+
+      /* v4.11 (as-built sync 2026-07-13, owner): the ENDED page's dismiss —
+         the same quiet ghost-tertiary treatment as .lc-stage-recnow
+         (outlined gold, 240×64) but IN the zone grid: it rides the Z5
+         caption band, centered below the return-line (panel E6 is
+         stage-centered at 528,620). Needed because the dwell grew 6s→30s;
+         a back-to-back incoming instructor dismisses instead of waiting.
+         Immediate return = the same path as the dwell expiring. */
+      .lc-ended-back {
+        grid-row: 5;
+        align-self: center;
+        width: 15rem;                 /* 240px, the compact-tertiary rectangle */
+        padding: 0 1rem;
+        height: 4rem;                 /* 64px secondary floor */
+        background: rgba(206, 184, 136, 0.15);
+        color: var(--c-gold-500);
+        border: 2px solid rgba(206, 184, 136, 0.6);
+        border-radius: 0.5rem;
+        font-size: 1.25rem;
+        font-weight: bold;
+        letter-spacing: 0.0625rem;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all var(--t-fast);
+      }
+
+      .lc-ended-back:hover {
+        background: rgba(206, 184, 136, 0.25);
+      }
+
+      .lc-ended-back:active {
+        transform: scale(0.96);
+      }
+
+      /* Disabled = legible ghost, not a vanish (P15/P18): outlined, dim
+         text, no fill — the path forward stays visible, and a helper
+         line states the unmet condition at the point of action. */
+      .lecture-capture-overlay button:disabled {
+        opacity: 1;
+        pointer-events: none;
+        background: rgba(255, 255, 255, 0.06);
+        border: 2px solid rgba(255, 255, 255, 0.35);
+        color: rgba(255, 255, 255, 0.65);
+        filter: none;
+        box-shadow: none;
+      }
+
+      /* --- THE MONITORING RAIL: everything glanceable-but-passive.
+             Top→bottom: TODAY card (up to 8 rows + the next-class
+             confirm strip at its foot) → SHOW PREVIEW toggle →
+             SCREEN thumb → CAMERA thumb → camera segmented control →
+             preview caveat. Fixed width; thumbs at full usable rail
+             width, stacked, both always present while preview is on. --- */
+      .lc-rail {
+        flex: 0 0 34rem;              /* 544px at panel scale (1rem = 16px at
+                                         1920×1080) — wide enough that worst-
+                                         case TODAY rows rarely truncate; the
+                                         preview column is height-capped and
+                                         centers within it */
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        min-width: 0;
+        min-height: 0;
+      }
+
+      .lc-rail-card {
+        background: var(--surface-card-faint);
+        border: 2px solid rgba(206, 184, 136, 0.2);
+        border-radius: 0.75rem;
+        padding: 0.75rem 1rem;
+      }
+
+      /* TODAY takes whatever the fixed preview block leaves (title +
+         5-6 rows at 16:9-ish windows; 8-row capacity documented) */
+      .lc-rail-card--today {
+        flex: 1 1 auto;
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+        overflow: hidden;
+        padding: 0.625rem 1rem;
+      }
+
+      /* CAMERA VIEW card (v4.2 item 7): a permanent bordered section
+         matching the TODAY card's anatomy — eyebrow top-left, purpose
+         caption, control filling the inner width. */
+      .lc-rail-card--camera {
+        flex: 0 0 auto;
+        display: flex;
+        flex-direction: column;
+        gap: 0.375rem;
+        padding: 0.625rem 1rem 1rem;  /* v4.3a: bottom breathing room under the
+                                         control, matching the TODAY card rhythm */
+      }
+
+      .lc-rail-title {
+        color: var(--c-gold-500);     /* typography = lc-t-caption */
+        letter-spacing: 0.125rem;
+        margin-bottom: 0.25rem;
+        flex-shrink: 0;
+      }
+
+      .lc-today {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+        min-height: 0;
+        overflow: hidden;             /* fixed rows; "+N more" — no scroll */
+      }
+
+      /* v4.4 TODAY/PREVIEW space-sharing (owner-deliberated GO): fixed
+         TOP row boxes (rows 1–3, panel Today1$–Today3$), then a SHARED
+         area where the LOWER rows and the preview frames occupy the
+         SAME space — complementary visibility, the VT Pro-e
+         overlapping-objects idiom (same as the stage subpages) — and
+         the confirm strip's reserved slot pinned at the card's bottom
+         edge (v4.5; was between rows 3 and 4). Lower rows vis = NOT
+         PreviewOn_Fb; frames vis = PreviewOn_Fb; the swap happens ONLY
+         on the user's own SHOW/HIDE press (or the 15 s View burst).
+         Rows 1–3 + the strip never move. */
+      .lc-today--top {
+        flex: 0 0 auto;
+        height: 7.2rem;               /* 3 fixed row slots (3 × 2.15rem + gaps) */
+      }
+
+      .lc-today-shared {
+        position: relative;           /* the overlap frame */
+        flex: 1 1 auto;
+        min-height: 0;
+        margin-top: 0.25rem;
+      }
+
+      .lc-today--more {
+        position: absolute;
+        inset: 0;
+      }
+
+      .lc-today-row {
+        position: relative;           /* v4.10: hosts the gutter dot below */
+        display: flex;
+        align-items: center;
+        gap: 0.625rem;
+        color: white;                 /* typography = lc-t-caption */
+        padding: 0.125rem 0.625rem 0.125rem 1.75rem;
+                                      /* v4.10 (as-built sync 2026-07-13): left
+                                         padding = the old 10px inset + the 18px
+                                         reserved rec-dot GUTTER — every row,
+                                         so text never shifts */
+        line-height: 1.2;
+        border-radius: 0.375rem;
+        border: 2px solid transparent;
+        background: var(--surface-card-soft);
+        flex-shrink: 0;
+      }
+
+      /* v4.10 (as-built sync 2026-07-13, chrome build decision): the
+         running-row rec dot sits in a RESERVED LEFT GUTTER between the row
+         frame edge and the text — 18px (12px dot box + 6px clearance) —
+         and EVERY row indents its text by the same gutter width, so
+         nothing shifts when a row becomes the running row. Panel truth:
+         the dot is a separate white Image Object at a fixed inset, lit by
+         StopReady_Fb — the ● NEVER arrives via serial (P9). The mock used
+         to prepend "● " to the running row's time text, which both shifted
+         the text and contradicted that rule. */
+      .lc-today-row::before {
+        content: '';
+        position: absolute;
+        left: 0.625rem;               /* the old text inset — the gutter sits
+                                         between it and the indented text */
+        top: 50%;
+        transform: translateY(-50%);
+        width: 0.75rem;               /* 12px dot box, reserved in every row */
+        height: 0.75rem;
+        border-radius: 50%;
+        background: transparent;      /* unlit outside the running row */
+      }
+
+      .lc-today-row.running::before {
+        background: white;            /* white dot reads on the red running
+                                         fill (the white rec-dot asset call) */
+      }
+
+      .lc-today-time {
+        color: var(--c-gold-300);
+        font-weight: bold;
+        white-space: nowrap;
+        font-variant-numeric: tabular-nums;
+        min-width: 6rem;
+      }
+
+      .lc-today-name {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        min-width: 0;
+      }
+
+      .lc-today-row.running {
+        border-color: var(--c-red);
+        background: rgba(166, 25, 46, 0.3);
+      }
+
+      .lc-today-row.running .lc-today-time {
+        color: white;
+      }
+
+      .lc-today-more,
+      .lc-today-empty {
+        color: var(--c-gold-300);     /* typography = lc-t-caption */
+        padding: 0.25rem 0.625rem;
+      }
+
+      /* --- Status line --- */
+      .lc-status-bar {
+        display: flex;
+        align-items: center;
+        gap: 0.625rem;
+        padding: 0 1.875rem 0.5rem 1.875rem;
+        color: var(--c-gold-300);     /* text span carries lc-t-caption */
+        flex-shrink: 0;
+      }
+
+      .lc-status-dot {
+        width: 0.625rem;
+        height: 0.625rem;
+        border-radius: 50%;
+        background: var(--c-teal);
+        box-shadow: 0 0 6px rgba(92, 184, 178, 0.8);
+        flex-shrink: 0;
+      }
+
+      /* --- End-recording confirm (error prevention on STOP).
+             VT Pro-e: a subpage popup; the real stop join lives on the
+             inner END RECORDING button only.
+             v4.12 (as-built sync 2026-07-13, owner): the dark backdrop
+             is TAP-TO-DISMISS on all three LC popups, each via its SAFE
+             path (KEEP RECORDING / NOT NOW / CLOSE). Panel: scrim =
+             full-screen Advanced Button ("321 Transparent Advanced")
+             on the popup latch; the card = a pressless button that
+             swallows misclicks (field guide §8.5a, package E-1). --- */
+      .lc-stop-modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100dvw;
+        height: 100dvh;
+        background: var(--surface-overlay);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 10005;
+        backdrop-filter: blur(4px);
+      }
+
+      .lc-stop-modal.active {
+        display: flex;
+      }
+
+      .lc-stop-modal .modal-content {
+        max-width: 42rem;
+      }
+
+      .lc-stop-modal .modal-title {
+        font-size: 2rem;
+      }
+
+      .lc-stop-modal .modal-text {
+        font-size: 1.5rem;
+        color: white;
+      }
+
+      .lc-stop-modal .modal-btn {
+        font-size: 1.5rem;
+        min-height: 5.25rem;
+        white-space: nowrap;
+        padding-left: 2rem;
+        padding-right: 2rem;
+      }
+
+      /* Gold (non-destructive) confirm button for popups */
+      .lc-modal-btn-gold {
+        background: var(--bg-accent);
+        color: var(--c-ink);
+      }
+
+      /* --- NEXT-CLASS CONFIRM popup (2nd tap of the strip; same
+             pattern as END RECORDING?) --- */
+      .lc-next-modal {
+        z-index: 10006;
+      }
+
+      /* --- HELP overlay (panel-local subpage; same pattern as the
+             END RECORDING? popup, zero module joins) --- */
+      .lc-help-modal {
+        z-index: 10007;
+      }
+
+      .lc-help-modal .modal-content {
+        max-width: 58rem;
+        gap: 1.5rem;
+      }
+
+      .lc-help-modal .modal-title {
+        color: var(--c-gold-500);
+        letter-spacing: 0.125rem;
+      }
+
+      /* v4.6 (owner item C): sectioned help — short titled blocks instead
+         of the old bullet wall. Eyebrow 22px CAPS gold + 26px sentence-
+         case body, 1-2 lines each, generous spacing; scans in seconds.
+         The THIS SCREEN block sits on top with a quiet divider. */
+      .lc-help-secs {
+        display: flex;
+        flex-direction: column;
+        gap: 1.375rem;
+        text-align: left;
+      }
+
+      .lc-help-sec {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+      }
+
+      .lc-help-sec--context {
+        padding-bottom: 1.25rem;
+        border-bottom: 2px solid rgba(206, 184, 136, 0.25);
+      }
+
+      .lc-help-sec-title {
+        color: var(--c-gold-500);
+        letter-spacing: 0.125rem;
+      }
+
+      .lc-help-sec-body {
+        color: white;
+      }
+
+      .lc-help-close {
+        min-width: 20rem;
+        min-height: 6rem;
+        font-size: 2rem;
+      }
+
+      /* Dev-only state-preview strip — same dashed-yellow convention as
+         .student-view-demo. Floats over the bottom-right corner (out of
+         flow so the panel gets its full height). NOT part of the panel UI. */
+      .lc-dev-strip {
+        position: fixed;
+        right: 0.5rem;
+        bottom: 0.375rem;
+        z-index: 10010;
+        display: flex;
+        align-items: center;
+        gap: 0.625rem;
+        background: rgba(255, 199, 44, 0.12);
+        border: 2px dashed var(--c-yellow);
+        border-radius: 0.5rem;
+        padding: 0.25rem 0.75rem;
+        flex-shrink: 0;
+        opacity: 0.25;
+        transition: opacity var(--t-fast);
+      }
+
+      .lc-dev-strip:hover {
+        opacity: 1;
+      }
+
+      .lc-dev-btn {
+        background: white;
+        color: var(--c-ink);
+        border: 2px solid transparent;
+        border-radius: 0.375rem;
+        font-size: 0.625rem;
+        font-weight: bold;
+        padding: 0.25rem 0.625rem;
+        cursor: pointer;
+        box-shadow: var(--shadow-xs);
+        transition: all var(--t-fast);
+      }
+
+      .lc-dev-btn:hover {
+        filter: brightness(1.05);
+      }
+
+      .lc-dev-btn:active {
+        transform: scale(0.94);
+      }
+
+      .lc-dev-btn.active {
+        background: var(--c-yellow);
+      }
+
+      /* Record-dot glyph used by the LECTURE CAPTURE source button
+         (glyph-in-span icons follow the .bluray-btn-icon precedent) */
+      .lc-rec-glyph {
+        font-size: 2rem;
+        line-height: 2.5rem;
+        color: var(--c-red);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+    </style>
+</head>
+<body>
+    <div class="interface">
+        <!-- Header -->
+        <div class="header">
+            <div class="fsu-logo">
+                <img src="Icons/FSULogo.svg" alt="FSU Logo" onclick="openTechnicalSetup()">
+                <span>FLORIDA STATE UNIVERSITY</span>
+            </div>
+            <div class="building-info">
+                <div class="building-name" onclick="toggleDemoView()">DIF</div>
+                <div class="time-display" id="timeDisplay"></div>
+            </div>
+            <button class="start-class-btn" onclick="startClass()">
+                <span>▶</span>
+                <span>START CLASS</span>
+            </button>
+        </div>
+
+        <!-- Room View Demo Bar (FOR SHOWCASE ONLY) -->
+        <div class="student-view-demo hidden">
+            <span class="demo-label">⚠ DEMO ONLY - ROOM VIEW (tap DIF to toggle):</span>
+            <div class="student-projectors">
+                <div class="student-projector">
+                    <span class="projector-label">LEFT PROJECTOR:</span>
+                    <div class="projector-display" id="leftProjectorDisplay">—</div>
+                </div>
+                <div class="student-projector">
+                    <span class="projector-label">RIGHT PROJECTOR:</span>
+                    <div class="projector-display" id="rightProjectorDisplay">—</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Middle row - Screens and lights -->
+        <div class="middle-row">
+            <div class="screen-container">
+                <div class="screen" id="leftScreen">
+                    <span>Preview Screen</span>
+                </div>
+            </div>
+
+            <div class="lights-panel">
+                <div class="lights-header">
+                    <img src="Icons/Lightbulb.png" alt="Lights">
+                    <span>LIGHTS</span>
+                </div>
+                <button class="light-btn active" onclick="toggleLight(this)">ALL ON</button>
+                <button class="light-btn" onclick="toggleLight(this)">LECTURE</button>
+                <button class="light-btn" onclick="toggleLight(this)">VIDEO 1</button>
+                <button class="light-btn" onclick="toggleLight(this)">VIDEO 2</button>
+                <button class="light-btn" onclick="toggleLight(this)">ALL OFF</button>
+            </div>
+
+            <div class="screen-container">
+                <div class="screen" id="rightScreen">
+                    <span>Preview Screen</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Bottom row - Controls -->
+        <div class="bottom-row">
+            <!-- Left section - Input Sources -->
+            <div class="left-section">
+                <div class="workflow-guide">
+                    <div class="workflow-step">
+                        <div class="workflow-number">1</div>
+                        <span>POWER ON</span>
+                    </div>
+                    <div class="workflow-arrow">→</div>
+                    <div class="workflow-step">
+                        <div class="workflow-number">2</div>
+                        <span>SELECT INPUT</span>
+                    </div>
+                    <div class="workflow-arrow">→</div>
+                    <div class="workflow-step">
+                        <div class="workflow-number">3</div>
+                        <span>PREVIEW</span>
+                    </div>
+                    <div class="workflow-arrow">→</div>
+                    <div class="workflow-step">
+                        <div class="workflow-number">4</div>
+                        <span>PROJECT</span>
+                    </div>
+                </div>
+
+                <div class="control-card control-card--input">
+                    <div class="card-title">
+                        <span>INPUT SOURCES</span>
+                    </div>
+                    <div class="sources-grid">
+                        <button class="source-btn" onclick="selectSource(this, 'desktop')">
+                            <img src="Icons/DeskTopIcon.png" alt="Desktop" class="btn-icon">
+                            <span>DESKTOP PC</span>
+                        </button>
+                        <button class="source-btn" onclick="selectSource(this, 'doccam')">
+                            <img src="Icons/DocCamIcon.svg" alt="Doc Cam" class="btn-icon">
+                            <span>DOC CAM</span>
+                        </button>
+                        <button class="source-btn" onclick="selectSource(this, 'laptophdmi')">
+                            <img src="Icons/LaptopIcon.webp" alt="Laptop HDMI" class="btn-icon">
+                            <span>LAPTOP HDMI</span>
+                        </button>
+                        <button class="source-btn" onclick="selectSource(this, 'laptopusbc')">
+                            <img src="Icons/LaptopIcon.webp" alt="Laptop USB-C" class="btn-icon">
+                            <span>LAPTOP USB-C</span>
+                        </button>
+                        <button class="source-btn" onclick="selectSource(this, 'wireless')">
+                            <img src="Icons/WirelessIcon.png" alt="Wireless" class="btn-icon">
+                            <span>WIRELESS STREAM</span>
+                        </button>
+                        <button class="source-btn lc-src-host" onclick="selectSource(this, 'lecturecapture')">
+                            <span class="lc-src-reclamp" id="lcSourceRecLamp"></span>
+                            <span class="btn-icon lc-rec-glyph">⏺</span>
+                            <span>LECTURE CAPTURE</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="control-card control-card--shrink">
+                    <div class="card-title">
+                        <span>CAMERA PRESETS</span>
+                    </div>
+                    <div class="camera-controls">
+                        <button class="camera-btn" onclick="selectCamera(this, 1)">
+                            <img src="Icons/CameraIcon.png" alt="Camera" class="btn-icon">
+                            <span>PRESET 1</span>
+                        </button>
+                        <button class="camera-btn" onclick="selectCamera(this, 2)">
+                            <img src="Icons/CameraIcon.png" alt="Camera" class="btn-icon">
+                            <span>PRESET 2</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Middle section - Workflow controls -->
+            <div class="middle-section">
+                <div class="control-card control-card--grow">
+                    <div class="card-title">
+                        <span>SCREEN CONTROLS</span>
+                    </div>
+                    <div class="controls-grid">
+                        <button class="control-btn" onclick="togglePreview(this, 'left')">
+                            <img src="Icons/LeftPreviewIcon.png" alt="Left Preview" class="btn-icon">
+                            <span>LEFT PREVIEW</span>
+                        </button>
+                        <button class="control-btn" onclick="togglePreview(this, 'right')">
+                            <img src="Icons/RightPreviewIcon.png" alt="Right Preview" class="btn-icon">
+                            <span>RIGHT PREVIEW</span>
+                        </button>
+                        <button class="control-btn" onclick="openProjectControls(this)">
+                            <img src="Icons/ProjectIcon.png" alt="Project" class="btn-icon">
+                            <span>PROJECT</span>
+                        </button>
+                        <button class="control-btn" id="projectorMuteBtn" onclick="toggleProjectorMute(this)">
+                            <img src="Icons/HideRightLeftIcon.png" alt="Projector Mute" class="btn-icon">
+                            <span>PROJECTOR MUTE</span>
+                        </button>
+
+                        <!-- Wrapper for the slide-down action menus -->
+                        <div class="menus-wrapper" id="menusWrapper">
+                            <!-- Project Controls Menu -->
+                            <div class="project-controls-menu" id="projectControlsMenu">
+                                <button class="close-menu-btn" onclick="closeProjectControls()">
+                                    ✕
+                                </button>
+                                <div class="project-menu-label">PROJECTOR CONTROLS</div>
+                                <div class="project-options-row">
+                                    <button class="project-option-btn" id="projectLeftBtn" onclick="projectToScreen('left')">
+                                        <span class="project-label-main">LEFT</span>
+                                        <span class="project-label-sub">Project Left</span>
+                                    </button>
+                                    <button class="project-option-btn" id="projectBothBtn" onclick="projectToScreen('both')">
+                                        <span class="project-label-main">BOTH</span>
+                                        <span class="project-label-sub">Project on Both</span>
+                                    </button>
+                                    <button class="project-option-btn" id="projectRightBtn" onclick="projectToScreen('right')">
+                                        <span class="project-label-main">RIGHT</span>
+                                        <span class="project-label-sub">Project Right</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div> <!-- Close menus-wrapper -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right section - Power, Volume, and Help -->
+            <div class="right-section">
+                <div class="power-volume-row">
+                <div class="power-and-screens-column">
+                    <div class="control-card power-card">
+                        <div class="card-title">
+                            <span>POWER</span>
+                        </div>
+                        <div class="power-controls">
+                            <button class="power-btn" onclick="togglePower(this, true)">
+                                <img src="Icons/PowerIcon.webp" alt="Power On" class="btn-icon">
+                                <span>POWER<br>
+                                &nbsp;ON</span>
+                            </button>
+                            <button class="power-btn selected" onclick="togglePower(this, false)">
+                                <img src="Icons/PowerIcon.webp" alt="Power Off" class="btn-icon">
+                                <span>POWER<br>OFF</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="volume-help-column">
+                <div class="control-card control-card--fill">
+                    <div class="card-title">
+                        <span>VOLUME</span>
+                    </div>
+                    <div class="volume-controls">
+                        <div class="volume-section">
+                            <div class="volume-label">MIC<br>VOLUME</div>
+                            <div class="volume-slider-container">
+                                <div class="volume-max">MAX</div>
+                                <input type="range" class="volume-slider" id="micSlider" min="0" max="100" value="50" oninput="updateVolumeSlider(this, 'micPercent')" orient="vertical">
+                                <div class="volume-min">MIN</div>
+                            </div>
+                            <div class="volume-percentage" id="micPercent">50%</div>
+                            <button class="mute-btn" onclick="toggleMute(this, 'mic')">
+                                <img src="Icons/Muted.png" alt="Mute">
+                            </button>
+                        </div>
+
+                        <div class="volume-section">
+                            <div class="volume-label">MAIN<br>VOLUME</div>
+                            <div class="volume-slider-container">
+                                <div class="volume-max">MAX</div>
+                                <input type="range" class="volume-slider" id="mainSlider" min="0" max="100" value="50" oninput="updateVolumeSlider(this, 'mainPercent')" orient="vertical">
+                                <div class="volume-min">MIN</div>
+                            </div>
+                            <div class="volume-percentage" id="mainPercent">50%</div>
+                            <button class="mute-btn" onclick="toggleMute(this, 'main')">
+                                <img src="Icons/Muted.png" alt="Mute">
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <button class="help-btn" onclick="showHelp()">HELP</button>
+                </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Power Off Confirmation Modal -->
+    <div class="power-off-modal" id="powerOffModal">
+        <div class="modal-content">
+            <div class="modal-message">
+                <div class="modal-title">POWER OFF PROJECTORS?</div>
+                <div class="modal-text">Are you sure you want to turn off the projectors?</div>
+            </div>
+            <div class="modal-buttons">
+                <button class="modal-btn modal-btn-no" onclick="cancelPowerOff()">NO, CANCEL</button>
+                <button class="modal-btn modal-btn-yes" onclick="confirmPowerOff()">YES, POWER OFF</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Screen Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-content">
+            <div class="loading-messages">
+                <div class="loading-message-primary">PLEASE WAIT</div>
+                <div class="loading-message-secondary">SYSTEM WILL BE AVAILABLE</div>
+                <div class="loading-message-tertiary">PROJECTORS ARE WARMING UP!</div>
+            </div>
+            <div class="progress-container">
+                <div class="loading-spinner"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Fullscreen Overlay -->
+    <div class="fullscreen-overlay" id="fullscreenOverlay">
+        <img class="fullscreen-content" id="fullscreenImage" alt="Fullscreen preview" style="display: none;">
+        <div class="fullscreen-text" id="fullscreenText" style="display: none;"></div>
+    </div>
+
+    <!-- Technical Setup Overlay -->
+    <div class="technical-setup-overlay" id="technicalSetupOverlay">
+        <div class="technical-setup-modal">
+            <!-- Header with just FSU logo and text -->
+            <div class="technical-setup-header">
+                <div class="fsu-logo-tech">
+                    <img src="Icons/FSULogo.svg" alt="FSU Logo">
+                    <span>FLORIDA STATE UNIVERSITY</span>
+                </div>
+            </div>
+
+            <!-- Technical Setup Content -->
+            <div class="technical-setup-content">
+                <h1 class="technical-setup-title">Technical Setup</h1>
+                <div class="technical-setup-buttons">
+                    <button class="tech-setup-btn" onclick="alert('VEQ-4 configuration')">
+                        <span>VEQ-4</span>
+                    </button>
+                    <button class="tech-setup-btn" onclick="closeTechnicalSetup()">
+                        <span>Return To Main Page</span>
+                    </button>
+                    <button class="tech-setup-btn" onclick="alert('Overflow controls')">
+                        <span>Overflow Controls</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Lecture Capture Page -->
+    <div class="lecture-capture-overlay" id="lectureCaptureOverlay">
+        <!-- Header (same pattern as the main page header) -->
+        <div class="header">
+            <div class="fsu-logo">
+                <img src="Icons/FSULogo.svg" alt="FSU Logo">
+                <span>FLORIDA STATE UNIVERSITY</span>
+            </div>
+            <div class="building-info">
+                <div class="building-name">LECTURE CAPTURE</div>
+                <div class="time-display"></div>
+            </div>
+            <div class="lc-header-actions">
+                <button class="help-btn lc-help-btn" onclick="lcHelpOpen()">HELP</button>
+                <button class="help-back-btn lc-back-btn" onclick="closeLectureCapture()">
+                    <span>←</span>
+                    <span>BACK TO CONTROLS</span>
+                </button>
+            </div>
+        </div>
+
+        <div class="lc-body">
+            <!-- THE STAGE — exactly one state page visible at a time -->
+            <div class="lc-stage">
+
+                <!-- 1 · IDLE — no more recordings today -->
+                <section class="lc-stage-page" id="lcPageIdle">
+                    <div class="lc-zone-headline lc-t-headline">No recordings scheduled</div>
+                    <div class="lc-zone-title">
+                        <!-- v4.2 honesty fix (+ v4.4 wording: never assume a
+                             recording is a class — DIF hosts seminars/defenses/
+                             events): opt-in system, never imply zero-touch. -->
+                        <div class="lc-t-body lc-dim">Scheduled recordings appear here. They start only after you press CONFIRM.</div>
+                    </div>
+                    <div class="lc-zone-big">
+                        <div class="lc-t-caption lc-dim">RIGHT NOW</div>
+                        <div class="lc-t-big" id="lcIdleClock">2:35 PM</div>
+                    </div>
+                    <div class="lc-zone-actions">
+                        <button class="lc-btn-secondary lc-btn-lamp-host" onclick="lcOpenWalkup()">
+                            <span class="lc-btn-lamp"></span>
+                            <span>NEW RECORDING</span>
+                            <span class="lc-btn-sub lc-btn-sub--overlay">Record something on your own</span>
+                        </button>
+                    </div>
+                    <div class="lc-zone-caption lc-t-caption lc-dim">
+                        <div>Need to record something now? NEW RECORDING starts a recording of your own.</div>
+                        <div>It just can't run into the next scheduled recording.</div>
+                    </div>
+                </section>
+
+                <!-- 2 · UP NEXT — event upcoming, confirm window not open yet -->
+                <section class="lc-stage-page" id="lcPageUpNext">
+                    <div class="lc-zone-headline lc-t-headline">Up next in this room</div>
+                    <div class="lc-zone-title">
+                        <div class="lc-t-title" id="lcUpNextTitle">Panel Demo D</div>
+                        <div class="lc-t-body lc-dim" id="lcUpNextTime">2:35 PM – 3:50 PM</div>
+                    </div>
+                    <div class="lc-zone-big">
+                        <div class="lc-t-caption lc-dim" id="lcUpNextBigLabel">SCHEDULED IN</div>
+                        <div class="lc-t-big" id="lcUpNextBig">1 hr 35 min</div>
+                    </div>
+                    <div class="lc-zone-actions">
+                        <button class="lc-btn-secondary lc-btn-lamp-host" onclick="lcOpenWalkup()">
+                            <span class="lc-btn-lamp"></span>
+                            <span>NEW RECORDING</span>
+                            <span class="lc-btn-sub lc-btn-sub--overlay">Separate from the scheduled one</span>
+                        </button>
+                    </div>
+                    <div class="lc-zone-caption lc-t-caption lc-dim">
+                        <div>Not confirmed yet. CONFIRM appears here 30 minutes before the scheduled start.</div>
+                        <div>NEW RECORDING starts a recording of your own. It can't run into the scheduled one.</div>
+                        <!-- two caption lines by design (owner v4.1 items 3+4):
+                             confirm-window honesty + walk-up guidance -->
+                    </div>
+                </section>
+
+                <!-- 3 · CONFIRM WINDOW — the star of the whole page -->
+                <section class="lc-stage-page" id="lcPageConfirm">
+                    <div class="lc-zone-headline lc-t-headline">Ready to record</div>
+                    <div class="lc-zone-title">
+                        <div class="lc-t-title" id="lcConfirmTitle">Panel Demo D</div>
+                        <div class="lc-t-body lc-dim" id="lcConfirmTime">2:35 PM – 3:50 PM</div>
+                    </div>
+                    <div class="lc-zone-big">
+                        <div class="lc-t-caption lc-dim" id="lcConfirmBigLabel">SCHEDULED IN</div>
+                        <div class="lc-t-big" id="lcConfirmBig">12 min</div>
+                    </div>
+                    <div class="lc-zone-actions">
+                        <button class="lc-btn-primary" onclick="lcConfirm()">
+                            <span>CONFIRM</span>
+                            <span class="lc-btn-sub lc-btn-sub--overlay" id="lcConfirmBtnSub">Starts recording at 2:35 PM</span>
+                        </button>
+                        <!-- Post-start (owner v4.1): this button HIDES entirely — a
+                             mid-window CONFIRM records immediately, so the pair would
+                             be two identical buttons. Panel build needs a "started"
+                             signal (v10.6 candidate NextStarted_Fb) on this vis join. -->
+                        <!-- v4.8 (owner): the "Starts recording now" sub is GONE
+                             from START NOW on both pages — the face is self-
+                             explanatory; the sub restated it. Single-line 36px
+                             face, flex-centered in the unchanged rectangle.
+                             CONFIRM's own sub STAYS (it does real work: the
+                             scheduled time + confirming-is-not-starting-now). -->
+                        <button class="lc-btn-secondary lc-btn-secondary--deck" id="lcStartNowBtn" onclick="lcStartNow()">
+                            <span class="lc-btn-main"><span>START NOW</span></span>
+                        </button>
+                    </div>
+                    <div class="lc-zone-caption lc-t-caption lc-dim" id="lcConfirmStatus">It records only if you confirm it</div>
+                    <!-- v4.6 (owner item D), v4.7 (owner item A), v4.8: quiet
+                         walk-up escape hatch — the confirm window opens ~30-45
+                         min early and a short ad-hoc that ends before the
+                         scheduled start is legitimate. v4.7 destination-named
+                         the face + removed the corner lamp; v4.8 (owner): ONE
+                         entry name panel-wide — face "NEW RECORDING" (sub-less
+                         compact tertiary, box tightened to 240px). Hides once
+                         the start passes (an ad-hoc would always overlap the
+                         running window and 409) — same "started" signal as the
+                         START NOW hide. Same press join as every walk-up entry
+                         (latch 175). -->
+                    <button class="lc-stage-recnow" id="lcConfirmRecNow" onclick="lcOpenWalkup()">
+                        <span>NEW RECORDING</span>
+                    </button>
+                </section>
+
+                <!-- 4 · CONFIRMED — waiting for the automatic start -->
+                <section class="lc-stage-page" id="lcPageConfirmed">
+                    <div class="lc-zone-headline lc-t-headline">Confirmed</div>
+                    <div class="lc-zone-title">
+                        <div class="lc-t-title" id="lcConfirmedTitle">Panel Demo D</div>
+                        <div class="lc-t-body lc-dim" id="lcConfirmedLine">Starts recording automatically at 2:35 PM.</div>
+                    </div>
+                    <div class="lc-zone-big">
+                        <div class="lc-t-big lc-teal">✓</div>
+                    </div>
+                    <div class="lc-zone-actions">
+                        <!-- v4.8 (owner): sub removed — see the CONFIRM page's
+                             START NOW note. Single-line face, same rectangle. -->
+                        <button class="lc-btn-secondary lc-btn-secondary--deck" onclick="lcStartNow()">
+                            <span class="lc-btn-main"><span>START NOW</span></span>
+                        </button>
+                    </div>
+                    <div class="lc-zone-caption lc-t-caption lc-dim">All set. Recording starts on its own.</div>
+                    <!-- v4.6 (owner item D), v4.7 (owner item A), v4.8: same
+                         quiet walk-up escape hatch as the CONFIRM page — face
+                         "NEW RECORDING" (v4.8 unified name), no lamp, 240px box
+                         (same press join — the walk-up latch). -->
+                    <button class="lc-stage-recnow" onclick="lcOpenWalkup()">
+                        <span>NEW RECORDING</span>
+                    </button>
+                </section>
+
+                <!-- 5 · RECORDING -->
+                <section class="lc-stage-page" id="lcPageRec">
+                    <div class="lc-zone-headline lc-t-headline"><span class="lc-live-dot"></span><span>Recording</span></div>
+                    <div class="lc-zone-title">
+                        <div class="lc-t-title" id="lcRecTitle">Panel Demo D</div>
+                        <div class="lc-t-body lc-dim" id="lcRecUntil">Recording until 3:50 PM</div>
+                    </div>
+                    <div class="lc-zone-big">
+                        <div class="lc-t-caption lc-dim">ELAPSED</div>
+                        <div class="lc-t-big" id="lcRecElapsed">0:14:32</div>
+                    </div>
+                    <div class="lc-zone-actions">
+                        <!-- v4.7 (owner items B+C): equal 24px gaps across the
+                             trio (isolation margin retired; the two-step END
+                             popup is the misfire guard) + leading action glyphs
+                             (pause bars / plus / stop square) per the amended
+                             icon policy. -->
+                        <button class="lc-rec-btn" id="lcHoldBtn" onclick="lcHold()">
+                            <span class="lc-btn-main"><span class="lc-btn-ico lc-btn-ico--pause" aria-hidden="true"></span><span id="lcHoldLabel">PAUSE</span></span>
+                        </button>
+                        <button class="lc-rec-btn" id="lcExtendBtn" onclick="lcExtend(this)">
+                            <span class="lc-btn-main"><span class="lc-btn-ico lc-btn-ico--plus" aria-hidden="true"></span><span>ADD 5 MINUTES</span></span>
+                            <span class="lc-btn-note" id="lcExtendNote"></span>
+                        </button>
+                        <button class="lc-rec-btn lc-rec-btn--stop" onclick="lcStop()">
+                            <span class="lc-btn-main"><span class="lc-btn-ico lc-btn-ico--stop" aria-hidden="true"></span><span>END RECORDING</span></span>
+                        </button>
+                    </div>
+                    <div class="lc-zone-caption lc-t-caption lc-dim">Recording what's being sent to the projector and the selected camera view.</div>
+                </section>
+
+                <!-- 6 · RECORDING PAUSED (naming pending user testing: PAUSE vs HOLD — see map) -->
+                <section class="lc-stage-page lc-stage-page--hold" id="lcPageHold">
+                    <!-- v4.1: the ⏸ glyph rides beside the headline (the REC page's
+                         dot-beside-"Recording" pattern); Z3 keeps the ELAPSED hero —
+                         recording continues during pause, so the timer must show. -->
+                    <div class="lc-zone-headline lc-t-headline lc-amber"><span class="lc-pause-glyph">⏸</span><span>Recording paused</span></div>
+                    <div class="lc-zone-title">
+                        <div class="lc-t-title" id="lcHoldClass">Panel Demo D</div>
+                        <!-- v4.11 (as-built sync 2026-07-13, owner): the PAUSED
+                             page KEEPS the REC page's until-line in the Z2-body
+                             slot — it stays true during a pause (the recording
+                             continues, the end time doesn't move). Panel P4 =
+                             the same serial 12 (NowUntil$) feeding both pages.
+                             The old cameras line (v4.7 item D) moved into the
+                             Z5 helper below as its second line. -->
+                        <div class="lc-t-body lc-dim" id="lcHoldUntil">Recording until 3:50 PM</div>
+                    </div>
+                    <div class="lc-zone-big">
+                        <div class="lc-t-caption lc-dim">ELAPSED</div>
+                        <div class="lc-t-big" id="lcHoldElapsed">0:14:32</div>
+                    </div>
+                    <div class="lc-zone-actions">
+                        <!-- v4.10 (as-built sync 2026-07-13, owner 2026-07-12):
+                             the PAUSED trio MIRRORS the REC trio — same three
+                             slots, same classes, so nothing moves on
+                             pause/resume. RESUME (amber, leading play glyph,
+                             short label — owner call) takes PAUSE's slot; ADD 5
+                             MINUTES is KEPT during a hold (the old mock dropping
+                             it was ruled an OVERSIGHT — extend is valid
+                             mid-hold; same extend logic, fit-gate and note as
+                             the REC page's); END RECORDING is identical to the
+                             REC page's (same button identity, v4.7). -->
+                        <button class="lc-rec-btn lc-rec-btn--resume" id="lcResumeBtn" onclick="lcHold()">
+                            <span class="lc-btn-main"><span class="lc-btn-ico lc-btn-ico--play" aria-hidden="true"></span><span id="lcResumeLabel">RESUME</span></span>
+                        </button>
+                        <button class="lc-rec-btn" id="lcHoldExtendBtn" onclick="lcExtend(this)">
+                            <span class="lc-btn-main"><span class="lc-btn-ico lc-btn-ico--plus" aria-hidden="true"></span><span>ADD 5 MINUTES</span></span>
+                            <span class="lc-btn-note" id="lcHoldExtendNote"></span>
+                        </button>
+                        <button class="lc-rec-btn lc-rec-btn--stop" onclick="lcStop()">
+                            <span class="lc-btn-main"><span class="lc-btn-ico lc-btn-ico--stop" aria-hidden="true"></span><span>END RECORDING</span></span>
+                        </button>
+                    </div>
+                    <!-- v4.11 (as-built sync 2026-07-13, owner): the helper
+                         absorbed P4's cameras line (v4.7 item D wording kept)
+                         as line 2 — the Z2-body slot it vacated now carries
+                         the until-line. Two caption lines by design, same as
+                         IDLE/UP NEXT (panel P10: one multiline label). -->
+                    <div class="lc-zone-caption lc-t-caption lc-dim">
+                        <div>The recording continues. Viewers see a pause screen with no audio.</div>
+                        <div>The cameras still work with the room computer.</div>
+                    </div>
+                </section>
+
+                <!-- 8 · RECORDING ENDED — post-stop reassurance, auto-returns -->
+                <section class="lc-stage-page" id="lcPageEnded">
+                    <div class="lc-zone-headline lc-t-headline">Recording ended</div>
+                    <div class="lc-zone-title">
+                        <div class="lc-t-title" id="lcEndedTitle">Panel Demo D</div>
+                        <!-- v4.7 (owner item F): "so you can leave" read dismissive —
+                             "You're all set" carries the walk-away reassurance warmly.
+                             v4.11 (as-built sync 2026-07-13, owner, panel E3): "Find
+                             it in My Media" invited an IMMEDIATE check that fails —
+                             long recordings can take 30+ min to land; never promise
+                             a clock we don't control. -->
+                        <div class="lc-t-body lc-dim">You're all set. The recording uploads to My Media in Canvas once it finishes processing.</div>
+                    </div>
+                    <div class="lc-zone-big">
+                        <div class="lc-t-big lc-teal">✓</div>
+                    </div>
+                    <!-- v4.11 (as-built sync 2026-07-13, owner, panel E5): the line
+                         states the NUMBER — the copy and the dwell timer in
+                         lcShowEnded (30 s, was ~6 s) are COUPLED; change together. -->
+                    <div class="lc-zone-caption lc-zone-caption--z4 lc-t-caption lc-dim">This screen goes back to the schedule in 30 seconds.</div>
+                    <!-- v4.11 (as-built sync 2026-07-13, owner, panel E6): quiet
+                         tertiary dismiss — with the longer 30 s dwell, a
+                         back-to-back incoming instructor must not be blocked from
+                         CONFIRM while the pulse runs. Ghost family look (the
+                         lc-stage-recnow treatment) centered below the return-line
+                         in the Z5 band. Panel: hatch_ghost_240x64 face, press =
+                         155 (SIMPL latch; page vis 116 = AND(EndedPulse_Fb, NOT
+                         latch) — the d91 pattern, no module pin). Mock: ends the
+                         ENDED state immediately, same path as the timer expiry. -->
+                    <button class="lc-ended-back" onclick="lcEndedDismiss()">BACK TO SCHEDULE</button>
+                </section>
+
+                <!-- 7 · WALK-UP page (internal name stays "walk-up"; v4.8
+                     user-visible copy = "New recording", entered via the
+                     NEW RECORDING entries) -->
+                <section class="lc-stage-page" id="lcPageWalkup">
+                    <button class="lc-stage-back" onclick="lcCloseWalkup()">
+                        <span>←</span>
+                        <span>CANCEL</span>
+                    </button>
+                    <div class="lc-zone-headline lc-t-headline">New recording</div>
+                    <div class="lc-zone-form lc-walkup-form">
+                        <div class="lc-field-label lc-t-caption">YOUR FSUID</div>
+                        <div class="lc-field-row">
+                            <input type="text" class="lc-field" id="lcFsuid" placeholder="e.g. lfp24b" autocomplete="off">
+                            <button class="lc-btn-secondary lc-verify-btn" id="lcVerifyBtn" onclick="lcVerify()">VERIFY</button>
+                        </div>
+                        <div class="lc-user-name lc-t-title" id="lcUserName"></div>
+                        <div class="lc-field-label lc-t-caption">TITLE (OPTIONAL)</div>
+                        <input type="text" class="lc-field" id="lcTitle" placeholder="Recording title" autocomplete="off">
+                        <!-- v4.15 (as-shipped sync 2026-07-15): renamed HOW LONG? ->
+                             DURATION OF RECORDING (owner rename at panel build,
+                             2026-07-13 -- "too informal"); + the section-break gap. -->
+                        <div class="lc-field-label lc-t-caption lc-field-label--break">DURATION OF RECORDING</div>
+                        <div class="lc-dur-row">
+                            <button class="lc-dur-btn" onclick="lcPickDuration(this, 30)">30 MIN</button>
+                            <button class="lc-dur-btn" onclick="lcPickDuration(this, 60)">60 MIN</button>
+                            <button class="lc-dur-btn" onclick="lcPickDuration(this, 90)">90 MIN</button>
+                            <button class="lc-dur-btn" id="lcDurCustomBtn" onclick="lcPickCustom()">CUSTOM</button>
+                        </div>
+                        <div class="lc-custom-row lc-hidden" id="lcCustomRow">
+                            <input type="text" inputmode="numeric" class="lc-field" id="lcCustomMin" placeholder="Minutes" autocomplete="off" oninput="lcCustomDuration(this)">
+                            <span class="lc-t-body lc-dim">minutes (1–480)</span>
+                        </div>
+                        <div class="lc-field-error lc-t-caption" id="lcDurError"></div>
+                        <div class="lc-walkup-actions">
+                            <button class="lc-btn-primary lc-btn-primary--form lc-btn-lamp-host" id="lcStartRecBtn" onclick="lcStartWalkup()" disabled>
+                                <span class="lc-btn-lamp"></span>
+                                <span>START RECORDING</span>
+                            </button>
+                        </div>
+                        <div class="lc-walkup-helper lc-t-caption lc-dim" id="lcWalkupHelper">Verify your FSUID and choose a duration first.</div>
+                    </div>
+                </section>
+            </div>
+
+            <!-- THE MONITORING RAIL — everything glanceable-but-passive.
+                 v4.6 order: TODAY card (rows 1–3 fixed, then the SHARED area
+                 where rows 4–8 swap with the on-demand frames — SCREEN above
+                 CAMERA, item A — and the confirm strip at the card's foot) →
+                 CAMERA VIEW card → SHOW PREVIEW toggle → hint line (state-swap,
+                 item B: off = invitation, on = the relocated ~1 fps caveat).
+                 No-reflow rule: the frames region keeps its reserved space in
+                 BOTH states (visibility, not display) — off = clean background,
+                 zero moving elements. Panel build: every object in the frames
+                 region rides PreviewOn_Fb; the lower TODAY rows + the off-hint
+                 ride NOT PreviewOn_Fb; the on-hint rides PreviewOn_Fb. -->
+            <div class="lc-rail">
+                <div class="lc-rail-card lc-rail-card--today">
+                    <div class="lc-rail-title lc-t-caption">TODAY IN THIS ROOM</div>
+                    <!-- v4.4 space-sharing: fixed TOP row boxes, then the SHARED
+                         area where TODAY's lower rows and the preview frames
+                         occupy the SAME space via complementary visibility (the
+                         VT Pro-e overlapping-objects idiom, same as the stage
+                         subpages). The swap happens ONLY on the user's own
+                         SHOW/HIDE PREVIEW press (or the 15 s View burst) -
+                         nothing ever moves. v4.5: the confirm strip is pinned
+                         at the card's BOTTOM edge (after the shared area); its
+                         rectangle stays reserved when hidden. -->
+                    <div class="lc-today lc-today--top" id="lcTodayTop"></div>
+                    <div class="lc-today-shared">
+                        <div class="lc-today lc-today--more" id="lcTodayMore"></div>
+                    <div class="lc-preview-region off" id="lcPreviewRegion">
+                        <div class="lc-preview">
+                            <!-- Top thumb = the CONTENT channel. If the projector
+                                 chain dies mid-class (bulb/scaler), this is the only
+                                 thing in the room proving the slides are still being
+                                 recorded — the Pearl taps content UPSTREAM of the
+                                 projector. v4.6 (owner item A): FIRST, on top.
+                                 v4.10 (as-built sync 2026-07-13): the chip face
+                                 reads CONTENT, not SCREEN (owner rename — clearer:
+                                 it's the projected/computer feed; panel asset
+                                 chip_content_*). Element ids keep the historical
+                                 Screen names — joins/wiring, not user copy. -->
+                            <svg class="lc-preview-scene" viewBox="0 0 360 202" aria-hidden="true">
+                                <rect x="0" y="0" width="360" height="202" fill="#10161c"/>
+                                <rect x="16" y="12" width="328" height="178" rx="5" fill="#22303c" stroke="rgba(255,255,255,0.16)"/>
+                                <rect x="42" y="38" width="150" height="13" rx="4" fill="rgba(206,184,136,0.55)"/>
+                                <rect x="42" y="74" width="222" height="9" rx="4" fill="rgba(255,255,255,0.28)"/>
+                                <rect x="42" y="94" width="190" height="9" rx="4" fill="rgba(255,255,255,0.22)"/>
+                                <rect x="42" y="114" width="206" height="9" rx="4" fill="rgba(255,255,255,0.16)"/>
+                                <rect x="42" y="134" width="142" height="9" rx="4" fill="rgba(255,255,255,0.12)"/>
+                            </svg>
+                            <div class="lc-preview-splash" id="lcSplashScreen" style="display:none">
+                                <span class="lc-preview-splash-glyph">⏸</span>
+                                <span class="lc-preview-splash-text">RECORDING PAUSED</span>
+                            </div>
+                            <span class="lc-preview-chip" id="lcChipScreen">CONTENT</span>
+                        </div>
+                        <div class="lc-preview">
+                            <!-- CAMERA thumb = the CAMERAS channel (the instructor can
+                                 already see the projector; the camera is what they
+                                 can't see). v4.6 (owner item A): SECOND, below SCREEN —
+                                 which lands it directly above the CAMERA VIEW card
+                                 that switches it (better grouping). -->
+                            <svg class="lc-preview-scene" viewBox="0 0 360 202" aria-hidden="true">
+                                    <defs>
+                                        <g id="lcSceneInstructorArt">
+                                            <rect x="0" y="0" width="360" height="202" fill="#141b22"/>
+                                            <rect x="0" y="150" width="360" height="52" fill="#0e1319"/>
+                                            <rect x="28" y="22" width="148" height="90" rx="4" fill="#1d2731" stroke="rgba(255,255,255,0.12)"/>
+                                            <rect x="44" y="38" width="72" height="9" rx="3" fill="rgba(206,184,136,0.4)"/>
+                                            <rect x="44" y="58" width="104" height="6" rx="3" fill="rgba(255,255,255,0.18)"/>
+                                            <rect x="44" y="72" width="88" height="6" rx="3" fill="rgba(255,255,255,0.13)"/>
+                                            <circle cx="250" cy="68" r="16" fill="#d8c9a3"/>
+                                            <path d="M218 124 c6 -38 58 -38 64 0 z" fill="#3f4d5c"/>
+                                            <path d="M212 127 h78 l9 62 h-96 z" fill="#2a2216"/>
+                                            <rect x="204" y="118" width="94" height="9" rx="3" fill="#4a3b26"/>
+                                        </g>
+                                        <g id="lcSceneStudentsArt">
+                                            <rect x="0" y="0" width="360" height="202" fill="#141b22"/>
+                                            <rect x="0" y="150" width="360" height="52" fill="#0e1319"/>
+                                            <path d="M51 112 c2 -11 28 -11 30 0 z" fill="#38424d"/>
+                                            <circle cx="66" cy="98" r="10" fill="#c9b892"/>
+                                            <path d="M133 112 c2 -11 28 -11 30 0 z" fill="#333c46"/>
+                                            <circle cx="148" cy="98" r="10" fill="#b7a98c"/>
+                                            <path d="M215 112 c2 -11 28 -11 30 0 z" fill="#3b4550"/>
+                                            <circle cx="230" cy="98" r="10" fill="#d0c1a0"/>
+                                            <path d="M297 112 c2 -11 28 -11 30 0 z" fill="#353e49"/>
+                                            <circle cx="312" cy="98" r="10" fill="#c2b394"/>
+                                            <rect x="26" y="112" width="308" height="7" rx="3" fill="#222b34"/>
+                                            <path d="M79 164 c3 -15 39 -15 42 0 z" fill="#3d4854"/>
+                                            <circle cx="100" cy="144" r="14" fill="#cdbc96"/>
+                                            <path d="M174 164 c3 -15 39 -15 42 0 z" fill="#37414c"/>
+                                            <circle cx="195" cy="144" r="14" fill="#baa88a"/>
+                                            <path d="M269 164 c3 -15 39 -15 42 0 z" fill="#404b58"/>
+                                            <circle cx="290" cy="144" r="14" fill="#d3c4a2"/>
+                                            <rect x="10" y="164" width="340" height="8" rx="3" fill="#26303a"/>
+                                        </g>
+                                    </defs>
+                                    <rect x="0" y="0" width="360" height="202" fill="#10161c"/>
+                                    <g id="lcCamSceneInstructor"><use href="#lcSceneInstructorArt"/></g>
+                                    <g id="lcCamSceneStudents" style="display:none"><use href="#lcSceneStudentsArt"/></g>
+                                    <g id="lcCamSceneBoth" style="display:none">
+                                        <g transform="translate(0 50.5) scale(0.5)"><use href="#lcSceneInstructorArt"/></g>
+                                        <g transform="translate(180 50.5) scale(0.5)"><use href="#lcSceneStudentsArt"/></g>
+                                        <rect x="179" y="0" width="2" height="202" fill="rgba(255,255,255,0.28)"/>
+                                    </g>
+                                </svg>
+                            <div class="lc-preview-splash" id="lcSplashCamera" style="display:none">
+                                <span class="lc-preview-splash-glyph">⏸</span>
+                                <span class="lc-preview-splash-text">RECORDING PAUSED</span>
+                            </div>
+                            <span class="lc-preview-chip" id="lcChipCamera">CAMERA</span>
+                        </div>
+                        <!-- v4.6 item B: the in-region caveat is GONE — its text now
+                             state-swaps into the hint line under SHOW PREVIEW. -->
+                    </div>
+                    </div>
+                    <button class="lc-next-strip" id="lcNextStrip" onclick="lcNextConfirmOpen()">
+                        <span id="lcNextLine"></span>
+                    </button>
+                </div>
+                <!-- CAMERA VIEW card (owner v4.2 item 7): its own bordered
+                     section matching the TODAY card's anatomy — eyebrow
+                     top-left, purpose caption, then the segmented control
+                     owning the card's full inner width. -->
+                <div class="lc-rail-card lc-rail-card--camera">
+                    <div class="lc-rail-title lc-t-caption">CAMERA VIEW</div>
+                    <div class="lc-cam-caption">Controls the camera for recordings and apps like Zoom.</div>
+                    <div class="lc-cam-seg">
+                        <button class="lc-cam-btn selected" id="lcCamInstructor" onclick="lcCamera(this, 'Instructor')"><span class="lc-seg-check">✓</span><span>Instructor</span></button>
+                        <button class="lc-cam-btn" id="lcCamStudents" onclick="lcCamera(this, 'Students')"><span class="lc-seg-check">✓</span><span>Students</span></button>
+                        <button class="lc-cam-btn" id="lcCamBoth" onclick="lcCamera(this, 'Both')"><span class="lc-seg-check">✓</span><span>Both</span></button>
+                    </div>
+                </div>
+                <!-- SHOW PREVIEW: standalone control OUTSIDE any card. Hint =
+                     ONE reserved line that state-swaps (v4.6 item B): preview
+                     off = the invitation, on = the relocated honesty caveat.
+                     Panel: two overlapping static labels on PreviewOn_Fb and
+                     its existing NOT — zero new joins, nothing moves. -->
+                <button class="lc-preview-toggle" id="lcPreviewToggle" onclick="lcTogglePreview()">SHOW PREVIEW</button>
+                <div class="lc-preview-hintline" id="lcPreviewHint">See what's being recorded.</div>
+            </div>
+        </div>
+
+        <!-- Status line -->
+        <div class="lc-status-bar">
+            <span class="lc-status-dot"></span>
+            <span class="lc-t-caption" id="lcStatus">Online · Ready</span>
+        </div>
+
+        <!-- End-recording confirmation (error prevention on STOP).
+             v4.12 (as-built sync 2026-07-13, owner): the backdrop is
+             TAP-TO-DISMISS on all three LC popups, always via the popup's
+             SAFE path (here = KEEP RECORDING: just close). Panel (field
+             guide §8.5a + package E-1): the scrim is a full-screen
+             Advanced Button (style "321 Transparent Advanced") pressing
+             the popup latch, and the modal card is a PRESSLESS button
+             that swallows misclicks — mock: the e.target guard in
+             lcScrimDismiss is that card (card-body clicks do nothing). -->
+        <div class="lc-stop-modal" id="lcStopModal" onclick="lcScrimDismiss(event, this, lcStopCancel)">
+            <div class="modal-content">
+                <div class="modal-message">
+                    <div class="modal-title lc-t-title">End recording?</div>
+                    <div class="modal-text lc-t-body" id="lcStopModalText">Panel Demo D is still recording.</div>
+                </div>
+                <div class="modal-buttons">
+                    <button class="modal-btn modal-btn-no" onclick="lcStopCancel()">KEEP RECORDING</button>
+                    <button class="modal-btn modal-btn-yes" onclick="lcStopConfirm()">END RECORDING</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Next-class confirm (2nd tap of the strip — prevents
+             mid-lecture fat-fingers; names the class so it can't be
+             mistaken for an action on the CURRENT recording).
+             v4.12: backdrop tap = the NOT NOW path (close, never
+             confirm) — see the stop popup's scrim note. -->
+        <div class="lc-stop-modal lc-next-modal" id="lcNextModal" onclick="lcScrimDismiss(event, this, lcNextConfirmCancel)">
+            <div class="modal-content">
+                <div class="modal-message">
+                    <div class="modal-title lc-t-title" id="lcNextModalTitle">Record ENT 4934 at 11:00?</div>
+                    <!-- v4.12 (as-built sync 2026-07-13, owner "copy A", panel
+                         N3): the person pressing CONFIRM here is MID-RECORDING
+                         for another class — line 2 kills the only-here "will
+                         this break what's running?" worry, which no other
+                         surface can address. Replaces the single-line "Once
+                         you confirm, it records automatically when it starts." -->
+                    <div class="modal-text lc-t-body">
+                        <div>It starts on its own at the scheduled time.</div>
+                        <div>The recording running now is not affected.</div>
+                    </div>
+                </div>
+                <div class="modal-buttons">
+                    <button class="modal-btn modal-btn-no" onclick="lcNextConfirmCancel()">NOT NOW</button>
+                    <button class="modal-btn lc-modal-btn-gold" onclick="lcNextConfirmYes()">CONFIRM</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- HELP overlay (panel-local subpage, zero module joins).
+             v4.6 (owner item C): SECTIONED for scannability — a state-
+             contextual THIS SCREEN block on top, then short titled blocks
+             (22px CAPS gold eyebrow + 26px sentence-case body, 1-2 lines).
+             Panel build: the contextual block = 8 stacked static labels
+             INSIDE this help subpage, one per kiosk state, each riding the
+             EXISTING State*_Fb visibility digitals directly (children of a
+             subpage only render while the subpage is shown) — ZERO new
+             joins, ZERO new SIMPL logic; walk-up rides its panel-local
+             latch. v4.12: backdrop tap = the CLOSE path — see the stop
+             popup's scrim note. -->
+        <div class="lc-stop-modal lc-help-modal" id="lcHelpModal" onclick="lcScrimDismiss(event, this, lcHelpClose)">
+            <div class="modal-content">
+                <div class="modal-message">
+                    <div class="modal-title lc-t-title">How Lecture Capture works</div>
+                </div>
+                <div class="lc-help-secs">
+                    <div class="lc-help-sec lc-help-sec--context">
+                        <div class="lc-help-sec-title lc-t-caption">THIS SCREEN</div>
+                        <!-- v4.13 (owner 2026-07-13): static seed synced to the
+                             Q4 idle line (lcHelpContextUpdate overwrites this at
+                             runtime; the seed just mustn't carry retired copy). -->
+                        <div class="lc-help-sec-body lc-t-body" id="lcHelpContext">Nothing is scheduled right now. NEW RECORDING is for recording without a schedule.</div>
+                    </div>
+                    <div class="lc-help-sec">
+                        <div class="lc-help-sec-title lc-t-caption">WHAT GETS RECORDED</div>
+                        <!-- v4.14 (owner-authored 2026-07-13, panel Q14,
+                             build-verified 2-liner): the Zoom clause was
+                             RE-HOMED — the CAMERA VIEW card's own hint line
+                             already says "Controls the camera for recordings
+                             and apps like Zoom." The LEFT-projector fact is
+                             universally true (same-source rooms included);
+                             LEFT stays ALL-CAPS for glanceability. -->
+                        <div class="lc-help-sec-body lc-t-body">The content sent to the projector, plus the selected camera view. Or the content sent to the LEFT projector, if the room has multiple.</div>
+                    </div>
+                    <div class="lc-help-sec">
+                        <div class="lc-help-sec-title lc-t-caption">SCHEDULED RECORDINGS</div>
+                        <div class="lc-help-sec-body lc-t-body">They record only after you press CONFIRM. Missed the start? You can still confirm and record from that moment on.</div>
+                    </div>
+                    <div class="lc-help-sec">
+                        <div class="lc-help-sec-title lc-t-caption">WHERE RECORDINGS GO</div>
+                        <!-- v4.7 (owner item E): FSU's Canvas course nav labels it
+                             "Course Media", not "Media Gallery". The review-and-
+                             publish qualifier is load-bearing honesty (gallery
+                             adds land PENDING) — never shorten it.
+                             v4.14 (owner rewrite 2026-07-13, panel Q18,
+                             build-verified 2-liner): "as pending" now states
+                             the literal PENDING moderation state outright,
+                             strengthening that honesty. -->
+                        <div class="lc-help-sec-body lc-t-body">Recordings upload to My Media in Canvas. Scheduled ones also show up as pending in Course Media for you to review and publish.</div>
+                    </div>
+                    <div class="lc-help-sec">
+                        <div class="lc-help-sec-title lc-t-caption">QUESTIONS?</div>
+                        <div class="lc-help-sec-body lc-t-body">Contact classroom support: (support contact here).</div>
+                    </div>
+                </div>
+                <button class="lc-btn-primary lc-help-close" onclick="lcHelpClose()">CLOSE</button>
+            </div>
+        </div>
+
+        <!-- Dev-only state preview (NOT part of the panel UI) -->
+        <div class="lc-dev-strip">
+            <span class="demo-label">⚠ DEMO ONLY - STATE PREVIEW:</span>
+            <button class="lc-dev-btn" onclick="lcSetState('idle', this)">IDLE</button>
+            <button class="lc-dev-btn" onclick="lcSetState('upnext', this)">UP NEXT</button>
+            <button class="lc-dev-btn active" onclick="lcSetState('confirm', this)">CONFIRM</button>
+            <button class="lc-dev-btn" onclick="lcSetState('confirm-started', this)">CONF-STARTED</button>
+            <button class="lc-dev-btn" onclick="lcSetState('confirmed', this)">CONFIRMED</button>
+            <button class="lc-dev-btn" onclick="lcSetState('recording', this)">RECORDING</button>
+            <button class="lc-dev-btn" onclick="lcSetState('holding', this)">HOLDING</button>
+            <button class="lc-dev-btn" onclick="lcSetState('ended', this)">ENDED</button>
+            <button class="lc-dev-btn" onclick="lcSetState('walkup', this)">WALK-UP</button>
+        </div>
+    </div>
+
+    <!-- Help System -->
+    <div class="help-overlay" id="helpOverlay">
+        <div class="help-modal">
+            <!-- Help Header -->
+            <div class="help-header">
+                <button class="help-back-btn" id="helpBackBtn" onclick="closeHelp()">
+                    <span>←</span>
+                    <span>BACK</span>
+                </button>
+                <h1 class="help-title">HELP CENTER</h1>
+                <button class="help-close-btn" onclick="closeHelp()">✕</button>
+            </div>
+
+            <!-- Main Help Content - Common Tasks -->
+            <div class="help-content" id="helpMainContent">
+                <h2 class="help-section-title">COMMON TASKS</h2>
+                <div class="help-tasks-grid">
+                    <button class="help-task-btn" onclick="showTaskDetail('project')">
+                        <img src="Icons/ProjectIcon.png" alt="Project" class="help-task-icon">
+                        <span class="help-task-text">How to Project Content</span>
+                    </button>
+                    <button class="help-task-btn" onclick="showTaskDetail('record')">
+                        <img src="Icons/CameraIcon.png" alt="Record" class="help-task-icon">
+                        <span class="help-task-text">Record Your Lecture</span>
+                    </button>
+                </div>
+
+                <button class="help-guidebook-btn" onclick="showGuidebook()">
+                    <img src="Icons/Book.png" alt="Guidebook">
+                    <span>ICON GUIDEBOOK</span>
+                </button>
+            </div>
+
+            <!-- Task Detail View -->
+            <div class="help-task-detail" id="helpTaskDetail" style="display: none;">
+                <h2 class="help-detail-title" id="taskDetailTitle">How to Project Content</h2>
+                <div class="help-detail-content">
+                    <div class="help-detail-steps" id="taskDetailSteps">
+                        <!-- Steps will be inserted here by JavaScript -->
+                    </div>
+                    <div class="help-detail-visual">
+                        <div class="help-gif-placeholder" id="taskDetailGif">
+                            <span>Animation Coming Soon</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Icon Guidebook View -->
+            <div class="help-guidebook" id="helpGuidebook" style="display: none;">
+                <h2 class="help-section-title">ICON GUIDEBOOK</h2>
+                <div class="help-guidebook-grid">
+                    <!-- Input Sources -->
+                    <div class="help-guidebook-section">
+                        <h3 class="help-guidebook-section-title">Input Sources</h3>
+                        <div class="help-icon-item">
+                            <img src="Icons/DeskTopIcon.png" alt="Desktop" class="help-icon">
+                            <div class="help-icon-text">
+                                <span class="help-icon-name">DESKTOP PC</span>
+                                <span class="help-icon-desc">Built-in classroom computer</span>
+                            </div>
+                        </div>
+                        <div class="help-icon-item">
+                            <img src="Icons/DocCamIcon.svg" alt="Doc Cam" class="help-icon">
+                            <div class="help-icon-text">
+                                <span class="help-icon-name">DOC CAM</span>
+                                <span class="help-icon-desc">Document camera to show physical documents, books, or objects to students</span>
+                            </div>
+                        </div>
+                        <div class="help-icon-item">
+                            <img src="Icons/LaptopIcon.webp" alt="Laptop" class="help-icon">
+                            <div class="help-icon-text">
+                                <span class="help-icon-name">LAPTOP HDMI / USB-C</span>
+                                <span class="help-icon-desc">Use the HDMI or USB-C cable at the teaching station to connect your laptop</span>
+                            </div>
+                        </div>
+                        <div class="help-icon-item">
+                            <img src="Icons/WirelessIcon.png" alt="Wireless" class="help-icon">
+                            <div class="help-icon-text">
+                                <span class="help-icon-name">WIRELESS STREAM</span>
+                                <span class="help-icon-desc">Share your screen wirelessly from your device without any cables</span>
+                            </div>
+                        </div>
+                        <div class="help-icon-item">
+                            <img src="Icons/CameraIcon.png" alt="Camera" class="help-icon">
+                            <div class="help-icon-text">
+                                <span class="help-icon-name">CAMERA PRESETS</span>
+                                <span class="help-icon-desc">Room camera with saved angles. Use these to quickly switch between views</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Screen Controls -->
+                    <div class="help-guidebook-section">
+                        <h3 class="help-guidebook-section-title">Screen Controls</h3>
+                        <div class="help-icon-item">
+                            <img src="Icons/LeftPreviewIcon.png" alt="Preview" class="help-icon">
+                            <div class="help-icon-text">
+                                <span class="help-icon-name">PREVIEW</span>
+                                <span class="help-icon-desc">Check what content looks like on your screen before students can see it</span>
+                            </div>
+                        </div>
+                        <div class="help-icon-item">
+                            <img src="Icons/ProjectIcon.png" alt="Project" class="help-icon">
+                            <div class="help-icon-text">
+                                <span class="help-icon-name">PROJECT</span>
+                                <span class="help-icon-desc">Show your content on the projectors around the room</span>
+                            </div>
+                        </div>
+                        <div class="help-icon-item">
+                            <img src="Icons/HideRightLeftIcon.png" alt="Projector Mute" class="help-icon">
+                            <div class="help-icon-text">
+                                <span class="help-icon-name">PROJECTOR MUTE</span>
+                                <span class="help-icon-desc">Blank both projectors while you work in private. Press again to unmute</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Power & Recording -->
+                    <div class="help-guidebook-section">
+                        <h3 class="help-guidebook-section-title">Power &amp; Recording</h3>
+                        <div class="help-icon-item">
+                            <img src="Icons/PowerIcon.webp" alt="Power" class="help-icon">
+                            <div class="help-icon-text">
+                                <span class="help-icon-name">POWER</span>
+                                <span class="help-icon-desc">Turn all projectors on or off</span>
+                            </div>
+                        </div>
+                        <div class="help-icon-item">
+                            <div class="help-icon-play">▶</div>
+                            <div class="help-icon-text">
+                                <span class="help-icon-name">START CLASS</span>
+                                <span class="help-icon-desc">Quickly power on, select desktop, preview on all screens, and project to all screens - all in one click</span>
+                            </div>
+                        </div>
+                        <div class="help-icon-item">
+                            <div class="help-icon-play">⏺</div>
+                            <div class="help-icon-text">
+                                <span class="help-icon-name">LECTURE CAPTURE</span>
+                                <span class="help-icon-desc">Confirm your scheduled recording, start a new recording, or control a recording in progress</span>
+                            </div>
+                        </div>
+                        <div class="help-icon-item">
+                            <img src="Icons/Unmuted.png" alt="Mute Toggle" class="help-icon">
+                            <div class="help-icon-text">
+                                <span class="help-icon-name">MUTE</span>
+                                <span class="help-icon-desc">The speaker icons below the volume sliders toggle between muted and unmuted. Click to switch between the two states</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="dif.js"></script>
+</body>
+</html>
