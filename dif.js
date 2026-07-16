@@ -735,8 +735,9 @@ const lc = {
     customMode: false,
     camera: 'Instructor',
     previewOn: false,       // on-demand rail preview (PreviewShow/PreviewOn_Fb)
-    previewBurst: null,     // camera-press burst timer (~15 s, module behavior)
-    previewTimeout: null    // v4.15: manual-toggle auto-close (~1 min, module gPvTimeout)
+    previewTimeout: null    // v4.17: THE one auto-close timer (~3 min, module gPvTimeout) —
+                            // the ~15 s camera-press burst is RETIRED (module v10.11: it lied
+                            // under the "Closes after 3 minutes." hint; every open = one timer)
 };
 
 // Known demo directory for the walk-up login
@@ -792,12 +793,32 @@ function lcFmtCountdown(ms) {
     return lcFmtDurMin(Math.floor(ms / 60000));
 }
 
-// Status line: a human sentence, newest fact first, no log framing.
-// "Online · Recording started at 8:18 AM" — withTime=false for facts
-// that aren't a moment (schedule freshness, prompts).
-function lcStatus(action, withTime = true) {
-    const el = document.getElementById('lcStatus');
-    el.textContent = `Online · ${action}${withTime ? ` at ${lcFmtClock(new Date())}` : ''}`;
+// Status line = HOLD + BASELINE (v4.18, as-shipped sync 2026-07-16 —
+// module v10.9 PostStatus / v10.10 20 s hold). A transient message owns
+// the line PLAIN (no "Online ·" prefix, no timestamp — the module never
+// stamps times) for ~20 s, then the BASELINE reclaims it: "Online ·
+// Recording until 3:50 PM" / "Online · Next recording at 2:35 PM" /
+// "Online · Ready". A new post always replaces immediately — the hold
+// only delays the baseline's return.
+let lcStatusHold = null;
+function lcBaseline() {
+    if (lc.recording) {
+        return lc.recEnd ?
+            `Online · Recording until ${lcFmtClock(lc.recEnd)}` :
+            'Online · Recording';
+    }
+    if (lc.upcoming.length > 0) {
+        return `Online · Next recording at ${lcFmtClock(lc.upcoming[0].start)}`;
+    }
+    return 'Online · Ready';
+}
+function lcStatus(action) {
+    document.getElementById('lcStatus').textContent = action;
+    if (lcStatusHold) clearTimeout(lcStatusHold);
+    lcStatusHold = setTimeout(() => {
+        lcStatusHold = null;
+        document.getElementById('lcStatus').textContent = lcBaseline();
+    }, 20000);
 }
 
 // Class title shortened to fit the ONE-line next-class strip
@@ -824,10 +845,6 @@ function lcSetState(state, devBtn) {
         clearTimeout(lc.endedTimer);
         lc.endedTimer = null;
     }
-    if (lc.previewBurst) {
-        clearTimeout(lc.previewBurst);
-        lc.previewBurst = null;
-    }
     if (lc.previewTimeout) {
         clearTimeout(lc.previewTimeout);
         lc.previewTimeout = null;
@@ -839,14 +856,14 @@ function lcSetState(state, devBtn) {
 
     if (state === 'idle') {
         lc.upcoming = [];
-        lcStatus('Schedule up to date. No more scheduled recordings today', false);
+        lcStatus('Schedule up to date. No more scheduled recordings today');
     } else if (state === 'upnext') {
         lc.upcoming = [
             { title: 'Panel Demo D', start: mins(95), end: mins(170) },
             { title: 'ENT 4934-0001 - Seminole, Sam', start: mins(185), end: mins(260) },
             { title: 'MAN 5721-0001 - Holmes, Robert', start: mins(300), end: mins(375) }
         ];
-        lcStatus('Schedule up to date', false);
+        lcStatus('Schedule up to date');
     } else if (state === 'confirm' || state === 'confirmed') {
         lc.confirmable = true;
         lc.confirmed = (state === 'confirmed');
@@ -858,7 +875,7 @@ function lcSetState(state, devBtn) {
             { title: 'BSC 2010-0002 - Darwin, Charles', start: mins(410), end: mins(485) }
         ];
         lcStatus(state === 'confirmed' ?
-            'Confirmed. Panel Demo D records automatically' : 'Panel Demo D is ready to confirm', false);
+            'Confirmed. Panel Demo D records automatically' : 'Panel Demo D is ready to confirm');
     } else if (state === 'confirm-started') {
         // Owner v4.1 item 1: the confirm window with the class start
         // already PASSED — START NOW hides (a mid-window CONFIRM records
@@ -870,7 +887,7 @@ function lcSetState(state, devBtn) {
             { title: 'ENT 4934-0001 - Seminole, Sam', start: mins(110), end: mins(185) },
             { title: 'MAN 5721-0001 - Holmes, Robert', start: mins(225), end: mins(300) }
         ];
-        lcStatus('Panel Demo D has started. Nothing is recorded until you confirm', false);
+        lcStatus('Panel Demo D has started. Nothing is recorded until you confirm');
     } else if (state === 'recording' || state === 'holding') {
         lc.recording = true;
         lc.nowTitle = 'Panel Demo D';
@@ -891,7 +908,7 @@ function lcSetState(state, devBtn) {
         if (state === 'holding') {
             lc.hold = 2;
             lc.confirmed = true;
-            lcStatus('Recording paused. Viewers see the pause screen', false);
+            lcStatus('Recording paused. Viewers see the pause screen');
         } else {
             lcStatus('Recording started');
         }
@@ -911,7 +928,7 @@ function lcSetState(state, devBtn) {
             { title: 'Panel Demo D', start: mins(95), end: mins(170) },
             { title: 'ENT 4934-0001 - Seminole, Sam', start: mins(185), end: mins(260) }
         ];
-        lcStatus('New recording. Verify your FSUID to begin', false);
+        lcStatus('New recording. Verify your FSUID to begin');
     }
 
     if (devBtn) {
@@ -1001,7 +1018,7 @@ function lcExtend(element) {
     lc.recEnd = new Date(lc.recEnd.getTime() + 5 * 60000);
     element.classList.add('flash');
     setTimeout(() => element.classList.remove('flash'), 300);
-    lcStatus(`Recording extended to ${lcFmtClock(lc.recEnd)}`, false);
+    lcStatus('Extended +5 min')   // v4.18: the module's exact string;
     showModeToast('Recording extended 5 minutes');
     lcRender();
 }
@@ -1013,12 +1030,22 @@ function lcHold() {
         // Engage: splash + mute while transitioning
         lc.hold = 1;
         lc.holdEngaging = true;
-        lcStatus('Pausing recording…', false);
+        lcStatus('Pausing recording…');
         lcRender();
         setTimeout(() => {
             if (lc.hold === 1 && lc.holdEngaging && lc.recording) {
                 lc.hold = 2;
-                lcStatus('Recording paused. Viewers see the pause screen', false);
+                lcStatus('Recording paused. Viewers see the pause screen');
+                // v4.18 (module v10.10 paused AUTO-SHOW): the CONFIRMED pause
+                // opens the previews on the one 3-min timer — visual proof the
+                // splash is really up. Fires on confirm, never on the press.
+                lc.previewOn = true;
+                if (lc.previewTimeout) clearTimeout(lc.previewTimeout);
+                lc.previewTimeout = setTimeout(() => {
+                    lc.previewTimeout = null;
+                    lc.previewOn = false;
+                    lcRender();
+                }, 180000);
                 lcRender();
             }
         }, 1500);
@@ -1219,7 +1246,7 @@ function lcVerify() {
     verifyBtn.classList.remove('selected');
     verifyBtn.textContent = 'VERIFY';
     document.getElementById('lcUserName').textContent = 'Checking...';
-    lcStatus('Checking FSUID...', false);
+    lcStatus('Checking FSUID...');
     lcUpdateWalkupReady();
 
     setTimeout(() => {
@@ -1255,8 +1282,10 @@ function lcPickCustom() {
     lc.duration = null;
     document.getElementById('lcCustomRow').classList.remove('lc-hidden');
     document.getElementById('lcDurError').textContent = '';
+    // v4.18: NO auto-focus — matches the panel (Set Focus On removed
+    // 2026-07-15, owner call: a keyboard must never pop over the form
+    // uninvited; the user taps the field themselves).
     const field = document.getElementById('lcCustomMin');
-    field.focus();
     if (field.value.trim() !== '') {
         lcCustomDuration(field);   // re-validate leftover text
     }
@@ -1284,7 +1313,7 @@ function lcCustomDuration(field) {
     if (!/^\d+$/.test(raw) || parseInt(raw, 10) < 1 || parseInt(raw, 10) > 480) {
         lc.duration = null;
         field.style.borderColor = 'var(--c-yellow)';
-        errorEl.textContent = 'whole minutes 1-480 only';
+        errorEl.textContent = 'Whole minutes 1-480 only';
         lcUpdateWalkupReady();
         return;
     }
@@ -1321,7 +1350,7 @@ function lcStartWalkup() {
         if (freeS >= 60) freeMin = Math.floor(Math.min(freeS, 28800) / 60);
         document.getElementById('lcDurError').textContent = freeMin > 0 ?
             `Only ${lcFmtDurMin(freeMin)} free before the next scheduled recording` :
-            'The next scheduled recording starts in a moment';
+            'Too close to the next scheduled recording';
         return;
     }
 
@@ -1366,30 +1395,25 @@ function lcCamera(element, view) {
     element.classList.add('selected');
     lc.camera = view;
     lcStatus(`Camera view set to ${view}`);
-    // Module behavior (v10.4): a view press with the preview closed
-    // opens a short automatic burst so the change is visibly confirmed.
-    if (!lc.previewOn) {
-        lc.previewOn = true;
-        if (lc.previewBurst) clearTimeout(lc.previewBurst);
-        lc.previewBurst = setTimeout(() => {
-            lc.previewBurst = null;
-            lc.previewOn = false;
-            lcRender();
-        }, 15000);
-    }
+    // Module behavior (v10.11): a view press opens the preview on THE one
+    // 3-minute timer (the old ~15 s burst is retired — it lied under the
+    // "Closes after 3 minutes." hint). An already-open preview refreshes.
+    lc.previewOn = true;
+    if (lc.previewTimeout) clearTimeout(lc.previewTimeout);
+    lc.previewTimeout = setTimeout(() => {
+        lc.previewTimeout = null;
+        lc.previewOn = false;
+        lcRender();
+    }, 180000);
     lcRender();                   // the CAMERA thumb shows the new view
 }
 
 // LIVE PREVIEW on demand (PreviewShow / PreviewOn_Fb). A press on the
-// lit toggle ALWAYS closes (v10.4 rule) — including during a view-burst.
-// v4.15 (as-shipped sync 2026-07-15, module gPvTimeout): an OPEN preview
-// auto-closes after 1 minute (was 3 min) — the panel hint's "Closes after
-// a minute." is COUPLED to this timer.
+// lit toggle ALWAYS closes (v10.4 rule). v4.17 (module v10.11): every
+// open — toggle, camera press, pause auto-show — runs THE one 3-minute
+// timer; the panel hint's "Closes after 3 minutes." is COUPLED and now
+// true on every path.
 function lcTogglePreview() {
-    if (lc.previewBurst) {
-        clearTimeout(lc.previewBurst);
-        lc.previewBurst = null;
-    }
     lc.previewOn = !lc.previewOn;
     if (lc.previewOn) {
         if (lc.previewTimeout) clearTimeout(lc.previewTimeout);
@@ -1397,14 +1421,14 @@ function lcTogglePreview() {
             lc.previewTimeout = null;
             lc.previewOn = false;
             lcRender();
-        }, 60000);
+        }, 180000);
     } else if (lc.previewTimeout) {
         clearTimeout(lc.previewTimeout);
         lc.previewTimeout = null;
     }
     // v4.15: the module streams live RTSP now (not a ~1 fps JPEG poll) —
     // the status line follows the hint line's honesty update below.
-    lcStatus(lc.previewOn ? 'Preview on. Live view, closes after a minute' : 'Preview off', false);
+    lcStatus(lc.previewOn ? 'Preview on. Live view, closes after 3 minutes' : 'Preview off');
     lcRender();
 }
 
@@ -1501,6 +1525,11 @@ function lcRenderToday() {
 }
 
 function lcRender() {
+    // v4.18: the module's 1 s baseline composer — when no transient hold
+    // is running, every state change re-owns the status line immediately.
+    if (!lcStatusHold) {
+        document.getElementById('lcStatus').textContent = lcBaseline();
+    }
     // Flip the stage wholesale to the current state's page
     const page = lcCurrentPage();
     LC_PAGES.forEach(id =>
@@ -1585,7 +1614,7 @@ function lcRender() {
     // the thumbs are now live RTSP video, not a ~1 fps JPEG poll, so the
     // caveat becomes the auto-close notice (COUPLED to the 1-minute timer).
     document.getElementById('lcPreviewHint').textContent = lc.previewOn ?
-        'Live view. Closes after a minute.' :
+        'Live view. Closes after 3 minutes.' :
         "See what's being recorded.";
     // v4.4 space-sharing: TODAY's lower rows swap with the frames
     // (complementary visibility — the same NOT PreviewOn_Fb signal).
