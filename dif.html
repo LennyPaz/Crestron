@@ -77,10 +77,6 @@
       }
       .lecture-capture-overlay .fsu-logo { visibility: hidden; }
 
-      /* v4.20 (owner): the v4.19 thin ::after border is RETIRED — "match the
-         pause" means the FULL treatment, not a pinstripe. See
-         .lc-stage-page--rec below (the red twin of --hold). */
-
       .lecture-capture-overlay.active {
         display: flex;
       }
@@ -219,16 +215,6 @@
                                          fields overflow the cell downward into
                                          the stage's empty lower frame, never
                                          upward into the Z1 headline band */
-      }
-
-      /* v4.24 (owner): RECORDING = the running row's red FILL (--c-red at
-         0.3) layered over the existing card. Border stays the normal frame
-         (owner removed the red border — the fill alone carries the state).
-         Panel: ONE Fill Border over the stage card, vis join 114. */
-      .lc-stage-page--rec {
-        background:
-          linear-gradient(rgba(166, 25, 46, 0.3), rgba(166, 25, 46, 0.3)),
-          var(--surface-card-faint);
       }
 
       /* Amber variant for RECORDING ON HOLD */
@@ -2127,7 +2113,7 @@
                 </section>
 
                 <!-- 5 · RECORDING -->
-                <section class="lc-stage-page lc-stage-page--rec" id="lcPageRec">
+                <section class="lc-stage-page" id="lcPageRec">
                     <div class="lc-zone-headline lc-t-headline"><span class="lc-live-dot"></span><span>Recording</span></div>
                     <div class="lc-zone-title">
                         <div class="lc-t-title" id="lcRecTitle">Panel Demo D</div>
