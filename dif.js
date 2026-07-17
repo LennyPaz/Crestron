@@ -735,7 +735,7 @@ const lc = {
     customMode: false,
     camera: 'Instructor',
     previewOn: false,       // on-demand rail preview (PreviewShow/PreviewOn_Fb)
-    previewTimeout: null    // v4.17: THE one auto-close timer (~3 min, module gPvTimeout) —
+    previewTimeout: null    // v4.17: THE one auto-close timer (~1 min, module gPvTimeout (v4.25)) —
                             // the ~15 s camera-press burst is RETIRED (module v10.11: it lied
                             // under the "Closes after 3 minutes." hint; every open = one timer)
 };
@@ -1045,7 +1045,7 @@ function lcHold() {
                     lc.previewTimeout = null;
                     lc.previewOn = false;
                     lcRender();
-                }, 180000);
+                }, 60000);
                 lcRender();
             }
         }, 1500);
@@ -1396,7 +1396,7 @@ function lcCamera(element, view) {
     lc.camera = view;
     lcStatus(`Camera view set to ${view}`);
     // Module behavior (v10.11): a view press opens the preview on THE one
-    // 3-minute timer (the old ~15 s burst is retired — it lied under the
+    // one-minute timer (v4.25) (the old ~15 s burst is retired — it lied under the
     // "Closes after 3 minutes." hint). An already-open preview refreshes.
     lc.previewOn = true;
     if (lc.previewTimeout) clearTimeout(lc.previewTimeout);
@@ -1404,7 +1404,7 @@ function lcCamera(element, view) {
         lc.previewTimeout = null;
         lc.previewOn = false;
         lcRender();
-    }, 180000);
+    }, 60000);
     lcRender();                   // the CAMERA thumb shows the new view
 }
 
@@ -1421,14 +1421,14 @@ function lcTogglePreview() {
             lc.previewTimeout = null;
             lc.previewOn = false;
             lcRender();
-        }, 180000);
+        }, 60000);
     } else if (lc.previewTimeout) {
         clearTimeout(lc.previewTimeout);
         lc.previewTimeout = null;
     }
     // v4.15: the module streams live RTSP now (not a ~1 fps JPEG poll) —
     // the status line follows the hint line's honesty update below.
-    lcStatus(lc.previewOn ? 'Preview on. Live view, closes after 3 minutes' : 'Preview off');
+    lcStatus(lc.previewOn ? 'Preview on. Live view, closes after a minute' : 'Preview off');
     lcRender();
 }
 
@@ -1534,6 +1534,8 @@ function lcRender() {
     const page = lcCurrentPage();
     LC_PAGES.forEach(id =>
         document.getElementById(id).classList.toggle('active', id === page));
+    // (v4.20: the v4.19 lc-rec-live border toggle is retired — the REC page
+    // carries its red treatment as a page variant class, same as --hold.)
 
     const next = lc.upcoming[0] || null;
 
@@ -1614,7 +1616,7 @@ function lcRender() {
     // the thumbs are now live RTSP video, not a ~1 fps JPEG poll, so the
     // caveat becomes the auto-close notice (COUPLED to the 1-minute timer).
     document.getElementById('lcPreviewHint').textContent = lc.previewOn ?
-        'Live view. Closes after 3 minutes.' :
+        'Live view. Closes after a minute.' :
         "See what's being recorded.";
     // v4.4 space-sharing: TODAY's lower rows swap with the frames
     // (complementary visibility — the same NOT PreviewOn_Fb signal).
