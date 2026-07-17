@@ -1152,7 +1152,11 @@ function lcHelpContextText() {
     if (page === 'lcPageUpNext')
         // v4.13 (owner-picked verbatim, 2026-07-13; package Q5 amended
         // the same day).
-        return 'CONFIRM appears here 30 minutes before the scheduled start. NEW RECORDING lets you record now, no schedule needed.';
+        // v4.26 (owner copy pass, reader-first): countdown-framed -- the page
+        // shows a countdown, so the button's arrival is stated in its units
+        // (the old "30 minutes before" promised a moment the floor-rounded
+        // countdown never displays; it flips at a visible 29).
+        return 'CONFIRM appears here when LESS than 30 minutes remain. NEW RECORDING lets you record now, no schedule needed.';
     if (page === 'lcPageConfirm')
         return started ?
             'The scheduled start has passed. CONFIRM starts recording right away.' :
