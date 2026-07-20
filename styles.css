@@ -130,11 +130,6 @@ body {
   transition: all var(--t-fast);
 }
 
-.fsu-logo img:hover {
-  transform: scale(1.05);
-  filter: brightness(1.1);
-}
-
 .building-info {
   display: flex;
   flex-direction: column;
@@ -152,11 +147,6 @@ body {
   line-height: 1;
   cursor: pointer;
   transition: all var(--t-fast);
-}
-
-.building-name:hover {
-  color: var(--c-gold-500);
-  text-shadow: 0 0 10px rgba(206, 184, 136, 0.5);
 }
 
 .time-display {
@@ -183,11 +173,6 @@ body {
   gap: 0.375rem;
   justify-self: end;
   height: fit-content;
-}
-
-.start-class-btn:hover {
-  box-shadow: var(--shadow-xl);
-  filter: brightness(1.05);
 }
 
 .start-class-btn:active {
@@ -312,10 +297,6 @@ body {
   transition: transform var(--t-fast);
 }
 
-.screen:hover {
-  box-shadow: 0 0 15px rgba(92, 184, 178, 0.4);
-}
-
 .screen img {
   width: 100%;
   height: 100%;
@@ -427,11 +408,6 @@ body {
   transition: all var(--t-fast);
   box-shadow: var(--shadow-sm);
   border: 2px solid transparent;
-}
-
-.light-btn:hover {
-  box-shadow: var(--shadow-md);
-  filter: brightness(1.05);
 }
 
 .light-btn:active {
@@ -566,16 +542,6 @@ body {
   border: 2px solid transparent;
 }
 
-.source-btn:hover,
-.camera-btn:hover,
-.control-btn:hover,
-.audio-btn:hover,
-.power-btn:hover,
-.projector-control-btn:hover {
-  box-shadow: var(--shadow-md);
-  filter: brightness(1.05);
-}
-
 .source-btn {
   font-size: 0.625rem;
   padding: 0.25rem;
@@ -583,10 +549,6 @@ body {
   text-align: center;
   min-height: 0;
   height: auto;
-}
-
-.source-btn:hover {
-  background: rgba(255, 255, 255, 0.95);
 }
 
 .source-btn:active {
@@ -700,10 +662,6 @@ body {
   text-align: center;
   min-height: 0;
   height: 100%;
-}
-
-.control-btn:hover {
-  background: rgba(255, 255, 255, 0.95);
 }
 
 .control-btn:active {
@@ -873,15 +831,6 @@ body {
   gap: 0.375rem;
 }
 
-.doccam-option-btn:hover,
-.project-option-btn:hover,
-.hide-option-btn:hover,
-.freeze-option-btn:hover {
-  box-shadow: var(--shadow-md);
-  background: rgba(255, 255, 255, 0.95);
-  filter: brightness(1.05);
-}
-
 .doccam-option-btn:active,
 .project-option-btn:active,
 .hide-option-btn:active,
@@ -973,12 +922,6 @@ body {
   min-height: 2.8125rem;
 }
 
-.bluray-btn:hover {
-  box-shadow: var(--shadow-md);
-  background: rgba(255, 255, 255, 0.95);
-  filter: brightness(1.05);
-}
-
 .bluray-btn:active {
   filter: brightness(0.95);
   transform: scale(0.93);
@@ -1001,10 +944,6 @@ body {
   color: white;
   font-weight: bold;
   border: 2px solid var(--c-gold-500);
-}
-
-.bluray-btn.center-btn:hover {
-  background: var(--c-slate-dark);
 }
 
 /* Empty grid cell for navigation layout */
@@ -1058,13 +997,6 @@ body {
   line-height: 1;
   padding-top: 0.125rem;
   padding-left: 0.0625rem;
-}
-
-.close-menu-btn:hover,
-.close-hide-menu-btn:hover,
-.close-freeze-menu-btn:hover {
-  box-shadow: var(--shadow-md);
-  filter: brightness(1.1);
 }
 
 .close-menu-btn:active,
@@ -1154,10 +1086,6 @@ body {
   height: 100%;
 }
 
-.projector-control-btn:hover {
-  background: rgba(255, 255, 255, 0.95);
-}
-
 .projector-control-btn:active {
   filter: brightness(0.95);
   transform: scale(0.94);
@@ -1190,10 +1118,6 @@ body {
   padding: 0.625rem;
   flex: 1;
   gap: 0.25rem;
-}
-
-.power-btn:hover {
-  background: rgba(255, 255, 255, 0.95);
 }
 
 .power-btn:active {
@@ -1313,10 +1237,6 @@ body {
   border: 2px solid transparent;
 }
 
-.mute-btn:hover {
-  filter: brightness(1.1);
-}
-
 .mute-btn:active {
   transform: scale(0.92);
 }
@@ -1347,11 +1267,6 @@ body {
   border-radius: 0.5rem;
   padding: 0.75rem;
   flex-shrink: 0;
-}
-
-.help-btn:hover {
-  box-shadow: var(--shadow-xl-strong);
-  filter: brightness(1.05);
 }
 
 .help-btn:active {
@@ -1437,11 +1352,6 @@ body {
   letter-spacing: 0.0625rem;
 }
 
-.modal-btn:hover {
-  box-shadow: var(--shadow-xl);
-  filter: brightness(1.05);
-}
-
 .modal-btn:active {
   filter: brightness(0.95);
   transform: scale(0.96);
@@ -1452,17 +1362,9 @@ body {
   color: var(--c-ink);
 }
 
-.modal-btn-no:hover {
-  background: rgba(255, 255, 255, 0.9);
-}
-
 .modal-btn-yes {
   background: var(--c-red);
   color: white;
-}
-
-.modal-btn-yes:hover {
-  background: var(--c-red-dark);
 }
 
 /* Loading Screen */
@@ -1633,12 +1535,6 @@ body {
   box-shadow: var(--shadow-lg);
 }
 
-.tech-setup-btn:hover {
-  background: var(--c-ink-light);
-  transform: translateY(-0.125rem);
-  box-shadow: var(--shadow-xl);
-}
-
 .tech-setup-btn:active {
   transform: translateY(0);
 }
@@ -1702,11 +1598,6 @@ body {
   justify-self: start;
 }
 
-.help-back-btn:hover {
-  background: rgba(206, 184, 136, 0.3);
-  transform: translateX(-0.1875rem);
-}
-
 .help-title {
   color: white;
   font-size: 2.375rem;
@@ -1728,11 +1619,6 @@ body {
   cursor: pointer;
   transition: all var(--t-fast);
   justify-self: end;
-}
-
-.help-close-btn:hover {
-  background: var(--c-red-dark);
-  transform: scale(1.05);
 }
 
 /* Main Help Content */
@@ -1779,13 +1665,6 @@ body {
   box-shadow: var(--shadow-lg);
 }
 
-.help-task-btn:hover {
-  background: rgba(255, 255, 255, 0.95);
-  border-color: var(--c-gold-500);
-  transform: translateY(-0.125rem);
-  box-shadow: var(--shadow-xl);
-}
-
 .help-task-icon {
   width: 4.375rem;
   height: 4.375rem;
@@ -1820,11 +1699,6 @@ body {
   gap: 0.625rem;
   max-width: 21.875rem;
   margin: auto auto 0;
-}
-
-.help-guidebook-btn:hover {
-  background: rgba(206, 184, 136, 0.3);
-  transform: scale(1.02);
 }
 
 .help-guidebook-btn img {
