@@ -789,7 +789,7 @@ function lcFmtDurMin(totalMin) {
 // (module SetCountdown); floor-based minutes to match the device exactly
 // (a rounded-up "1 min" at 61s would overstate the wait).
 function lcFmtCountdown(ms) {
-    if (ms < 60000) return 'under a minute';
+    if (ms < 60000) return 'Less than 1 minute';   // v4.29 (owner, module v10.14): clearer than "under a minute" at the final tick
     return lcFmtDurMin(Math.floor(ms / 60000));
 }
 
@@ -1019,8 +1019,30 @@ function lcExtend(element) {
     element.classList.add('flash');
     setTimeout(() => element.classList.remove('flash'), 300);
     lcStatus('Extended +5 min')   // v4.18: the module's exact string;
-    showModeToast('Recording extended 5 minutes');
+    // v4.30 (owner 2026-07-20, module v10.17): the toast RETIRES (popups are for
+    // decisions) — the caption under the button confirms instead: "Extended to
+    // {new end}" for ~6 s on lcExtendNote/lcHoldExtendNote (the Confirm-helper
+    // convention applied to +5). The real module composes this from the
+    // POST-extend schedule refresh (device truth, ~1-2 s later); the mock is
+    // optimistic since there is no device.
+    lc.extendNoteMsg = 'Extended to ' + lcFmtClock(lc.recEnd);
+    lc.extendNoteUntil = Date.now() + 6000;
     lcRender();
+}
+
+// v4.30: the extend caption (module ExtendNote$ — ONE serial join feeds BOTH
+// pages' caption elements). A ~6 s "Extended to {end}" transient owns it, then
+// the baseline reclaims: while the ghosted +5 is blocked by a follower the
+// caption says WHY (module copy: "Next class at {time}"); blank otherwise.
+function lcRenderExtendNote() {
+    let note = '';
+    if (lc.extendNoteUntil && Date.now() < lc.extendNoteUntil) {
+        note = lc.extendNoteMsg;
+    } else if (lc.recording && !lcExtendFits() && lc.upcoming[0]) {
+        note = 'Next class at ' + lcFmtClock(lc.upcoming[0].start);
+    }
+    document.getElementById('lcExtendNote').textContent = note;
+    document.getElementById('lcHoldExtendNote').textContent = note;
 }
 
 function lcHold() {
@@ -1360,7 +1382,11 @@ function lcStartWalkup() {
 
     const title = document.getElementById('lcTitle').value.trim();
     lc.recording = true;
-    lc.nowTitle = title || `New Recording - ${lc.user}`;
+    // v4.28 (module v10.13): the default walk-up title is named + DATED —
+    // "New Recording - {name} - YYYY-MM-DD" (the auto-filer's date form).
+    // A typed title is untouched.
+    lc.nowTitle = title ||
+        `New Recording - ${lc.user} - ${new Date().toLocaleDateString('en-CA')}`;
     lc.recStart = new Date();
     lc.recEnd = new Date(Date.now() + lc.duration * 60000);
     lc.hold = 0;
@@ -1632,11 +1658,12 @@ function lcRender() {
     // during a hold was an oversight; extend is valid mid-hold, the joins
     // are state-agnostic), gated + noted identically to the REC page's.
     const fits = lcExtendFits();
-    const extendNote = (lc.recording && !fits) ? 'Next recording too soon' : '';
     document.getElementById('lcExtendBtn').disabled = !fits;
-    document.getElementById('lcExtendNote').textContent = extendNote;
     document.getElementById('lcHoldExtendBtn').disabled = !fits;
-    document.getElementById('lcHoldExtendNote').textContent = extendNote;
+    // v4.30: note text moved to lcRenderExtendNote (transient beats baseline;
+    // baseline copy now module-parity "Next class at {time}", was the static
+    // 'Next recording too soon')
+    lcRenderExtendNote();
 
     // Privacy hold button face (REC page)
     const holdBtn = document.getElementById('lcHoldBtn');
@@ -1715,6 +1742,7 @@ setInterval(() => {
     if (!overlay || !overlay.classList.contains('active')) return;
     lcRenderElapsed();
     lcRenderCountdowns();
+    lcRenderExtendNote();   // v4.30: the transient expires + the baseline stays live without a full render
     document.getElementById('lcIdleClock').textContent = lcFmtClock(new Date());
 }, 1000);
 
