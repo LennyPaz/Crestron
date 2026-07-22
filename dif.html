@@ -1469,10 +1469,16 @@
              END RECORDING? popup, zero module joins) --- */
       .lc-help-modal {
         z-index: 10007;
+        /* ONE text-color rule across both columns (owner + codex 2026-07-22):
+           gold = structure/labels only; white = primary; dim white =
+           secondary; quieter dim white = metadata. Fixes the gold-does-two-
+           jobs scan conflict. */
+        --lc-help-text-secondary: rgba(255, 255, 255, 0.72);
+        --lc-help-text-meta: rgba(255, 255, 255, 0.65);
       }
 
       .lc-help-modal .modal-content {
-        max-width: 58rem;
+        max-width: 78rem;   /* v4.31: wider for the two-column button/facts split */
         gap: 1.5rem;
       }
 
@@ -1481,16 +1487,6 @@
         letter-spacing: 0.125rem;
       }
 
-      /* v4.6 (owner item C): sectioned help — short titled blocks instead
-         of the old bullet wall. Eyebrow 22px CAPS gold + 26px sentence-
-         case body, 1-2 lines each, generous spacing; scans in seconds.
-         The THIS SCREEN block sits on top with a quiet divider. */
-      .lc-help-secs {
-        display: flex;
-        flex-direction: column;
-        gap: 1.375rem;
-        text-align: left;
-      }
 
       .lc-help-sec {
         display: flex;
@@ -1516,6 +1512,159 @@
         min-width: 20rem;
         min-height: 6rem;
         font-size: 2rem;
+      }
+
+      /* v4.31/v4.32 (owner + codex, 2026-07-22): help redesign — button
+         RECOGNITION replaces the paragraph wall. LEFT column splits into
+         BEFORE RECORDING / WHILE RECORDING groups of real button-face
+         facsimiles (4 flat Image Objects on the panel: CONFIRM, a NEW
+         RECORDING hybrid of its two looks, PAUSE, END); RIGHT column
+         keeps the concept facts as text. Spacing tuned to fit 1080. */
+      .lc-help-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+        gap: 2.5rem;
+        text-align: left;
+        width: 100%;
+      }
+      /* the LEFT column also distributes (owner 2026-07-22): whichever column
+         is shorter stretches its gaps to fill the equal-height grid cell, so
+         both columns end flush regardless of how the font wraps. Extra space
+         is only ~one line, spread across the gaps, so it just breathes. */
+      .lc-help-grid > div:first-child {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+      }
+      .lc-help-modal .lc-help-sec--context { width: 100%; }
+      /* group heading inside the left column (BEFORE / WHILE RECORDING) */
+      .lc-help-group-label {
+        color: var(--c-gold-500);
+        letter-spacing: 0.125rem;
+        margin-bottom: 0.625rem;
+      }
+      .lc-help-group-label--second { margin-top: 1.125rem; }
+      .lc-help-btnrow {
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+        margin-bottom: 0.75rem;
+      }
+      /* the left column's LAST row must reach the cell bottom so its content
+         ends flush with the right column's last line, not 12px above it
+         (space-between aligns the margin box, so a bottom margin would gap). */
+      .lc-help-grid > div:first-child > .lc-help-btnrow:last-child { margin-bottom: 0; }
+      /* the facsimile wrapper: a fixed-width slot so captions align, and
+         the button face never reacts to touch (it is an example). */
+      .lc-help-btnface {
+        flex: 0 0 15rem;
+        display: flex;
+        justify-content: center;
+        pointer-events: none;
+      }
+      /* facsimile labels never wrap — the widest ("END RECORDING") must
+         read as one line, matching the live single-line button faces. */
+      .lc-help-btnface .lc-btn-primary,
+      .lc-help-btnface .lc-rec-btn { white-space: nowrap; }
+      /* shrink the reused live-button classes to help scale (examples,
+         not controls) without redefining their identity (color/glyph).
+         Widths are PAIRED for symmetry (owner 2026-07-22): CONFIRM = PAUSE
+         (narrow 12rem), END = NEW RECORDING (wide 15rem). */
+      .lc-help-btnface .lc-btn-primary {          /* CONFIRM */
+        width: 12rem;
+        min-width: 0;                             /* override the live button's 25rem floor */
+        min-height: 4.25rem;
+        padding: 0.5rem 1.5rem;
+        font-size: 1.5rem;
+        border-radius: 0.5rem;
+        box-shadow: var(--shadow-md);
+      }
+      .lc-help-btnface .lc-rec-btn,
+      .lc-help-btnface .lc-rec-btn--stop {
+        min-width: 0;
+        min-height: 4.25rem;
+        padding: 0.5rem 1rem;
+        font-size: 1.25rem;
+      }
+      .lc-help-btnface .lc-rec-btn:not(.lc-rec-btn--stop) { width: 12rem; }  /* PAUSE = CONFIRM */
+      .lc-help-btnface .lc-rec-btn--stop { width: 15rem; }                   /* END = NEW RECORDING */
+      /* NEW RECORDING HYBRID face (owner 2026-07-22): ONE button split cleanly
+         down a diagonal into the TWO real on-panel looks — the left half is
+         the prominent face verbatim (white fill, ink label), the right half is
+         the quiet escape-hatch face verbatim (gold ghost-tint fill, gold
+         border frame, gold label). Two full-size layers, each clipped to its
+         diagonal half; the identical centered label reads as one continuous
+         "NEW RECORDING" that changes color at the split. Bakes to ONE flat
+         panel image. */
+      .lc-help-btnface .lc-newrec-hybrid {
+        position: relative;
+        width: 15rem;                                  /* = END, for the wide pair (owner symmetry) */
+        height: 4.25rem;
+        border-radius: 0.5rem;
+        overflow: hidden;                              /* rounds the outer corners over the clips */
+        border: 2px solid rgba(206, 184, 136, 0.6);    /* the ghost frame, wrapping both halves */
+        box-shadow: var(--shadow-md);
+      }
+      .lc-newrec-hybrid .nr-look {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.25rem;
+        font-weight: bold;
+        letter-spacing: 0.03em;
+        white-space: nowrap;
+      }
+      /* the ghost look is the FULL base layer (no clip); the opaque white
+         prominent layer sits above and is the ONLY clipped fill, so the
+         diagonal is a single clean edge — no two-clip anti-alias seam
+         (codex 2026-07-22). */
+      .lc-newrec-hybrid .nr-look--ghost {
+        background: rgba(206, 184, 136, 0.15);
+        color: var(--c-gold-500);
+      }
+      .lc-newrec-hybrid .nr-look--prominent {
+        background: #ffffff;
+        color: var(--c-ink);
+        z-index: 1;
+        clip-path: polygon(0 0, 60% 0, 40% 100%, 0 100%);   /* left half; 20% shift = an obvious diagonal */
+      }
+      .lc-help-cap-1 {
+        font-size: 1.375rem;   /* 22px */
+        font-weight: 600;
+        color: white;
+        line-height: 1.7rem;
+      }
+      .lc-help-cap-2 {
+        font-size: 1.25rem;    /* 20px */
+        font-weight: 400;
+        color: var(--lc-help-text-secondary);   /* dim white, not gold (gold = labels only) */
+        line-height: 1.6rem;
+        margin-top: 0.25rem;
+      }
+      /* small meta-note under NEW RECORDING — explains the hybrid shows the
+         same control's two on-panel appearances (owner approved a caption
+         line 2026-07-22). */
+      .lc-help-cap-note {
+        font-size: 1.125rem;   /* 18px */
+        font-weight: 400;
+        font-style: italic;
+        color: var(--lc-help-text-meta);
+        line-height: 1.5rem;
+        margin-top: 0.375rem;
+      }
+      /* the right column stretches to the grid cell height (= the taller
+         column); space-between distributes its sections so the last one
+         (QUESTIONS) sits flush at the bottom, matching the left column's
+         bottom edge no matter how the font wraps. gap is the MINIMUM spacing;
+         extra space is shared, never reduced below it. (owner + codex,
+         robust column balance, 2026-07-22) */
+      .lc-help-facts {
+        display: flex;
+        flex-direction: column;
+        gap: 1.375rem;
+        justify-content: space-between;
       }
 
       /* Dev-only state-preview strip — same dashed-yellow convention as
@@ -1919,7 +2068,7 @@
                         <!-- v4.2 honesty fix (+ v4.4 wording: never assume a
                              recording is a class — DIF hosts seminars/defenses/
                              events): opt-in system, never imply zero-touch. -->
-                        <div class="lc-t-body lc-dim">Scheduled recordings appear here. They start only after you press CONFIRM.</div>
+                        <div class="lc-t-body lc-dim">Scheduled recordings appear here. They record after you confirm them at the panel.</div>
                     </div>
                     <div class="lc-zone-big">
                         <div class="lc-t-caption lc-dim">RIGHT NOW</div>
@@ -1994,7 +2143,7 @@
                             <span class="lc-btn-main"><span>START NOW</span></span>
                         </button>
                     </div>
-                    <div class="lc-zone-caption lc-t-caption lc-dim" id="lcConfirmStatus">It records only if you confirm it. You can also start your own recording, as long as it ends before this one begins.</div>
+                    <div class="lc-zone-caption lc-t-caption lc-dim" id="lcConfirmStatus">It records when you confirm it, or right away with START NOW. You can also start your own recording, as long as it ends before this one begins.</div>
                     <!-- v4.6 (owner item D), v4.7 (owner item A), v4.8: quiet
                          walk-up escape hatch — the confirm window opens ~30-45
                          min early and a short ad-hoc that ends before the
@@ -2118,7 +2267,7 @@
                          the until-line. Two caption lines by design, same as
                          IDLE/UP NEXT (panel P10: one multiline label). -->
                     <div class="lc-zone-caption lc-t-caption lc-dim">
-                        <div>The recording continues. Viewers see a pause screen with no audio.</div>
+                        <div>While paused, viewers see a pause screen and hear no audio.</div>
                         <div>The cameras still work with the room computer.</div>
                     </div>
                 </section>
@@ -2325,8 +2474,8 @@
                     <div class="lc-cam-caption">Controls the camera for recordings and apps like Zoom.</div>
                     <div class="lc-cam-seg">
                         <button class="lc-cam-btn selected" id="lcCamInstructor" onclick="lcCamera(this, 'Instructor')"><span class="lc-seg-check">✓</span><span>Instructor</span></button>
-                        <button class="lc-cam-btn" id="lcCamStudents" onclick="lcCamera(this, 'Students')"><span class="lc-seg-check">✓</span><span>Students</span></button>
                         <button class="lc-cam-btn" id="lcCamBoth" onclick="lcCamera(this, 'Both')"><span class="lc-seg-check">✓</span><span>Both</span></button>
+                        <button class="lc-cam-btn" id="lcCamStudents" onclick="lcCamera(this, 'Students')"><span class="lc-seg-check">✓</span><span>Students</span></button>
                     </div>
                 </div>
                 <!-- SHOW PREVIEW: standalone control OUTSIDE any card. Hint =
@@ -2358,7 +2507,7 @@
             <div class="modal-content">
                 <div class="modal-message">
                     <div class="modal-title lc-t-title">End recording?</div>
-                    <div class="modal-text lc-t-body" id="lcStopModalText">Panel Demo D is still recording.</div>
+                    <div class="modal-text lc-t-body" id="lcStopModalText">Panel Demo D has not ended yet. It uploads automatically after you end it.</div>
                 </div>
                 <div class="modal-buttons">
                     <button class="modal-btn modal-btn-no" onclick="lcStopCancel()">KEEP RECORDING</button>
@@ -2410,44 +2559,89 @@
                 <div class="modal-message">
                     <div class="modal-title lc-t-title">How Lecture Capture works</div>
                 </div>
-                <div class="lc-help-secs">
-                    <div class="lc-help-sec lc-help-sec--context">
-                        <div class="lc-help-sec-title lc-t-caption">THIS SCREEN</div>
-                        <!-- v4.13 (owner 2026-07-13): static seed synced to the
-                             Q4 idle line (lcHelpContextUpdate overwrites this at
-                             runtime; the seed just mustn't carry retired copy). -->
-                        <div class="lc-help-sec-body lc-t-body" id="lcHelpContext">Nothing is scheduled right now. NEW RECORDING is for recording without a schedule.</div>
+                <!-- THIS SCREEN state strip (full width) — id preserved:
+                     lcHelpContextUpdate() still writes the per-state line here. -->
+                <div class="lc-help-sec lc-help-sec--context">
+                    <div class="lc-help-sec-title lc-t-caption">THIS SCREEN</div>
+                    <div class="lc-help-sec-body lc-t-body" id="lcHelpContext">Nothing is scheduled right now. NEW RECORDING is for recording without a schedule.</div>
+                </div>
+                <div class="lc-help-grid">
+                    <!-- LEFT · button RECOGNITION, split BEFORE / WHILE
+                         RECORDING. The faces are the REAL button classes
+                         (facsimiles here; 4 flat Image Objects on the panel:
+                         CONFIRM, the NEW RECORDING hybrid with BOTH looks
+                         baked into one image, PAUSE, END), non-interactive.
+                         SCHEDULED RECORDINGS' old paragraph folded into the
+                         CONFIRM caption. The dynamic CONFIRM time-sub is
+                         omitted (a static time would mislead; codex 2026-07-22). -->
+                    <div>
+                        <div class="lc-help-group-label lc-t-caption">BEFORE RECORDING</div>
+                        <div class="lc-help-btnrow">
+                            <div class="lc-help-btnface" aria-hidden="true">
+                                <div class="lc-btn-primary"><span>CONFIRM</span></div>
+                            </div>
+                            <div>
+                                <div class="lc-help-cap-1">Enables recording for this scheduled class.</div>
+                                <div class="lc-help-cap-2">Before start: records on time.</div>
+                                <div class="lc-help-cap-2">After start: begins now.</div>
+                            </div>
+                        </div>
+                        <!-- NEW RECORDING has two on-panel looks (prominent on
+                             idle/up-next, a quiet escape-hatch on the confirm
+                             pages). The hybrid face shows BOTH at once via a
+                             diagonal split (owner 2026-07-22) so it reads as one
+                             control and bakes to ONE flat panel image. -->
+                        <div class="lc-help-btnrow">
+                            <div class="lc-help-btnface" aria-hidden="true">
+                                <div class="lc-newrec-hybrid">
+                                    <span class="nr-look nr-look--prominent">NEW RECORDING</span>
+                                    <span class="nr-look nr-look--ghost">NEW RECORDING</span>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="lc-help-cap-1">Record without a schedule.</div>
+                                <div class="lc-help-cap-2">It cannot overlap a scheduled class.</div>
+                                <div class="lc-help-cap-note">Same button. Its look changes by screen.</div>
+                            </div>
+                        </div>
+                        <div class="lc-help-group-label lc-help-group-label--second lc-t-caption">WHILE RECORDING</div>
+                        <div class="lc-help-btnrow">
+                            <div class="lc-help-btnface" aria-hidden="true">
+                                <div class="lc-rec-btn"><span class="lc-btn-main"><span class="lc-btn-ico lc-btn-ico--pause"></span><span>PAUSE</span></span></div>
+                            </div>
+                            <div>
+                                <div class="lc-help-cap-1">Viewers see a pause screen and hear no audio.</div>
+                                <div class="lc-help-cap-2">It does not end your recording.</div>
+                            </div>
+                        </div>
+                        <div class="lc-help-btnrow">
+                            <div class="lc-help-btnface" aria-hidden="true">
+                                <div class="lc-rec-btn lc-rec-btn--stop"><span class="lc-btn-main"><span class="lc-btn-ico lc-btn-ico--stop"></span><span>END RECORDING</span></span></div>
+                            </div>
+                            <div>
+                                <div class="lc-help-cap-1">Finalizes the recording. It cannot be resumed.</div>
+                                <div class="lc-help-cap-2">The file uploads to My Media automatically.</div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="lc-help-sec">
-                        <div class="lc-help-sec-title lc-t-caption">WHAT GETS RECORDED</div>
-                        <!-- v4.14 (owner-authored 2026-07-13, panel Q14,
-                             build-verified 2-liner): the Zoom clause was
-                             RE-HOMED — the CAMERA VIEW card's own hint line
-                             already says "Controls the camera for recordings
-                             and apps like Zoom." The LEFT-projector fact is
-                             universally true (same-source rooms included);
-                             LEFT stays ALL-CAPS for glanceability. -->
-                        <div class="lc-help-sec-body lc-t-body">The content sent to the projector, plus the selected camera view. Or the content sent to the LEFT projector, if the room has multiple.</div>
-                    </div>
-                    <div class="lc-help-sec">
-                        <div class="lc-help-sec-title lc-t-caption">SCHEDULED RECORDINGS</div>
-                        <div class="lc-help-sec-body lc-t-body">They record only after you press CONFIRM. Missed the start? You can still confirm and record from that moment on.</div>
-                    </div>
-                    <div class="lc-help-sec">
-                        <div class="lc-help-sec-title lc-t-caption">WHERE RECORDINGS GO</div>
-                        <!-- v4.7 (owner item E): FSU's Canvas course nav labels it
-                             "Course Media", not "Media Gallery". The review-and-
-                             publish qualifier is load-bearing honesty (gallery
-                             adds land PENDING) — never shorten it.
-                             v4.14 (owner rewrite 2026-07-13, panel Q18,
-                             build-verified 2-liner): "as pending" now states
-                             the literal PENDING moderation state outright,
-                             strengthening that honesty. -->
-                        <div class="lc-help-sec-body lc-t-body">Recordings upload to My Media in Canvas. Scheduled ones also show up as pending in Course Media for you to review and publish.</div>
-                    </div>
-                    <div class="lc-help-sec">
-                        <div class="lc-help-sec-title lc-t-caption">QUESTIONS?</div>
-                        <div class="lc-help-sec-body lc-t-body">Contact classroom support: (support contact here).</div>
+                    <!-- RIGHT · concepts stay text (imagery would not help). -->
+                    <div class="lc-help-facts">
+                        <div class="lc-help-sec">
+                            <div class="lc-help-sec-title lc-t-caption">WHAT GETS RECORDED</div>
+                            <div class="lc-help-sec-body lc-t-body">The content sent to the projector, plus the selected camera view. Or the content sent to the LEFT projector, if the room has multiple.</div>
+                        </div>
+                        <div class="lc-help-sec">
+                            <div class="lc-help-sec-title lc-t-caption">CAMERA VIEW</div>
+                            <div class="lc-help-sec-body lc-t-body">Select instructor, students, or both. Both is one combined side-by-side view, not separate feeds.</div>
+                        </div>
+                        <div class="lc-help-sec">
+                            <div class="lc-help-sec-title lc-t-caption">WHERE RECORDINGS GO</div>
+                            <div class="lc-help-sec-body lc-t-body">Recordings upload to My Media in Canvas. Scheduled ones also show up as pending in Course Media for you to review and publish.</div>
+                        </div>
+                        <div class="lc-help-sec">
+                            <div class="lc-help-sec-title lc-t-caption">QUESTIONS?</div>
+                            <div class="lc-help-sec-body lc-t-body">Contact classroom support: (850) 644-2811.</div>
+                        </div>
                     </div>
                 </div>
                 <button class="lc-btn-primary lc-help-close" onclick="lcHelpClose()">CLOSE</button>

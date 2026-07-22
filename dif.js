@@ -614,9 +614,9 @@ function showTaskDetail(taskType) {
             gif: null,
             steps: [
                 { icon: 'Icons/CameraIcon.png', text: 'Tap LECTURE CAPTURE in the input sources' },
-                { icon: 'Icons/CameraIcon.png', text: 'If your room has a scheduled recording, press CONFIRM. It starts by itself at the scheduled time' },
+                { icon: 'Icons/CameraIcon.png', text: 'If your room has a scheduled recording, press CONFIRM and it records at the scheduled time. START NOW begins it immediately instead' },
                 { icon: 'Icons/DeskTopIcon.png', text: 'Nothing scheduled? Sign in with your FSUID under NEW RECORDING and pick a duration' },
-                { icon: 'Icons/CameraIcon.png', text: 'Choose the camera view: INSTRUCTOR, STUDENTS, or BOTH' },
+                { icon: 'Icons/CameraIcon.png', text: 'Choose the camera view: INSTRUCTOR, BOTH, or STUDENTS' },
                 { icon: 'Icons/PowerIcon.webp', text: 'When you finish, press END RECORDING. The recording uploads to your My Media in Canvas automatically' }
             ]
         }
@@ -950,7 +950,7 @@ function lcSetState(state, devBtn) {
 function lcStop() {
     if (!lc.recording) return;
     document.getElementById('lcStopModalText').textContent =
-        `${lc.nowTitle} is still recording. It uploads automatically after it ends.`;
+        `${lc.nowTitle} has not ended yet. It uploads automatically after you end it.`;
     document.getElementById('lcStopModal').classList.add('active');
 }
 
@@ -1192,7 +1192,7 @@ function lcHelpContextText() {
         // opener; RESUME dropped as the one self-evident face (the panel's
         // help box is a hard 2-liner and the name-all-three version 3-lined
         // into the divider). Package Q9 amended same day, build-verified.
-        return 'Viewers see a pause screen while the recording continues. ADD 5 MINUTES extends it. END RECORDING uploads it.';
+        return 'Viewers see a pause screen and hear no audio. ADD 5 MINUTES extends the session. END RECORDING uploads it.';
     if (page === 'lcPageWalkup')
         return 'Verify your FSUID first, then pick a duration. START RECORDING begins right away.';
     if (page === 'lcPageEnded')
@@ -1733,7 +1733,7 @@ function lcRenderCountdowns() {
     document.getElementById('lcConfirmRecNow').style.display = started ? 'none' : '';
     document.getElementById('lcConfirmStatus').textContent = started ?
         'The scheduled start has passed. You can still start recording at any point.' :
-        'It records only if you confirm it. You can also start your own recording, as long as it ends before this one begins.';
+        'It records when you confirm it, or right away with START NOW. You can also start your own recording, as long as it ends before this one begins.';
 }
 
 // 1-second tick: elapsed timer, countdowns, and idle clock stay live
