@@ -1571,14 +1571,16 @@
       .lc-help-btnface .lc-rec-btn { white-space: nowrap; }
       /* shrink the reused live-button classes to help scale (examples,
          not controls) without redefining their identity (color/glyph).
-         Widths are PAIRED for symmetry (owner 2026-07-22): CONFIRM = PAUSE
-         (narrow 12rem), END = NEW RECORDING (wide 15rem). */
+         All four faces are UNIFORM 15rem (= 240px) to match the built panel
+         (owner 2026-07-23; was a 12rem/15rem pair). Fonts filled per face so a
+         short label doesn't float in an empty pill: CONFIRM/PAUSE 1.875rem,
+         END 1.375rem, NEW RECORDING 1.25rem. */
       .lc-help-btnface .lc-btn-primary {          /* CONFIRM */
-        width: 12rem;
+        width: 15rem;
         min-width: 0;                             /* override the live button's 25rem floor */
         min-height: 4.25rem;
         padding: 0.5rem 1.5rem;
-        font-size: 1.5rem;
+        font-size: 1.875rem;
         border-radius: 0.5rem;
         box-shadow: var(--shadow-md);
       }
@@ -1589,8 +1591,8 @@
         padding: 0.5rem 1rem;
         font-size: 1.25rem;
       }
-      .lc-help-btnface .lc-rec-btn:not(.lc-rec-btn--stop) { width: 12rem; }  /* PAUSE = CONFIRM */
-      .lc-help-btnface .lc-rec-btn--stop { width: 15rem; }                   /* END = NEW RECORDING */
+      .lc-help-btnface .lc-rec-btn:not(.lc-rec-btn--stop) { width: 15rem; font-size: 1.875rem; }  /* PAUSE */
+      .lc-help-btnface .lc-rec-btn--stop { width: 15rem; font-size: 1.375rem; }                   /* END */
       /* NEW RECORDING HYBRID face (owner 2026-07-22): ONE button split cleanly
          down a diagonal into the TWO real on-panel looks — the left half is
          the prominent face verbatim (white fill, ink label), the right half is
