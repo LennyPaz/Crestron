@@ -950,7 +950,7 @@ function lcSetState(state, devBtn) {
 function lcStop() {
     if (!lc.recording) return;
     document.getElementById('lcStopModalText').textContent =
-        `${lc.nowTitle} has not ended yet. It uploads automatically after you end it.`;
+        `${lc.nowTitle} cannot be resumed once ended. It uploads to My Media automatically.`;
     document.getElementById('lcStopModal').classList.add('active');
 }
 

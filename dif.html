@@ -69,10 +69,12 @@
          kept but hidden so the flex layout doesn't reflow. */
       .lc-logo {
         position: absolute;
-        top: 10px;
-        left: 30px;
-        width: 430px;
-        height: 77px;
+        top: 0.625rem;                /* was 10px fixed — now scales with the
+                                         rem clamp so it never overlaps the
+                                         stage border on smaller screens */
+        left: 1.875rem;               /* 30px */
+        width: 26.875rem;             /* 430px */
+        height: 4.8125rem;            /* 77px */
         z-index: 1;
       }
       .lecture-capture-overlay .fsu-logo { visibility: hidden; }
@@ -1293,8 +1295,9 @@
          on the user's own SHOW/HIDE press (or the 15 s View burst).
          Rows 1–3 + the strip never move. */
       .lc-today--top {
-        flex: 0 0 auto;
-        height: 7.2rem;               /* 3 fixed row slots (3 × 2.15rem + gaps) */
+        flex: 0 0 auto;               /* fit the 3 rows exactly — no bottom slack,
+                                         so the row 3->4 boundary is one normal
+                                         row-gap, not a visible gap (owner) */
       }
 
       .lc-today-shared {
@@ -2507,7 +2510,7 @@
             <div class="modal-content">
                 <div class="modal-message">
                     <div class="modal-title lc-t-title">End recording?</div>
-                    <div class="modal-text lc-t-body" id="lcStopModalText">Panel Demo D has not ended yet. It uploads automatically after you end it.</div>
+                    <div class="modal-text lc-t-body" id="lcStopModalText">Panel Demo D cannot be resumed once ended. It uploads to My Media automatically.</div>
                 </div>
                 <div class="modal-buttons">
                     <button class="modal-btn modal-btn-no" onclick="lcStopCancel()">KEEP RECORDING</button>
