@@ -1,0 +1,1 @@
+window.TEST_SUBMIT_URL = "https://defaulta36450ebdb0642a78d1b026719f701.e3.environment.api.powerplatform.com:443/powerautomate/automations/direct/cu/27/workflows/5ff00a097d974d93a31430cd8d64c05a/triggers/manual/paths/invoke?api-version=1&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=K3lT-R9ie4eg-H5rZSjQlA0ehFIZUAgA0-4CoWGYZj0";

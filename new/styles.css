@@ -1,0 +1,267 @@
+/* Mockup shell + simulated source scenes. The panel page itself is rendered
+   entirely from the spec; nothing in here positions panel objects. */
+* { margin: 0; padding: 0; }
+html, body { height: 100%; background: #0b0f14; color: #dfe3e8; font-family: Arial, Helvetica, sans-serif; }
+
+/* Dev strip, ported from the LC page's .lc-dev-strip (panel-ui/dif/dif.html):
+   floats over a corner, 0.25 opacity, solid on hover/focus-within. */
+#devstrip {
+  position: fixed; right: 0.5rem; bottom: 0.375rem; z-index: 10010;
+  display: flex; align-items: center; gap: 0.625rem;
+  background: rgba(255, 199, 44, 0.12);
+  border: 2px dashed #ffc72c; border-radius: 0.5rem;
+  padding: 0.25rem 0.75rem;
+  opacity: 0.25; transition: opacity 150ms ease;
+  font-size: 0.75rem; color: #ffc72c;
+}
+#devstrip:hover, #devstrip:focus-within { opacity: 1; }
+#devstrip .demo-label { font-weight: bold; letter-spacing: 0.03em; }
+#devstrip label { display: flex; align-items: center; gap: 0.3rem; }
+#devstrip select, #devstrip button {
+  background: #fff; color: #101820; border: 2px solid transparent;
+  border-radius: 0.375rem; font-size: 0.625rem; font-weight: bold;
+  padding: 0.25rem 0.625rem; cursor: pointer;
+  box-shadow: 0 1px 2px rgba(0,0,0,.3); transition: all 150ms ease;
+}
+#devstrip button:hover, #devstrip select:hover { border-color: #ffc72c; transform: translateY(-1px); }
+#devstrip button:active { transform: scale(0.94); }
+#devstrip button:focus-visible, #devstrip select:focus-visible { outline: 2px solid #ffc72c; outline-offset: 2px; }
+
+/* The glass is 1920 px of layout before scaleStage shrinks it. Clipped to the window, or on a
+   phone that width widens the page and cuts the task bar and the cards off at the right. */
+#viewport { position: fixed; inset: 0; overflow: hidden; }
+#stage-wrap { position: absolute; top: 0; width: 1920px; height: 1080px; transform-origin: top left; }
+#stage { font-family: Arial, Helvetica, sans-serif; user-select: none; cursor: default; }
+#stage img { pointer-events: none; }
+
+/* ---------------- simulated source scenes ---------------- */
+.video { overflow: hidden; }
+.video.inactive { background: #000; }
+.scene { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+
+/* desktop pc */
+.scene-pc .pc-desktop { position: absolute; inset: 0; background: linear-gradient(160deg, #14355f, #1d5a8a 60%, #2a7ca8); }
+.scene-pc .pc-icons { position: absolute; top: 4%; left: 2%; display: flex; flex-direction: column; gap: 12%; height: 40%; }
+.scene-pc .pc-icons i { width: 22px; height: 20px; background: #ffffff44; border: 1px solid #ffffff88; border-radius: 3px; }
+.scene-pc .pc-window { position: absolute; left: 16%; top: 14%; width: 62%; height: 60%; background: #f4f5f7; border-radius: 4px; box-shadow: 0 6px 24px rgba(0,0,0,.4); }
+.scene-pc .pc-titlebar { height: 18%; background: #d8dce2; border-radius: 4px 4px 0 0; color: #333; font-size: 12px; display: flex; align-items: center; padding-left: 8px; }
+.scene-pc .pc-slide { height: 82%; display: flex; align-items: center; justify-content: center; color: #1a2b45; font-size: 22px; font-weight: bold; }
+.scene-pc .pc-taskbar { position: absolute; bottom: 0; width: 100%; height: 7%; background: #10141aee; }
+
+/* doc cam */
+.scene-doccam { background: #3c3a36; }
+.scene-doccam .dc-paper { width: 70%; height: 84%; background: #f7f4ec; border-radius: 2px; box-shadow: 0 4px 18px rgba(0,0,0,.5); padding: 5% 6%; box-sizing: border-box; }
+.scene-doccam .dc-line { height: 7%; background: #b9b2a4; margin-bottom: 5%; border-radius: 2px; }
+.scene-doccam .dc-line.w80 { width: 80%; } .dc-line.w70 { width: 70%; } .dc-line.w60 { width: 60%; } .dc-line.w50 { width: 50%; }
+.scene-doccam .dc-fig { width: 40%; height: 26%; border: 3px solid #8f867a; border-radius: 4px; margin: 4% 0; }
+.scene-doccam .dc-tag, .dc-tag { position: absolute; right: 3%; bottom: 3%; color: #fffb; font-size: 12px; letter-spacing: 1px; }
+
+/* wireless */
+.scene-air { background: #101820; flex-direction: column; gap: 10px; }
+.scene-air .air-logo { color: #CEB888; font-size: 26px; letter-spacing: 4px; font-weight: bold; }
+.scene-air .air-code { color: #fff; font-size: 20px; }
+.scene-air .air-sub { color: #8892a0; font-size: 13px; }
+
+/* laptop */
+.scene-laptop .lt-desktop { position: absolute; inset: 0; background: linear-gradient(150deg, #402a56, #7a3560 70%, #a0475c); }
+.scene-laptop.usbc .lt-desktop { background: linear-gradient(150deg, #1f4d43, #2c6b52 70%, #5d8f4e); }
+.scene-laptop .lt-window { position: absolute; left: 22%; top: 22%; width: 54%; height: 46%; background: #f2f2f5; border-radius: 6px; display: flex; align-items: center; justify-content: center; color: #333; font-size: 18px; font-weight: bold; box-shadow: 0 6px 24px rgba(0,0,0,.4); }
+.scene-laptop .lt-dock { position: absolute; bottom: 3%; left: 25%; width: 50%; height: 6%; background: #ffffff33; border-radius: 8px; }
+.scene-laptop .lt-tag { position: absolute; right: 3%; bottom: 3%; color: #fffb; font-size: 12px; letter-spacing: 1px; }
+
+/* no signal */
+.scene-nosig { background: #05070a; color: #97a2ae; font-size: 20px; text-align: center; font-weight: bold; flex-direction: column; }
+.scene-nosig span { font-size: 13px; font-weight: normal; color: #5b6770; }
+
+/* blu-ray */
+.scene-bd { background: #06080c; }
+.bd-menu { position: absolute; inset: 0; background: linear-gradient(120deg, #0a1520, #14263a); padding: 6% 8%; }
+.bd-title { color: #CEB888; font-size: 24px; letter-spacing: 3px; margin-bottom: 6%; }
+.bd-item { color: #b6c1cc; font-size: 16px; padding: 2% 3%; width: 40%; }
+.bd-item.sel { background: #CEB88833; border-left: 3px solid #CEB888; color: #fff; }
+.bd-movie .bd-film { position: absolute; inset: 0; background: radial-gradient(ellipse at 40% 40%, #6a4a2f, #241a10 70%); }
+.bd-movie .bd-film.dim { filter: brightness(.4); }
+.bd-osd { position: absolute; left: 4%; bottom: 5%; color: #fff; font-size: 16px; text-shadow: 0 1px 3px #000; }
+.bd-black { position: absolute; inset: 0; background: #000; }
+
+/* camera */
+/* the owner's own camera artwork, ported from the earlier mock (see room.js cameraScene) */
+.scene-cam .cam-scene { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+/* the hold splash, also the owner's (.lc-preview-splash there) */
+.scene-splash { position: absolute; inset: 0; display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 10px; background: #0d1216; }
+.scene-splash .splash-glyph { font-size: 44px; color: #CEB888; line-height: 1; }
+.scene-splash .splash-text { font-size: 15px; letter-spacing: 2px; color: #dfe3e8; }
+.scene-cam .cam-tag { position: absolute; right: 3%; top: 4%; color: #fff9; font-size: 12px; letter-spacing: 1px; background: #0008; padding: 2px 8px; border-radius: 3px; }
+
+/* ---------------- guided tasks (dev lane; never on the glass) ---------------- */
+#task-picker {
+  position: fixed; inset: 0; z-index: 20000;
+  background: rgba(10, 13, 17, 0.94);
+  display: flex; align-items: center; justify-content: center;
+}
+.tp-card {
+  width: min(760px, 92vw); max-height: 88vh; overflow: auto;
+  background: #141a21; border: 1px solid #2a333d; border-radius: 12px;
+  padding: 32px 36px; color: #dfe3e8;
+}
+.tp-card h1 { font-size: 26px; color: #CEB888; margin-bottom: 10px; }
+.tp-sub { font-size: 15px; line-height: 1.5; color: #9fa9b4; margin-bottom: 22px; }
+.tp-free {
+  background: #CEB888; color: #101820; border: 0; border-radius: 8px;
+  font-size: 15px; font-weight: bold; padding: 12px 22px; cursor: pointer;
+  margin-bottom: 26px;
+}
+.tp-free:hover { background: #e2c87a; }
+.tp-list { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.tp-task {
+  background: #1c242d; color: #dfe3e8; border: 1px solid #37424e;
+  border-radius: 8px; padding: 14px 16px; font-size: 15px; text-align: left;
+  cursor: pointer;
+}
+.tp-task:hover { border-color: #CEB888; background: #222c36; }
+.tp-results { margin-top: 26px; border-top: 1px solid #2a333d; padding-top: 16px; }
+.tp-results h2 { font-size: 14px; color: #9fa9b4; margin-bottom: 10px; font-weight: normal; }
+.tp-res { font-size: 14px; padding: 4px 0; }
+.tp-res span { display: inline-block; min-width: 68px; font-weight: bold; }
+.tp-res span.ok { color: #6fcf97; }
+.tp-res span.skip { color: #8892a0; }
+.tp-res i { color: #8892a0; font-style: normal; font-size: 13px; }
+
+/* Owner 2026-09-02: the bar was covering the panel and clipping the LECTURE CAPTURE
+   card. The DESIGN was already right, and scaleStage() reserves the bar's height so
+   the glass gives up room rather than sharing it. The bug was that scaleStage only ran
+   on resize and at boot, so when a task STARTED and the bar appeared, nothing re-ran
+   it: the panel kept its full-height scale and the bar sat on top. Fixed at the
+   trigger, not by moving the bar. It also now carries a Hide button that removes it
+   for the rest of the session. */
+/* Owner 2026-09-02, twice. First: "why is it a bottom bar when there is so much
+   space on the left and right of the page". A 16:9 stage in a wider window leaves the
+   sides empty, and docking below cost the glass height it did not need to lose. It is
+   now a SIDE panel in the left margin; scaleStage reserves that width and the glass
+   keeps its full height whenever the window is wide enough, which it nearly always is.
+   Second: "hide doesnt work". It did not, ever: this id rule's display:flex beat the
+   browser's [hidden]{display:none}, so the attribute was set and the panel painted
+   anyway. That is also why it sat on the LECTURE CAPTURE card this morning with no
+   task running. The [hidden] rule below is the fix, and it is deliberately an id
+   selector too, so nothing can outrank it the same way again. */
+#task-bar {
+  position: fixed; left: 0; top: 0; bottom: 0; width: 300px; z-index: 19000;
+  display: flex; flex-direction: column; justify-content: space-between; gap: 18px;
+  background: #141a21; border-right: 2px solid #CEB888;
+  padding: 18px 20px; color: #dfe3e8; box-sizing: border-box;
+}
+#task-bar[hidden] { display: none; }
+#task-bar.done { border-right-color: #6fcf97; }
+.tb-right { flex-direction: column; align-items: stretch; gap: 10px; }
+.tb-state { text-align: center; }
+.tb-hide {
+  background: transparent; color: #9fa9b4; border: 1px solid #37424e;
+  border-radius: 6px; padding: 8px 14px; font-size: 13px; cursor: pointer;
+}
+.tb-hide:hover { border-color: #a6192e; color: #dfe3e8; }
+/* exploring: pick the situation (owner 2026-09-18) */
+.tb-setup { margin-top: 16px; display: flex; flex-direction: column; gap: 6px; }
+.tb-setup[hidden] { display: none; }
+.tb-setup-q { font-size: 12px; color: #CEB888; font-weight: bold; letter-spacing: .04em; margin-top: 6px; }
+.tb-pick { background: #1c242d; color: #dfe3e8; border: 1px solid #37424e; border-radius: 6px;
+  padding: 8px 10px; font-size: 14px; text-align: left; cursor: pointer; }
+.tb-pick:hover { border-color: #CEB888; }
+.tb-pick.on { background: #CEB888; border-color: #CEB888; color: #101820; font-weight: bold; }
+.tb-pick-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+.tb-pick-row .tb-pick { text-align: center; padding: 8px 4px; }
+.tb-pick-row2 { grid-template-columns: repeat(2, 1fr); }
+.tb-setup-note { font-size: 12px; color: #8892a0; margin-top: 4px; }
+.tb-warm {margin-top: 14px; font-size: 14px; line-height: 1.4; color: #CEB888; }
+.tb-title { font-size: 13px; color: #CEB888; font-weight: bold; letter-spacing: .04em; }
+.tb-prompt { font-size: 17px; line-height: 1.35; margin-top: 2px; }
+.tb-right { display: flex; align-items: center; gap: 14px; flex-shrink: 0; }
+.tb-state { font-size: 13px; color: #8892a0; }
+#task-bar.done .tb-state { color: #6fcf97; font-weight: bold; }
+.tb-skip {
+  background: transparent; color: #9fa9b4; border: 1px solid #37424e;
+  border-radius: 6px; padding: 8px 14px; font-size: 13px; cursor: pointer;
+}
+.tb-skip:hover { border-color: #CEB888; color: #dfe3e8; }
+
+/* ---------------- the self-guided test (js/testflow.js) ----------------
+   Welcome, about you, ratings and finish use the #task-picker overlay, shown only BETWEEN tasks.
+   During a task the only thing off the glass is the #task-bar side panel above. */
+/* primary and secondary share one box (font, line height, padding, 1px border) so a pair of them
+   side by side is the same height; owner 2026-09-18, "these buttons should be the same height" */
+.tf-primary, .tf-secondary {
+  font-family: Arial, sans-serif; font-size: 16px; line-height: 20px; padding: 11px 22px;
+  border-radius: 8px; cursor: pointer; box-sizing: border-box;
+}
+.tf-primary {
+  background: #CEB888; color: #101820; border: 1px solid #CEB888; font-weight: bold;
+}
+/* side by side they read as one size only if they are one WIDTH too (owner 2026-09-18: 182 px
+   against 156 px looked like two sizes), so buttons in a row share a minimum width */
+.tf-row .tf-primary, .tf-row .tf-secondary { min-width: 200px; }
+.tf-primary:hover:not(:disabled) { background: #e2c87a; }
+.tf-primary:disabled { opacity: .45; cursor: default; }
+.tf-secondary {
+  background: transparent; color: #dfe3e8; border: 1px solid #5a6570;
+}
+.tf-secondary:hover { border-color: #CEB888; }
+#task-bar .tf-primary { font-size: 15px; padding: 12px 14px; }
+#task-bar button:disabled { opacity: .45; cursor: default; }
+.tf-note { font-size: 14px; color: #9fa9b4; line-height: 1.5; margin-bottom: 22px; }
+.tf-note b { color: #dfe3e8; }
+.tf-q { border: 0; padding: 0; margin: 0 0 22px; }
+.tf-q legend { font-size: 16px; color: #dfe3e8; margin-bottom: 10px; padding: 0; }
+.tf-choices { display: flex; flex-wrap: wrap; gap: 8px; }
+.tf-choice {
+  background: #1c242d; color: #dfe3e8; border: 1px solid #37424e; border-radius: 8px;
+  padding: 10px 14px; font-size: 14px; cursor: pointer;
+}
+.tf-choice:hover { border-color: #CEB888; }
+.tf-choice.on, .tf-pt.on { background: #CEB888; border-color: #CEB888; color: #101820; font-weight: bold; }
+/* one column per point, so the row fills the card whatever the scale is (1 to 5 since 2026-09-17) */
+.tf-scale { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 10px; }
+.tf-pt {
+  background: #1c242d; color: #dfe3e8; border: 1px solid #37424e; border-radius: 8px;
+  padding: 14px 6px; font-size: 16px; line-height: 20px; cursor: pointer; min-width: 0;
+}
+.tf-pt:hover { border-color: #CEB888; }
+.tf-ends { display: flex; justify-content: space-between; gap: 12px; margin-top: 6px; font-size: 13px; color: #9fa9b4; }
+.tf-comment {
+  width: 100%; box-sizing: border-box; background: #1c242d; color: #dfe3e8;
+  border: 1px solid #37424e; border-radius: 8px; padding: 10px 12px; font: 14px/1.4 Arial, sans-serif; resize: vertical;
+}
+.tf-comment:focus { outline: none; border-color: #CEB888; }
+.tf-row { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 12px; }
+.tf-need { flex: 1; font-size: 13px; color: #9fa9b4; }
+/* how you did, shown only after sending */
+.tf-results { list-style: none; margin: 0 0 22px; padding: 0; }
+.tf-res { display: grid; grid-template-columns: 96px 1fr; column-gap: 12px; row-gap: 3px;
+  padding: 10px 0; border-top: 1px solid #2a333d; font-size: 15px; }
+.tf-res-word { font-weight: bold; }
+.tf-res.ok .tf-res-word { color: #6fcf97; }
+.tf-res.miss .tf-res-word { color: #CEB888; }
+.tf-res-hint { grid-column: 2; font-size: 14px; color: #9fa9b4; line-height: 1.4; }
+.tf-error {font-size: 15px; line-height: 1.5; color: #ffb3bd; margin-bottom: 18px; }
+.tf-ends { font-size: 14px; }
+@media (max-width: 700px) {
+  /* a phone: the task panel becomes a top bar and scaleStage reserves its height instead */
+  #task-bar { right: 0; bottom: auto; width: auto; border-right: 0; border-bottom: 2px solid #CEB888;
+              padding: 12px 16px; gap: 10px; }
+  #task-bar .tb-prompt { font-size: 15px; }
+  #task-bar .tb-right { flex-direction: row; justify-content: flex-start; gap: 8px; }
+  #task-bar .tf-primary, #task-bar .tb-skip { padding: 9px 12px; font-size: 14px; }
+  .tp-card { padding: 22px 18px; }
+  /* five points fit a phone comfortably; they were shrunk when the scale had eleven */
+  .tf-scale { gap: 8px; }
+  /* words on a phone: stack the five choices so none is squeezed to a sliver */
+  .tf-scale { grid-auto-flow: row; grid-auto-columns: auto; }
+  .tf-pt { font-size: 16px; padding: 12px 8px; }
+}
+
+/* ---------------- main-page help popup (iteration 4) ----------------
+   Iteration 4 draws the popup from the compiled panel's own LC_PopHelp page:
+   the real scrim, card, divider and close artwork, positioned by the numbers in
+   js/help.js. Nothing about it is styled here, because a rule in this file
+   could drift away from the panel without anything failing. The only thing left
+   in CSS is the acting button's hover, which has no panel equivalent. */
+.hs-act:hover { filter:brightness(1.08); }

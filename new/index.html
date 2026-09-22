@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Classroom Screen Test</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Cache-Control" content="no-store">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<!-- Dev-only control strip. Same convention as the LC page's .lc-dev-strip:
+     dashed FSU yellow, sits at 0.25 opacity so it stays out of the way, and
+     goes solid on hover or keyboard focus. It is NOT part of the panel UI, and
+     it must never sit over the glass as a bar: the panel is the thing being
+     judged, so the chrome gets out of its way. -->
+<div id="devstrip">
+  <span class="demo-label">&#9888; DEMO ONLY</span>
+  <label>Room
+    <select id="variant">
+      <option value="bluray" selected>Blu-ray (1 proj)</option>
+      <option value="twoproj">Two projectors</option>
+      <option value="twodoc">Two doc cams (201)</option>
+      <option value="standard">Standard</option>
+    </select>
+  </label>
+  <span id="chrome-time">
+    <button data-min="5">+5 min</button>
+    <button data-min="15">+15 min</button>
+    <button data-min="60">+1 hr</button>
+  </span>
+  <button id="chrome-ss">Screensaver</button>
+</div>
+<div id="viewport">
+  <div id="stage-wrap"><div id="stage"></div></div>
+</div>
+<script>
+// Scripts are loaded with a cache-buster on purpose. This mockup is edited while
+// people are testing it, and Chrome's memory cache will otherwise serve an old
+// js/program.js after a reload with no sign that anything is stale. Everything
+// here is local and small, so the re-fetch costs nothing and a tester can never
+// be looking at yesterday's behaviour.
+// Which room this copy claims to be. The help card names it so a caller can say
+// where they are without reading a sign, so it MUST come from here and never be
+// a literal inside the help copy: every room would otherwise claim to be the same room.
+window.PANEL_ROOM = "Test Room";
+
+// Two modes. The DEFAULT is the self-guided usability test (js/testflow.js): standard room only,
+// no dev strip, no deep links, because this page is what testers are sent. ?dev gives the
+// reviewer's page back: the room picker, the clock buttons, ?room, ?main and ?help, free play.
+const DEV_MODE = false;   // public build: always the test, ?dev does nothing
+if (!DEV_MODE) {
+  document.getElementById("devstrip").style.display = "none";
+  document.getElementById("variant").value = "standard";
+  // app.js reads ?room on first boot; a tester must not be able to change the room with it
+  const qs = new URLSearchParams(location.search);
+  if (qs.has("room")) { qs.delete("room"); history.replaceState(null, "", location.pathname + (qs.toString() ? "?" + qs : "")); }
+}
+
+(async function boot() {
+  const cb = "?cb=" + Date.now();
+  const load = src => new Promise((ok, no) => {
+    const s = document.createElement("script");
+    s.src = src + cb; s.onload = ok; s.onerror = () => no(new Error("failed to load " + src));
+    document.body.appendChild(s);
+  });
+  try {
+    for (const f of ["assets/images.js", "js/joins.js", "js/markup.js", "js/room.js",
+                     "js/pearl.js", "js/formatter.js", "js/program.js",
+                     "js/renderer.js", "js/app.js", "js/help.js", "js/grading.js", "js/testflow.js"]) {
+      await load(f);
+    }
+    // the submit address for the test, written by the public build; absent locally, and a
+    // missing file must not stop the panel from booting
+    if (!DEV_MODE) { try { await load("js/testconfig.js"); } catch (e) { /* not configured */ } }
+    window.CACHEBUST = cb;
+    // app.js boots on DOMContentLoaded, which already fired before these loads
+    window.dispatchEvent(new Event("DOMContentLoaded"));
+    // The dev-strip room picker calls boot() again and REPLACES window.app, so
+    // arming once and stopping left the help bound to a dead app: after switching
+    // rooms, HELP opened nothing at all. Measured 2026-09-01. So this watches for
+    // the app IDENTITY changing rather than for it existing, and rebinds every time.
+    // Comparing to a remembered reference is what makes it work; a "have I armed
+    // yet" flag is what broke it.
+    let armedApp = null;
+    const armTasks = setInterval(() => {
+      if (window.app && window.app.program && window.app !== armedApp) {
+        armedApp = window.app;
+        window.helpOverlay = new HelpOverlay(window.app);
+        if (!DEV_MODE) { window.testFlow = new TestFlow(window.app); return; }
+        // ?help lands straight on the help card over a live main page (dev mode
+        // only). It exists so a reviewer does not have to click through the
+        // screensaver to see one screen. It changes nothing the panel does.
+        const qs = new URLSearchParams(location.search);
+        // ?main=1 lands on the powered-on main page with nothing over it, so a reviewer
+        // can look at a control (the volume sliders, say) without the help in the way.
+        // Same join-driven setup as ?help, minus the HELP press.
+        if (!window.__mainDeepLinked && qs.has("main")) {
+          window.__mainDeepLinked = true;
+          setTimeout(() => {
+            const p = window.app.program, B = window.app.bus;
+            const tp = document.getElementById("task-picker");
+            if (tp) tp.remove();
+            window.app.renderer.flipTo("main");
+            B.press(5); B.release(5);
+            p.warmMs = 0; p.refreshAll();
+            B.press(12); B.release(12);
+            B.press(21); B.release(21);
+          }, 150);
+        }
+        if (!window.__helpDeepLinked && qs.has("help")) {
+          window.__helpDeepLinked = true;
+          // Driven through the JOINS, not by poking routes. Poking left source
+          // unset, a state the room cannot be in, and the help's own diagnosis
+          // then read "no source is picked" over a projected picture. A review
+          // entry point that shows an impossible room teaches the wrong thing.
+          // Deferred a tick because presses land on the boot app before it has
+          // finished settling: done inline, POWER ON simply did not take.
+          setTimeout(() => {
+            const p = window.app.program, B = window.app.bus;
+            const tp = document.getElementById("task-picker");
+            if (tp) tp.remove();
+            window.app.renderer.flipTo("main");
+            B.press(5); B.release(5);            // POWER ON
+            p.warmMs = 0; p.refreshAll();        // skip the 30 s warm-up for review
+            B.press(12); B.release(12);          // DESKTOP PC
+            B.press(21); B.release(21);          // PROJECT
+            B.press(25); B.release(25);          // HELP
+            const want = new URLSearchParams(location.search).get("help");
+            if (want && want !== "1") window.helpOverlay.goto(want);
+          }, 150);
+        }
+      }
+    }, 150);
+  } catch (e) {
+    document.getElementById("stage").innerHTML =
+      '<div style="color:#ff8f9c;font:16px Arial;padding:40px">' + e.message + "</div>";
+  }
+})();
+</script>
+</body>
+</html>
