@@ -1,5 +1,5 @@
 {
- "source": "_nl_next28.vtz",
+ "source": "_nl_next29b.vtz",
  "pages": [
   {
    "idx": 1,
@@ -4264,16 +4264,16 @@
      "target": "Simple_Button",
      "geo": {
       "left": 1714,
-      "top": 1010,
+      "top": 1008,
       "width": 86,
-      "height": 48,
+      "height": 50,
       "z": 36
      },
      "props": {
-      "PositionAndSize/Top": "1010",
+      "PositionAndSize/Top": "1008",
       "PositionAndSize/Left": "1714",
       "PositionAndSize/Width": "86",
-      "PositionAndSize/Height": "48",
+      "PositionAndSize/Height": "50",
       "PositionAndSize/Z": "36",
       "PageFlip": "0",
       "SubpageFlip": "0",
@@ -4303,7 +4303,7 @@
        },
        "normal": {
         "icon": null,
-        "image": "images/mute_white_86x48_r10.png",
+        "image": "images/mute_white_86x50_r11.png",
         "fill": "None",
         "label": "<P><FONT size=\"15\" face=\"Arial\" color=\"#101820\"><B>MUTE MIC</B></FONT></P>",
         "align": {
@@ -4315,7 +4315,7 @@
        },
        "pressed": {
         "icon": null,
-        "image": "images/mute_white_86x48_press_r10.png",
+        "image": "images/mute_white_86x50_press_r11.png",
         "fill": "None",
         "label": "<P><FONT size=\"15\" face=\"Arial\" color=\"#ffffff\"><B>MUTE MIC</B></FONT></P>",
         "align": {
@@ -4327,7 +4327,7 @@
        },
        "selected": {
         "icon": null,
-        "image": "images/mute_red_86x48_r10.png",
+        "image": "images/mute_red_86x50_r11.png",
         "fill": "None",
         "label": "<P><FONT size=\"15\" face=\"Arial\" color=\"#ffffff\"><B>UNMUTE MIC</B></FONT></P>",
         "align": {
@@ -4348,16 +4348,16 @@
      "target": "Simple_Button",
      "geo": {
       "left": 1714,
-      "top": 1010,
+      "top": 1008,
       "width": 86,
-      "height": 48,
+      "height": 50,
       "z": 37
      },
      "props": {
-      "PositionAndSize/Top": "1010",
+      "PositionAndSize/Top": "1008",
       "PositionAndSize/Left": "1714",
       "PositionAndSize/Width": "86",
-      "PositionAndSize/Height": "48",
+      "PositionAndSize/Height": "50",
       "PositionAndSize/Z": "37",
       "PageFlip": "0",
       "SubpageFlip": "0",
@@ -4387,7 +4387,7 @@
        },
        "normal": {
         "icon": null,
-        "image": "images/mute_red_86x48_r10.png",
+        "image": "images/mute_red_86x50_r11.png",
         "fill": "None",
         "label": "<P><FONT size=\"15\" face=\"Arial\" color=\"#ffffff\"><B>UNMUTE MIC</B></FONT></P>",
         "align": {
@@ -4399,7 +4399,7 @@
        },
        "pressed": {
         "icon": null,
-        "image": "images/mute_red_86x48_press_r10.png",
+        "image": "images/mute_red_86x50_press_r11.png",
         "fill": "None",
         "label": "<P><FONT size=\"15\" face=\"Arial\" color=\"#ffffff\"><B>UNMUTE MIC</B></FONT></P>",
         "align": {
@@ -4411,7 +4411,7 @@
        },
        "selected": {
         "icon": null,
-        "image": "images/mute_red_86x48_r10.png",
+        "image": "images/mute_red_86x50_r11.png",
         "fill": "None",
         "label": "<P><FONT size=\"15\" face=\"Arial\" color=\"#ffffff\"><B>UNMUTE MIC</B></FONT></P>",
         "align": {
@@ -4432,16 +4432,16 @@
      "target": "Simple_Button",
      "geo": {
       "left": 1806,
-      "top": 1010,
+      "top": 1008,
       "width": 86,
-      "height": 48,
+      "height": 50,
       "z": 38
      },
      "props": {
-      "PositionAndSize/Top": "1010",
+      "PositionAndSize/Top": "1008",
       "PositionAndSize/Left": "1806",
       "PositionAndSize/Width": "86",
-      "PositionAndSize/Height": "48",
+      "PositionAndSize/Height": "50",
       "PositionAndSize/Z": "38",
       "PageFlip": "0",
       "SubpageFlip": "0",
@@ -4471,7 +4471,7 @@
        },
        "normal": {
         "icon": null,
-        "image": "images/mute_white_86x48_r10.png",
+        "image": "images/mute_white_86x50_r11.png",
         "fill": "None",
         "label": "<P><FONT size=\"15\" face=\"Arial\" color=\"#101820\"><B>MUTE MAIN</B></FONT></P>",
         "align": {
@@ -4483,7 +4483,7 @@
        },
        "pressed": {
         "icon": null,
-        "image": "images/mute_white_86x48_press_r10.png",
+        "image": "images/mute_white_86x50_press_r11.png",
         "fill": "None",
         "label": "<P><FONT size=\"15\" face=\"Arial\" color=\"#ffffff\"><B>MUTE MAIN</B></FONT></P>",
         "align": {
@@ -4495,7 +4495,7 @@
        },
        "selected": {
         "icon": null,
-        "image": "images/mute_red_86x48_r10.png",
+        "image": "images/mute_red_86x50_r11.png",
         "fill": "None",
         "label": "<P><FONT size=\"15\" face=\"Arial\" color=\"#ffffff\"><B>UNMUTE MAIN</B></FONT></P>",
         "align": {
@@ -4516,16 +4516,16 @@
      "target": "Simple_Button",
      "geo": {
       "left": 1806,
-      "top": 1010,
+      "top": 1008,
       "width": 86,
-      "height": 48,
+      "height": 50,
       "z": 39
      },
      "props": {
-      "PositionAndSize/Top": "1010",
+      "PositionAndSize/Top": "1008",
       "PositionAndSize/Left": "1806",
       "PositionAndSize/Width": "86",
-      "PositionAndSize/Height": "48",
+      "PositionAndSize/Height": "50",
       "PositionAndSize/Z": "39",
       "PageFlip": "0",
       "SubpageFlip": "0",
@@ -4555,7 +4555,7 @@
        },
        "normal": {
         "icon": null,
-        "image": "images/mute_red_86x48_r10.png",
+        "image": "images/mute_red_86x50_r11.png",
         "fill": "None",
         "label": "<P><FONT size=\"15\" face=\"Arial\" color=\"#ffffff\"><B>UNMUTE MAIN</B></FONT></P>",
         "align": {
@@ -4567,7 +4567,7 @@
        },
        "pressed": {
         "icon": null,
-        "image": "images/mute_red_86x48_press_r10.png",
+        "image": "images/mute_red_86x50_press_r11.png",
         "fill": "None",
         "label": "<P><FONT size=\"15\" face=\"Arial\" color=\"#ffffff\"><B>UNMUTE MAIN</B></FONT></P>",
         "align": {
@@ -4579,7 +4579,7 @@
        },
        "selected": {
         "icon": null,
-        "image": "images/mute_red_86x48_r10.png",
+        "image": "images/mute_red_86x50_r11.png",
         "fill": "None",
         "label": "<P><FONT size=\"15\" face=\"Arial\" color=\"#ffffff\"><B>UNMUTE MAIN</B></FONT></P>",
         "align": {
@@ -6472,7 +6472,7 @@
       "DigitalEnableJoin": "0",
       "DigitalVisibilityJoin": "150",
       "FontSizeChoice": "18",
-      "FontColor": "0xffffff",
+      "FontColor": "0xdfd1a7",
       "HorizontalAlignment": "Center",
       "VerticalAlignment": "Middle",
       "UseHTMLFormatting": "true",

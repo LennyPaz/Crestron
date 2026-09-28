@@ -48,7 +48,7 @@ const TF_RATINGS = [
 const TF_FREE_KINDS = [["needsOk", "A class needs your OK"], ["confirmed", "A class is confirmed"],
                        ["recording", "A class is recording"], ["none", "Nothing booked"]];
 const TF_FREE_MINS = [5, 20, 45];
-// Room layouts the CURRENT panel (round 28) actually has: both are pages of the same compiled
+// Room layouts the CURRENT panel (round 29b) actually has: both are pages of the same compiled
 // panel, switched by d58/d59. Blu-ray and a second doc cam are not on the current glass, so they
 // are not offered (owner asked 2026-09-18/21; see docs/panel_ux_test_pickup_2026-09-17.md).
 const TF_FREE_ROOMS = [["one", "One projector"], ["two", "Two projectors"]];
