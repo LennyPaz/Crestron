@@ -13,7 +13,10 @@ let app = null;
 
 async function boot(variantKey) {
   const v = VARIANTS[variantKey];
-  const spec = await (await fetch(v.spec + (window.CACHEBUST || ""))).json();
+  const res = await fetch(v.spec + (window.CACHEBUST || ""));
+  if (!res.ok) throw new Error("the panel data answered " + res.status);   // shown as plain words by showLoadFailure
+  const specText = await res.text();
+  const spec = JSON.parse(specText);
   document.getElementById("stage").innerHTML = "";
 
   const bus = new JoinBus();
@@ -50,7 +53,7 @@ async function boot(variantKey) {
     },
   });
 
-  function bindVideo(o, el) {
+  function bindVideo(o, el, urlSerial) {
     const n = o.name;
     const R = () => program ? program.routes : { prevL: 0, prevR: 0, kaltura: 0 };
     const camLabel = () => ({ 1: "INSTRUCTOR CAM", 2: "STUDENT CAM", 3: "BOTH CAMS" }[pearl.layoutN] || "CAMERA");
@@ -61,6 +64,14 @@ async function boot(variantKey) {
     // Content_Splash$ / Camera_Splash$), so that is what the recorder previews show
     const recContent = () => pearl.paused ? room.slateScene() : (room.sceneFor(R().kaltura) || room.noContentScene());
     const recCam = () => pearl.paused ? room.slateScene() : room.cameraScene(camLabel(), pearl.layoutN);
+    // The recorder's two streams are told apart by the URL serial a window is bound to, as on the
+    // glass: s60 is the content channel, s61 the camera. Round 30 (09-28) moved those serials
+    // between two windows without renaming them, and binding by NAME showed them the wrong way
+    // round (Astra 2026-09-29). Names are only the fallback for a spec with no serial.
+    const bySerial = {
+      60: () => s60() ? recContent() : null,
+      61: () => s61() ? recCam() : null,
+    };
     const map = {
       "P1_12_screen_container": () => room.sceneFor(R().prevL),
       "P1_14_screen_container": () => room.sceneFor(R().prevR),
@@ -71,7 +82,7 @@ async function boot(variantKey) {
       "Embedded Video_1": () => room.sceneFor(R().prevL),
       "Embedded Video_5": () => room.sceneFor(R().prevR),
     };
-    const get = map[n] || (() => null);
+    const get = bySerial[urlSerial] || map[n] || (() => null);
     room.bind(el, get);
   }
 
@@ -110,6 +121,8 @@ async function boot(variantKey) {
     variant: variantKey,
     // the compiled panel this spec was decoded from, recorded with every test result
     specSource: spec.source || "",
+    // the spec's CONTENT, for the test's study version: the source name alone survives an edit
+    specText,
     bus, pearl, program, renderer, room,
     nudgeClock: min => { clockOffsetMs += min * 60000; },
   };
@@ -156,5 +169,5 @@ window.addEventListener("DOMContentLoaded", () => {
   const want = new URLSearchParams(location.search).get("room");
   if (want && VARIANTS[want]) sel.value = want;
   sel.onchange = () => boot(sel.value);
-  boot(sel.value).then(scaleStage);
+  boot(sel.value).then(scaleStage).catch(() => { if (window.showLoadFailure) window.showLoadFailure(); });
 });

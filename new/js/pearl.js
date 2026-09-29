@@ -12,6 +12,11 @@
 // Corrected against the Codex round-2 review 2026-08-28.
 "use strict";
 
+// The one ID the walk-up form accepts (owner 2026-09-29): given to testers in the task text, so
+// nobody types their real FSUID. FSUID-shaped, with no characters that read alike (no l, I, 1, O,
+// 0, S, 5). Any other ID answers "ID not found", as the real panel does for an unknown one.
+const PRACTICE_FSUID = "rwp34x";
+
 function fmtClockFull(ep) {
   const d = new Date(ep * 1000);
   let h = d.getHours(); const m = d.getMinutes();
@@ -283,7 +288,9 @@ class PearlSim {
   }
   _verifyReply() {
     const id = this._verifyId;
-    if (id.length < 3) { this.adhoc.name = "ID not found"; return; }
+    // only the practice ID is known here; capitals are accepted, as on the real panel (owner
+    // 2026-09-29: an FSUID typed in full capitals still verifies there)
+    if (id.toLowerCase() !== PRACTICE_FSUID) { this.adhoc.name = "ID not found"; return; }
     this.adhoc.verified = true;
     this.adhoc.verifiedId = id;
     // The real panel shows the person's full name. A tester's typed ID is not a real one, so any
@@ -598,3 +605,4 @@ class PearlSim {
 }
 
 window.PearlSim = PearlSim;
+window.PRACTICE_FSUID = PRACTICE_FSUID;

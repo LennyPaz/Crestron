@@ -106,6 +106,16 @@ html, body { height: 100%; background: #0b0f14; color: #dfe3e8; font-family: Ari
   padding: 32px 36px; color: #dfe3e8;
 }
 .tp-card h1 { font-size: 26px; color: #CEB888; margin-bottom: 10px; }
+/* the panel could not load (index.html showLoadFailure): plain words and Try again, on the glass */
+.load-failure { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center;
+  justify-content: center; gap: 18px; background: #101820; color: #dfe3e8; font-family: Arial, sans-serif;
+  text-align: center; padding: 40px; }
+.load-failure h1 { font-size: 56px; color: #CEB888; }
+.load-failure p { font-size: 32px; max-width: 1200px; line-height: 1.4; }
+.load-failure button { font-size: 32px; padding: 18px 48px; border-radius: 12px; border: 0;
+  background: #CEB888; color: #101820; font-weight: bold; cursor: pointer; }
+/* each new screen moves focus to its heading for screen readers; no outline is drawn for that */
+.tp-card h1:focus { outline: none; }
 .tp-sub { font-size: 15px; line-height: 1.5; color: #9fa9b4; margin-bottom: 22px; }
 .tp-free {
   background: #CEB888; color: #101820; border: 0; border-radius: 8px;
@@ -255,6 +265,9 @@ html, body { height: 100%; background: #0b0f14; color: #dfe3e8; font-family: Ari
 .tf-res.miss .tf-res-word { color: #CEB888; }
 .tf-res-hint { grid-column: 2; font-size: 14px; color: #9fa9b4; line-height: 1.4; }
 .tf-error {font-size: 15px; line-height: 1.5; color: #ffb3bd; margin-bottom: 18px; }
+/* answers left from an earlier version of the test, with the button that sends them */
+.tf-older { margin-bottom: 22px; }
+.tf-older .tf-error, .tf-older .tf-note { margin-bottom: 10px; }
 .tf-ends { font-size: 14px; }
 @media (max-width: 700px) {
   /* a phone: the task panel becomes a top bar and scaleStage reserves its height instead */

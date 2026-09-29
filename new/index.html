@@ -5,7 +5,9 @@
 <title>Classroom Screen Test</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta http-equiv="Cache-Control" content="no-store">
-<link rel="stylesheet" href="styles.css">
+<!-- styles.css is loaded by the boot script below, under the build stamp -->
+<!-- until it arrives: the page's own background, and the dev strip out of sight (styles.css shows it) -->
+<style>html, body { background: #0b0f14; } #devstrip { display: none; }</style>
 </head>
 <body>
 <!-- Dev-only control strip. Same convention as the LC page's .lc-dev-strip:
@@ -56,13 +58,62 @@ if (!DEV_MODE) {
   if (qs.has("room")) { qs.delete("room"); history.replaceState(null, "", location.pathname + (qs.toString() ? "?" + qs : "")); }
 }
 
+// Anything that stops the panel loading (a script, or the panel's own data file) ends here: plain
+// words and a way to try again, never the technical error (Astra 2026-09-29: a failed data file
+// used to leave a blank page, and a failed script showed its raw message).
+window.showLoadFailure = function () {
+  const tp = document.getElementById("task-picker");
+  if (tp) tp.remove();
+  const stage = document.getElementById("stage");
+  // the renderer never sized the stage, so size it here and let the page scale it to the window
+  Object.assign(stage.style, { position: "relative", width: "1920px", height: "1080px", overflow: "hidden" });
+  if (window.scaleStage) window.scaleStage();
+  else {
+    // failed before app.js (which owns scaleStage) loaded: fit the card to the window here, and
+    // again on every resize, or Try again can end up off screen (Astra 2026-09-29)
+    const fit = () => {
+      const s = Math.min(window.innerWidth / 1920, window.innerHeight / 1080);
+      Object.assign(document.getElementById("stage-wrap").style, { transform: "scale(" + s + ")", transformOrigin: "0 0" });
+    };
+    fit();
+    window.addEventListener("resize", fit);
+  }
+  stage.innerHTML =
+    '<div class="load-failure"><h1>The panel did not load</h1>' +
+    '<p>This is usually a brief connection problem. Check that you are online, then try again.</p>' +
+    '<button type="button" onclick="location.reload()">Try again</button></div>';
+};
 (async function boot() {
-  const cb = "?cb=" + Date.now();
+  // The public build writes build.json, a stamp of every file it shipped. It is fetched fresh on
+  // every visit and keys every other file, so a returning tester's browser keeps the scripts and
+  // images until a republish, and a cached copy of THIS page cannot pin old ones (Astra 2026-09-29).
+  // Locally there is no build.json, and every load is fresh, as above.
+  // The public build turns REQUIRE_STAMP on (build_public.py). There the stamp is also the test's
+  // study version (js/testflow.js), so a page that loaded without it would take a tester's saved
+  // progress for another version's and start them over (Astra 2026-09-29): it tries twice, then
+  // shows the "did not load" screen rather than start the test under the wrong version.
+  const REQUIRE_STAMP = true;   // public build: see build.json
+  let cb = "?cb=" + Date.now(), stamp = "";
+  for (let attempt = 0; attempt < (REQUIRE_STAMP ? 2 : 1) && !stamp; attempt++) {
+    if (attempt) await new Promise(r => setTimeout(r, 1000));
+    try {
+      const r = await fetch("build.json?t=" + Date.now(), { cache: "no-store" });
+      if (r.ok) { const j = await r.json(); if (/^[0-9a-f]{12}$/.test(j.stamp)) stamp = j.stamp; }
+    } catch (e) { /* tried again, or a local copy */ }
+  }
+  if (stamp) { cb = "?cb=" + stamp; window.BUILD_STAMP = stamp; }
   const load = src => new Promise((ok, no) => {
     const s = document.createElement("script");
     s.src = src + cb; s.onload = ok; s.onerror = () => no(new Error("failed to load " + src));
     document.body.appendChild(s);
   });
+  // the stylesheet goes under the same stamp; a failed one still lets the panel try to load
+  await new Promise(ok => {
+    const l = document.createElement("link");
+    l.rel = "stylesheet"; l.href = "styles.css" + cb; l.onload = ok; l.onerror = ok;
+    document.head.appendChild(l);
+  });
+  if (!stamp && REQUIRE_STAMP) { window.showLoadFailure(); return; }
   try {
     for (const f of ["assets/images.js", "js/joins.js", "js/markup.js", "js/room.js",
                      "js/pearl.js", "js/formatter.js", "js/program.js",
@@ -132,8 +183,7 @@ if (!DEV_MODE) {
       }
     }, 150);
   } catch (e) {
-    document.getElementById("stage").innerHTML =
-      '<div style="color:#ff8f9c;font:16px Arial;padding:40px">' + e.message + "</div>";
+    window.showLoadFailure();
   }
 })();
 </script>

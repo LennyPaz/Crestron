@@ -128,30 +128,47 @@ const TASK_DEFS = [
     // tracked on every state change, not polled: a brief flash on the screen still counts
     watch: (app, st) => { if (visibleToRoom(app, G_SRC.HDMI)) st.laptopShown = true; },
     grade: (app, st) => {
-      const r = app.program.routes;
-      const previewing = r.prevL === G_SRC.HDMI || r.prevR === G_SRC.HDMI;
+      const r = app.program.routes, k = app.pearl;
+      // Owner 2026-09-29 (Astra): the recorder's content window counts too. VIDEO MUTE, the laptop,
+      // PROJECT, then CHECK RECORDER shows the laptop on the panel with the projector blanked. It
+      // follows whatever the program sends to the recorder, so if VIDEO MUTE ever cuts that feed,
+      // this path stops passing on its own.
+      const viaRecorder = !!(k.out && k.out.PreviewOn) && !k.paused && r.kaltura === G_SRC.HDMI &&
+                          app.bus.getS(60) !== "";
+      const previewing = r.prevL === G_SRC.HDMI || r.prevR === G_SRC.HDMI || viaRecorder;
       // also not about to be shown: projected during a warm-up appears when it ends
       const coming = onScreenOrComing(app, G_SRC.HDMI);
       return { worked: previewing && !st.laptopShown && !coming,
-               detail: { previewing, laptopShownToRoom: !!st.laptopShown, laptopAboutToShow: coming } };
+               detail: { previewing, viaRecorder, laptopShownToRoom: !!st.laptopShown, laptopAboutToShow: coming } };
     },
   },
   {
     id: "confirm",
     name: "Make sure a class records",
     hint: "Open LECTURE CAPTURE and press CONFIRM. A class that needs your OK will not record without it.",
-    prompt: "Your class starts in 20 minutes and you want it recorded. Make sure the recording will start on its own when class begins.",
+    // owner 2026-09-29: the scheduled start has to be clear, and starting early no longer passes
+    prompt: "Your class starts in 20 minutes and you want it recorded. Make sure the recording will start on its own at the class's scheduled start time.",
     setup: app => gradeReset(app, { power: true, schedule: [
       gradeEvent(app, "task-confirm", "BSC 2085-0003 - Smith, Jane", 20, 50, true, false)] }),
-    // Looking at the schedule is NOT success. The class has to be confirmed (or already recording)
-    // and not ended.
+    // Looking at the schedule is NOT success. The class has to be confirmed and not ended.
     // Expiry is read on the simulator clock (terminal), not only the ended flag, so a class whose
-    // time passed without recording fails. Started early counts only while it is really capturing.
-    grade: app => {
+    // time passed without recording fails. Owner 2026-09-29: starting it NOW (START NOW, or the
+    // one-press confirm-and-start) is not the task either; it records from 20 minutes early.
+    // And the confirm has to land BEFORE the start (Astra 2026-09-29): a class left unconfirmed past
+    // its start has already lost its opening, however it is rescued afterwards.
+    watch: (app, st) => {
+      const k = app.pearl, e = k.schedule.find(x => x.id === "task-confirm");
+      if (e && e.started && k.now() < e.start) st.startedEarly = true;
+      if (e && e.confirmed && !e.started && k.now() < e.start) st.confirmedInTime = true;
+    },
+    grade: (app, st) => {
       const k = app.pearl, e = k.schedule.find(x => x.id === "task-confirm");
       const alive = !!(e && !k.terminal(e) && k.teardownEvent !== e);
-      const worked = alive && (e.started ? capturing(app, e.id) : e.confirmed);
-      return { worked, detail: { confirmed: !!(e && e.confirmed), started: !!(e && e.started) } };
+      // read live too: "done" pressed within one watch tick of CONFIRM
+      const inTime = !!st.confirmedInTime || !!(e && e.confirmed && !e.started && k.now() < e.start);
+      const worked = alive && !!e.confirmed && inTime && !st.startedEarly;
+      return { worked, detail: { confirmed: !!(e && e.confirmed), started: !!(e && e.started),
+                                 startedEarly: !!st.startedEarly, confirmedInTime: inTime } };
     },
   },
   {
@@ -179,13 +196,27 @@ const TASK_DEFS = [
   {
     id: "walkup",
     name: "Record an unscheduled session",
-    hint: "Open LECTURE CAPTURE, press NEW RECORDING, enter your FSU ID, press VERIFY, choose a length, then START RECORDING.",
-    prompt: "You're holding a review session in this room right now. It isn't on the schedule, so nothing will record it unless you do. Create a new recording.",
+    hint: "Open LECTURE CAPTURE, press NEW RECORDING, enter the FSUID, press VERIFY, choose a length, then START RECORDING.",
+    // the practice ID (owner 2026-09-29), so nobody types their own FSUID into a test
+    prompt: "You're holding a review session in this room right now. It isn't on the schedule, so nothing will record it unless you do. Create a new recording. When it asks for your FSUID, use the practice ID " + window.PRACTICE_FSUID + ".",
     setup: app => gradeReset(app, { power: true }),
-    grade: app => {
+    // how far a tester got, so a miss says where it stopped (Astra 2026-09-29); flags only, never
+    // what was typed
+    watch: (app, st) => {
+      const k = app.pearl, a = k.adhoc || {}, run = k.runEvent();
+      if (app.program.walkup) st.formOpened = true;
+      if (a.verified) st.verified = true;
+      if (a.name === "ID not found") st.idNotFound = true;
+      if (a.durMin > 0) st.lengthPicked = true;
+      if (run && run.walkup) st.started = true;
+    },
+    grade: (app, st) => {
       const k = app.pearl, run = k.runEvent();
       const worked = !!(run && run.walkup && capturing(app, run.id));
-      return { worked, detail: { formOpen: !!app.program.walkup } };
+      return { worked, detail: { formOpen: !!app.program.walkup, formOpened: !!st.formOpened,
+                                 verified: !!st.verified, idNotFound: !!st.idNotFound,
+                                 // a started walk-up always had a length, even picked in the same instant
+                                 lengthPicked: !!(st.lengthPicked || st.started), started: !!st.started } };
     },
   },
   {
@@ -210,9 +241,12 @@ const TASK_DEFS = [
       const k = app.pearl, run = k.runEvent();
       const same = !!(run && run.id === "task-privacy");
       const live = capturing(app, "task-privacy");
-      return { worked: !!(st.heldPrivacy && live),
+      // and the mic must be back on: a mute left on loses the rest of the lecture's sound, which is
+      // the failure this system exists to prevent (Astra 2026-09-29, owner's 09-28 reasoning)
+      const micOn = !app.program.muteMic;
+      return { worked: !!(st.heldPrivacy && live && micOn),
                detail: { held: !!st.heldPrivacy, recordingAgain: !!live, stillPaused: same && k.paused,
-                         mutedMic: !!st.mutedMic } };
+                         mutedMic: !!st.mutedMic, micStillMuted: !micOn } };
     },
   },
 ];
@@ -233,4 +267,7 @@ function gradeWatch(app, task, st) {
 }
 function gradeUnwatch(app) { app.program.__gradeTask = null; app.program.__gradeState = null; }
 
-window.GRADING = { TASK_DEFS, gradeReset, gradeEvent, gradeWatch, gradeUnwatch, visibleToRoom, onScreenOrComing, G_SRC };
+// every helper the grades call is listed here: testflow's study version hashes these, so a helper
+// left out could change how tasks are graded without changing the version
+window.GRADING = { TASK_DEFS, gradeReset, gradeEvent, gradeWatch, gradeUnwatch, visibleToRoom, onScreenOrComing,
+                   capturing, G_SRC };
