@@ -8,7 +8,7 @@ const repoRoot = path.resolve(__dirname, '..', '..');
 const outDir = path.resolve(__dirname, '..', process.argv[2] || 'baseline');
 await fs.mkdir(outDir, { recursive: true });
 
-const indexUrl = pathToFileURL(path.join(repoRoot, 'index.html')).href;
+const indexUrl = pathToFileURL(path.join(repoRoot, 'original.html')).href;   // the old mock, renamed 2026-09-29
 
 const browser = await chromium.launch();
 const context = await browser.newContext({

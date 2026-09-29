@@ -10,7 +10,7 @@ const repoRoot = path.resolve(__dirname, '..', '..');
 const outDir = path.resolve(__dirname, '..', 'laptop');
 await fs.mkdir(outDir, { recursive: true });
 const tag = process.argv[2] || 'shot';
-const indexUrl = pathToFileURL(path.join(repoRoot, 'index.html')).href;
+const indexUrl = pathToFileURL(path.join(repoRoot, 'original.html')).href;   // the old mock, renamed 2026-09-29
 
 const width = parseInt(process.env.W || '1366', 10);
 const height = parseInt(process.env.H || '768', 10);
