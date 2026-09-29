@@ -600,8 +600,19 @@ class Renderer {
     draw();
     this.root.appendChild(wrap);
     this.kbd = wrap;
+    // A tap anywhere outside the keyboard closes it (owner, 2026-09-28), and still does its own
+    // job: VERIFY verifies, a button presses. Capture phase, so this runs before the tapped
+    // control and never swallows it. The field that opened the keyboard is excluded, because its
+    // own tap reopens it; tapping a different field closes this one and opens it for that field.
+    this.kbdOutside = ev => {
+      if (!this.kbd || this.kbd.contains(ev.target) || ev.target === input) return;
+      this.closeKeyboard();
+    };
+    // pointerdown, the event the panel's buttons take (a touch sends mousedown only later)
+    document.addEventListener("pointerdown", this.kbdOutside, true);
   }
   closeKeyboard() {
+    if (this.kbdOutside) { document.removeEventListener("pointerdown", this.kbdOutside, true); this.kbdOutside = null; }
     if (!this.kbd) return;
     this.kbd.remove();
     this.kbd = null;

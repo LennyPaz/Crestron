@@ -101,24 +101,18 @@ function onScreenOrComing(app, src) {
   return (r.projL === src && !p.hiddenL) || (r.projR === src && !p.hiddenR);
 }
 
+// Owner 2026-09-28: the room-computer task was dropped. Every task starts with the room on, so it
+// was the laptop task's two presses with a different source. Its grading cases moved to the
+// laptop task in verify_tasks.js.
 const TASK_DEFS = [
-  {
-    id: "desktop",
-    name: "Show the room computer",
-    hint: "Press DESKTOP PC, then PROJECT. START PRESENTING does both in one press.",
-    prompt: "Your slides are loaded on the room computer. Put them up on the projector screen for the class.",
-    // Owner 2026-09-17: nobody should sit through a warm-up. On the real panel the source and
-    // PROJECT buttons are COVERED for its 30 s (spec covers on join 4), so a task that starts
-    // cold is 30 s of a tester staring at a blocked screen. These start warm.
-    setup: app => gradeReset(app, { power: true }),
-    grade: app => ({ worked: onScreenOrComing(app, G_SRC.DESKTOP),
-                     detail: { warming: app.program.warmMs > 0 } }),
-  },
   {
     id: "laptop",
     name: "Show your laptop",
     hint: "Press LAPTOP HDMI, then PROJECT.",
     prompt: "You just plugged your own laptop in at the front of the room with the HDMI cable. Show your laptop on the projector screen.",
+    // Owner 2026-09-17: nobody should sit through a warm-up. On the real panel the source and
+    // PROJECT buttons are COVERED for its 30 s (spec covers on join 4), so a task that starts
+    // cold is 30 s of a tester staring at a blocked screen. These start warm.
     // HDMI is connected, USB-C is not: choosing the wrong input shows NO SIGNAL and must not pass
     setup: app => gradeReset(app, { power: true, hdmi: true, usbc: false }),
     grade: app => ({ worked: onScreenOrComing(app, G_SRC.HDMI),
@@ -186,7 +180,7 @@ const TASK_DEFS = [
     id: "walkup",
     name: "Record an unscheduled session",
     hint: "Open LECTURE CAPTURE, press NEW RECORDING, enter your FSU ID, press VERIFY, choose a length, then START RECORDING.",
-    prompt: "You are running a review session right now, and no class is booked in this room. Make sure this session is being recorded.",
+    prompt: "You're holding a review session in this room right now. It isn't on the schedule, so nothing will record it unless you do. Create a new recording.",
     setup: app => gradeReset(app, { power: true }),
     grade: app => {
       const k = app.pearl, run = k.runEvent();
@@ -198,22 +192,27 @@ const TASK_DEFS = [
     id: "privacy",
     name: "Keep a private moment out of a recording",
     hint: "Press PAUSE for the conversation, then RESUME. The same recording carries on.",
-    prompt: "Your class is being recorded when a student comes up with a private question. Keep that conversation out of the recording without ending it. By the end of this task, the class should be recording again.",
+    prompt: "Your class is being recorded when a student comes up with a private question. Keep that conversation, and the student, out of the recording without ending it. By the end of this task, the class should be recording again.",
     setup: app => gradeReset(app, { power: true, recordingId: "task-privacy", schedule: [
       gradeEvent(app, "task-privacy", "PSY 3810-0002 - Smith, Jane", -10, 60, false, true)] }),
     // Both halves, on the SAME recording: it was held at some point, and at the moment they say
     // done it is capturing again or its resume is going through (same rule as the other recording
     // tasks: nothing more is needed from the tester), not held, not being stopped.
+    // Muting the mic is NOT the task (owner 2026-09-28): the camera still films the student at the
+    // lectern, and a forgotten mute silently loses the rest of the lecture's sound. It is recorded
+    // as its own flag, so the results show how many testers reach for mute first.
     watch: (app, st) => {
       const k = app.pearl, run = k.runEvent();
       if (k.paused && run && run.id === "task-privacy") st.heldPrivacy = true;
+      if (app.program.muteMic) st.mutedMic = true;
     },
     grade: (app, st) => {
       const k = app.pearl, run = k.runEvent();
       const same = !!(run && run.id === "task-privacy");
       const live = capturing(app, "task-privacy");
       return { worked: !!(st.heldPrivacy && live),
-               detail: { held: !!st.heldPrivacy, recordingAgain: !!live, stillPaused: same && k.paused } };
+               detail: { held: !!st.heldPrivacy, recordingAgain: !!live, stillPaused: same && k.paused,
+                         mutedMic: !!st.mutedMic } };
     },
   },
 ];

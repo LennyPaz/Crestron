@@ -284,10 +284,12 @@ class PearlSim {
   _verifyReply() {
     const id = this._verifyId;
     if (id.length < 3) { this.adhoc.name = "ID not found"; return; }
-    const cap = id[0].toUpperCase() + id.slice(1).replace(/[0-9]/g, "");
     this.adhoc.verified = true;
     this.adhoc.verifiedId = id;
-    this.adhoc.name = this.opts.verifyName ? this.opts.verifyName(id) : (cap + " Seminole");
+    // The real panel shows the person's full name. A tester's typed ID is not a real one, so any
+    // name here is made up: "Test Instructor" says so plainly and can never match a real instructor
+    // (owner, 2026-09-28; it used to be the ID plus "Seminole", which read as broken).
+    this.adhoc.name = this.opts.verifyName ? this.opts.verifyName(id) : "Test Instructor";
     this.adhoc.error = "";
     this.verAge = 0;
   }

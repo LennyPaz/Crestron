@@ -1,4 +1,4 @@
-// The self-guided usability test: welcome, two optional questions, seven tasks with two worded
+// The self-guided usability test: welcome, two optional questions, six tasks with two worded
 // ratings after each, then submit, and a summary of how they did once it is sent. Testers can also
 // explore the panel on their own at any time. Replaces the old free-choice picker (tasks.js).
 //
@@ -237,7 +237,9 @@ class TestFlow {
       '<div id="task-bar" hidden>' +
         '<div class="tb-left"><div class="tb-title"></div><div class="tb-prompt"></div>' +
           '<div class="tb-warm" hidden></div>' +
-          '<div class="tb-warn tf-error" hidden></div></div>' +
+          '<div class="tb-warn tf-error" hidden></div>' +
+          '<div class="tb-room"><div class="tb-room-q">IN THE ROOM</div>' +
+            '<div class="tb-room-screens"></div><div class="tb-room-cap"></div></div></div>' +
         '<div class="tb-right">' +
           '<button class="tf-primary tb-done">I think I am done</button>' +
           '<button class="tb-skip tb-stuck">I am stuck, skip this</button>' +
@@ -257,7 +259,26 @@ class TestFlow {
     this.bar.querySelector(".tb-reset").onclick = () => this.resetTask();
     this.bar.querySelector(".tb-tasks").onclick = () => this.leaveFree();
     this.bar.querySelector(".tb-send").onclick = () => this.go("finish");
+    // The projector screen as the room sees it (owner 2026-09-28): the instructor at the lectern
+    // can see the screen, the tester cannot, so it is drawn here. The room repaints it on every
+    // route, video mute and power change. Only two looks, as in a real room: the picture, or black
+    // (off, warming, video mute and nothing sent all look the same from the lectern).
+    if (this.app.room) this.app.room.bind(this.bar.querySelector(".tb-room-screens"), () => this.roomScreens());
     this.showStorageWarning();
+  }
+
+  roomScreens() {
+    const p = this.app.program, two = !!(p.opts && p.opts.twoProj);
+    const scene = side => {
+      const hidden = side === "R" ? p.hiddenR : p.hiddenL;
+      if (!p.powerOn || p.warmMs > 0 || hidden) return "";
+      return this.app.room.sceneFor(side === "R" ? p.routes.projR : p.routes.projL) || "";
+    };
+    const cap = this.bar.querySelector(".tb-room-cap");
+    if (cap) cap.textContent = two ? "The two projector screens" : "The projector screen";
+    const screen = side => '<div class="tb-room-screen' + (two ? " half" : "") + '" data-side="' + side + '">' +
+      '<div class="tb-room-inner">' + scene(side) + "</div></div>";
+    return two ? screen("L") + screen("R") : screen("L");
   }
 
   // Which buttons the side panel shows: during a task, while exploring, or with feedback unsent.

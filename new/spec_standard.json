@@ -1,5 +1,5 @@
 {
- "source": "_nl_next29b.vtz",
+ "source": "_nl_next30.vtz",
  "pages": [
   {
    "idx": 1,
@@ -4951,7 +4951,7 @@
       "IndirectTextJoin": "15",
       "DigitalEnableJoin": "0",
       "DigitalVisibilityJoin": "0",
-      "FontSizeChoice": "14",
+      "FontSizeChoice": "16",
       "FontColor": "0xffffff",
       "HorizontalAlignment": "Center",
       "VerticalAlignment": "Middle",
@@ -5198,7 +5198,7 @@
       "PositionAndSize/Z": "51",
       "ScreenAspectRatio": "Stretch",
       "SourceID": "252",
-      "URLSerial": "61",
+      "URLSerial": "60",
       "DigitalPressJoin": "0",
       "DigitalEnableJoin": "0",
       "DigitalVisibilityJoin": "68",
@@ -5961,7 +5961,7 @@
       "PositionAndSize/Z": "60",
       "ScreenAspectRatio": "Stretch",
       "SourceID": "252",
-      "URLSerial": "60",
+      "URLSerial": "61",
       "DigitalPressJoin": "0",
       "DigitalEnableJoin": "0",
       "DigitalVisibilityJoin": "68",

@@ -173,6 +173,19 @@ html, body { height: 100%; background: #0b0f14; color: #dfe3e8; font-family: Ari
 .tb-pick-row2 { grid-template-columns: repeat(2, 1fr); }
 .tb-setup-note { font-size: 12px; color: #8892a0; margin-top: 4px; }
 .tb-warm {margin-top: 14px; font-size: 14px; line-height: 1.4; color: #CEB888; }
+/* "IN THE ROOM": the projector screen, drawn from the same scenes as the panel's previews (a
+   928x522 scene scaled to fit). Black is the only other look, as in a real room. */
+.tb-room { margin-top: 22px; }
+.tb-room-q { font-size: 12px; color: #CEB888; font-weight: bold; letter-spacing: .04em; margin-bottom: 6px; }
+.tb-room-screens { display: flex; gap: 8px; }
+.tb-room-screen { position: relative; width: 260px; height: 146px; overflow: hidden; flex: none;
+  border: 6px solid #2a2f35; border-radius: 3px; background: #000; box-sizing: content-box;
+  box-shadow: 0 6px 18px rgba(0,0,0,.5); }
+.tb-room-screen.half { width: 122px; height: 69px; border-width: 4px; }
+.tb-room-inner { position: absolute; left: 0; top: 0; width: 928px; height: 522px;
+  transform: scale(0.2802); transform-origin: 0 0; }
+.tb-room-screen.half .tb-room-inner { transform: scale(0.1315); }
+.tb-room-cap { font-size: 12px; color: #8892a0; margin-top: 6px; text-align: center; }
 .tb-title { font-size: 13px; color: #CEB888; font-weight: bold; letter-spacing: .04em; }
 .tb-prompt { font-size: 17px; line-height: 1.35; margin-top: 2px; }
 .tb-right { display: flex; align-items: center; gap: 14px; flex-shrink: 0; }

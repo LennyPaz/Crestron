@@ -107,8 +107,8 @@ class Page1Formatter {
       top = "RECORDING"; title = this.clean(I.NowTitle, 54);
       t1 = this.ellip(this.sourceName(I.CaptureRoute, 0), 15);
       t2 = this.nowEndClock(I.NowUntil);
-      if (t1.length === 0 && t2.length > 0) dim = "until " + t2;
-      else if (t2.length > 0) dim = t1 + " - until " + t2;
+      if (t1.length === 0 && t2.length > 0) dim = "ends " + t2;
+      else if (t2.length > 0) dim = t1 + " - ends " + t2;
       else dim = t1;
     } else if (I.StateRec && !I.RecordingTruth && !this.gWasRec) {
       top = "STARTING";
@@ -118,8 +118,8 @@ class Page1Formatter {
       top = "RECORDING"; title = this.clean(I.NowTitle, 54);
       t1 = this.ellip(this.sourceName(I.CaptureRoute, 0), 15);
       t2 = this.nowEndClock(I.NowUntil);
-      if (t1.length === 0 && t2.length > 0) dim = "until " + t2;
-      else if (t2.length > 0) dim = t1 + " - until " + t2;
+      if (t1.length === 0 && t2.length > 0) dim = "ends " + t2;
+      else if (t2.length > 0) dim = t1 + " - ends " + t2;
       else dim = t1;
     } else if (I.ConfirmReady && !I.Confirmed) {
       top = "NEEDS YOUR OK";
@@ -147,8 +147,8 @@ class Page1Formatter {
       dim = this.ellip(dim, 32);
       for (;;) {
         t1 = this.ellip(title, titleCap);
-        t1 = this.wrapFit(t1, 26, 2);
-        body = '<FONT size="14"><B>' + t1 + '</B></FONT><BR><FONT size="1"> </FONT><BR><FONT color="#C3CAD1" size="13">' + dim + "</FONT>";
+        t1 = this.wrapFit(t1, 22, 2);   // v1.17: 16 px title, 22 a line
+        body = '<FONT size="16"><B>' + t1 + '</B></FONT><BR><FONT size="1"> </FONT><BR><FONT color="#C3CAD1" size="13">' + dim + "</FONT>";
         if (body.length <= 242 || titleCap <= 6) break;
         titleCap -= 6;
       }
