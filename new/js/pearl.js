@@ -274,7 +274,14 @@ class PearlSim {
     if (!this.adhoc.verified) this.adhoc.name = "Whole minutes 1-480 only";
   }
   adhocDur(n) { this.adhoc.durMin = n; this.adhoc.custom = false; this.adhoc.error = ""; this.bus.setS(45, "", true); }
-  customArm() { this.adhoc.custom = true; this.adhoc.durMin = 0; }
+  // CUSTOM arms the typed length. From a preset it clears the length, so START waits for one to be
+  // typed; over a valid typed length it changes nothing, as on the bench, where CUSTOM only sets the
+  // program's CustomArm latch (Rev 60 R:7238) and the module keeps its value (Astra 2026-09-29: the
+  // second press used to wipe the length and take START away).
+  customArm() {
+    if (this.adhoc.custom && this.adhoc.durMin > 0) return;
+    this.adhoc.custom = true; this.adhoc.durMin = 0;
+  }
   // PearlRest.usp:3147-3150: any verify starts unverified and shows "Checking..." until the
   // device answers; the answer is simulated a second later (_verifyReply). There is no directory
   // here, so any plausible id gets an invented name.

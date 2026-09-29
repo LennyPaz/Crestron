@@ -27,7 +27,10 @@ async function boot(variantKey) {
   const simNow = () => new Date(Date.now() + clockOffsetMs);
 
   const pearl = new PearlSim(bus, { now: () => simNow().getTime() });
-  const sources = { 1: "Blu-ray", 2: "Document Camera", 3: "Desktop PC", 4: "Wireless Stream", 5: "Laptop HDMI", 6: "Laptop USB-C", 7: "Document Camera 2" };
+  // The names the status card shows, as the program gives them to Page1Formatter (Rev 60, H=166
+  // parameters P2..P7). "Doc Cam", not "Document Camera" (Astra 2026-09-29). Input 7 exists only in
+  // room 201's design, which has no program yet; its name follows the same pattern.
+  const sources = { 1: "Blu-ray", 2: "Doc Cam", 3: "Desktop PC", 4: "Wireless Stream", 5: "Laptop HDMI", 6: "Laptop USB-C", 7: "Doc Cam 2" };
   const fmt = new Page1Formatter(bus, sources);
 
   // default schedule: seeded relative to the sim clock. Titles are in the shape the

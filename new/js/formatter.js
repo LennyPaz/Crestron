@@ -97,8 +97,11 @@ class Page1Formatter {
     } else if (I.EndedPulse) {
       top = "RECORDING ENDED"; title = this.gEndedTitle;
       dim = "Uploads to My Media on its own";
+    } else if (I.RecorderHealth & 8) {
+      top = "ONE MOMENT"; title = this.clean(I.NowTitle, 54);   // v1.19: between states
+      dim = "Checking the recorder";
     } else if (I.StatePaused && I.RecordingTruth) {
-      top = "ON HOLD"; title = this.clean(I.NowTitle, 54);
+      top = "PAUSED"; title = this.clean(I.NowTitle, 54);   // v1.18 (was ON HOLD)
       dim = "Open Lecture Capture to resume";
     } else if (I.StateRec && I.RecordingTruth && I.RemainingSeconds > 0 && I.RemainingSeconds < 600) {
       top = this.mss(I.RemainingSeconds); title = this.clean(I.NowTitle, 54);
@@ -160,7 +163,8 @@ class Page1Formatter {
     this.shBody = body;
 
     if (!recValid) this.shTruth = '<FONT size="13" color="#5A6068"><B>STATUS UNKNOWN</B></FONT>';
-    else if (I.RecordingTruth && I.StatePaused) this.shTruth = '<FONT size="13" color="#101820"><B>ON HOLD</B></FONT>';
+    else if (I.RecorderHealth & 8) this.shTruth = '<FONT size="13" color="#5A6068"><B>ONE MOMENT</B></FONT>';   // v1.19
+    else if (I.RecordingTruth && I.StatePaused) this.shTruth = '<FONT size="13" color="#101820"><B>PAUSED</B></FONT>';
     else if (I.RecordingTruth) this.shTruth = '<FONT size="13" color="#A6192E"><B>RECORDING</B></FONT>';
     else this.shTruth = '<FONT size="13" color="#101820"><B>NOT RECORDING</B></FONT>';
   }

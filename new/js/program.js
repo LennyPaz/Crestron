@@ -141,9 +141,12 @@ class Program {
     B.onPress(23, e => { if (e) { this.preset = 23; this.refreshAll(); } });
 
     // ---- volume + mutes (H=101..108) ----
-    // H=104/108: the mute reset fires on a volume-feedback CHANGE, not the command
-    B.onSendA(2, v => { if (v !== this.volMain) { this.volMain = v; this.muteMain = false; } this.refreshAll(); });
-    B.onSendA(3, v => { if (v !== this.volMic) { this.volMic = v; this.muteMic = false; } this.refreshAll(); });
+    // Rev 58 (bench since 2026-09-17, plan option A): a slider only changes volume. Up to Rev 57 a
+    // volume change sent a 0.3 s unmute pulse (H104 MAIN, H108 MIC) into the UNMUTE OR, so dragging
+    // a muted channel's slider unmuted it; Rev 58 re-pointed those OR inputs and the pulses have no
+    // reader. A muted mic stays muted until UNMUTE (or, on the older glass, its mute toggle).
+    B.onSendA(2, v => { this.volMain = v; this.refreshAll(); });
+    B.onSendA(3, v => { this.volMic = v; this.refreshAll(); });
     // Rev 56: the mutes are ABSOLUTE pairs, not toggles. d30/d32 are Main_/Mic_Mute_On_Press,
     // d35/d37 are Mic_/Main_Mute_Off_Press (DGE O30/O32/O35/O37). The sim used to toggle on
     // 30/32, which is exactly what a DGE double-fire turns into a wrong answer, and never
@@ -607,7 +610,15 @@ class Program {
     B.setD(141, P.PreviewOn && !anyModal ? 1 : 0);
     // Owner 2026-09-17: while the recording is held the RECORDER's meter sits at zero. The mic
     // still hears the room, but nothing is reaching the recording, and the meter belongs to it.
-    B.setA(6, P.PreviewOn && !P.StatePaused ? P.AudioLevel : 0);
+    // What the recorder hears (Rev 60): the two Aux mixes that feed it carry the mic, muted by MIC
+    // MUTE (Mic_Out_Audio_Mute_On, H=249), and the content's audio, muted by MAIN MUTE
+    // (Program_Out_Audio_Mute_On, H=262). This room's sources are silent pictures (no content
+    // audio is modelled), so the recorder hears the mic: the meter follows the same speech level as
+    // the mic meter and reads 0 when the mic is muted (Astra 2026-09-29: it kept bouncing, which told
+    // a tester in the privacy task that a muted mic was still recording). 0, not a floor: PearlRest
+    // v10.56 maps -60 dBFS or quieter to 0 (PearlRest.usp:4163), and a muted mix is silence.
+    const heard = Math.round(this.micLevel * 45000);
+    B.setA(6, P.PreviewOn && !P.StatePaused ? Math.min(65535, heard) : 0);
 
     // Needs_Confirm (H=164/165): confirm window open and not yet confirmed
     B.setD(118, P.StateConfirmRaw && !P.Confirmed ? 1 : 0);
