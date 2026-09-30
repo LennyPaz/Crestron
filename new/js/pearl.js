@@ -446,7 +446,17 @@ class PearlSim {
     const nx = this.nextEvent();
     const H = this.health;
     const schedOk = H.scheduleValid;
-    const health = (H.recorderValid ? 1 : 0) | (schedOk ? 2 : 0) | (H.transportDown ? 4 : 0);
+    // bit 3: the main card says ONE MOMENT rather than RECORDING or PAUSED (PearlRest.usp 4588-4594).
+    // Ported: v10.57 (Rev 63), while a recording runs and the hold's own cover is up, asked for and
+    // not yet confirmed or released and not yet restored, which here is pausePending. That covers
+    // END pressed while a hold engages or is being released; END during a confirmed hold stays
+    // PAUSED. NOT ported, because the mockup models no pause at the device: v10.56's ENDING row
+    // (PearlRest.usp:1507, only when gPauseInPlay, which only a recorder reporting itself paused
+    // raises, :3731) and the device-pause rows 4 to 7. So an END on a plain recording raises nothing
+    // here, as on the bench: RECORDING until the stop lands, then RECORDING ENDED. (First cut raised
+    // it on every END; the touch-panel session caught it against :1507, 2026-09-29.)
+    const between = this.recording && this.pausePending > 0;
+    const health = (H.recorderValid ? 1 : 0) | (schedOk ? 2 : 0) | (H.transportDown ? 4 : 0) | (between ? 8 : 0);
 
     // ---- kiosk state machine (PearlRest.usp:3747-3779) ----
     // display recording holds through the stop teardown (the persisted event id)
