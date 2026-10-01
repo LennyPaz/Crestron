@@ -501,7 +501,8 @@ class Renderer {
     // LaunchKeyboard: on the real panel the field has no keyboard of its own. Tapping it opens the
     // PANEL's on-screen keyboard, over the lower half of the glass, and that is the only way to
     // type. It never opens uninvited (Set Focus On was removed 2026-07-15, owner), so this hangs
-    // off the tap, and the field takes no keystrokes from the tester's own keyboard.
+    // off the tap. The field itself takes no keystrokes; while the panel keyboard is open, the
+    // tester's own keyboard types through it (see launchKeyboard).
     if ((p.LaunchKeyboard || "false") === "true") {
       input.readOnly = true;
       input.addEventListener("keydown", ev => ev.preventDefault());
@@ -610,9 +611,36 @@ class Renderer {
     };
     // pointerdown, the event the panel's buttons take (a touch sends mousedown only later)
     document.addEventListener("pointerdown", this.kbdOutside, true);
+    // Owner 2026-10-01: while the panel's keyboard is showing, the tester's OWN keyboard types too
+    // ("as long as they see the keyboard it's fine"). Every AI stand-in run typed on its own keyboard
+    // first and got nothing. It goes through the same key actions, so the serial join fires per
+    // character as for an on-screen key. With the panel keyboard closed it still does nothing: the
+    // field is opened by a tap, as on the glass. Shortcuts (Ctrl, Alt, Cmd) are left alone.
+    this.kbdKeys = ev => {
+      if (!this.kbd || ev.ctrlKey || ev.metaKey || ev.altKey) return;
+      // Only keys aimed at the panel: anything focused in the side panel (its notes, its buttons)
+      // keeps its own keys, so Enter on a side-panel button is never a VERIFY press.
+      const t = ev.target;
+      if (t && t !== input && t !== document.body && t !== document.documentElement && !this.root.contains(t)) return;
+      if (ev.key === "Backspace") act("bksp");
+      else if (ev.key === "Enter") act("go");
+      else if (ev.key === "Escape") act("hide");
+      // Tab does nothing, as the panel's own Tab key does nothing; left to the browser it would move
+      // focus to the next field and light it while the keys still typed into this one
+      else if (ev.key === "Tab") { /* inert */ }
+      else if (ev.key === " ") type(" ");
+      // only what the glass can type: letters (shifted too), digits and the two layers' symbols
+      else if (/^[A-Za-z0-9,.!?\/@'"\-_#$%&*+()<>=:;]$/.test(ev.key)) type(ev.key);
+      else return;
+      // stop it reaching the field too, whose own Enter handler would press the join a second time
+      ev.preventDefault();
+      ev.stopPropagation();
+    };
+    document.addEventListener("keydown", this.kbdKeys, true);
   }
   closeKeyboard() {
     if (this.kbdOutside) { document.removeEventListener("pointerdown", this.kbdOutside, true); this.kbdOutside = null; }
+    if (this.kbdKeys) { document.removeEventListener("keydown", this.kbdKeys, true); this.kbdKeys = null; }
     if (!this.kbd) return;
     this.kbd.remove();
     this.kbd = null;
