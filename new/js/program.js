@@ -308,7 +308,9 @@ class Program {
     if (side === "L") this.routes.projL = this.source;
     else if (side === "R") this.routes.projR = this.source;
     else { this.routes.projL = this.source; this.routes.projR = this.source; }
-    if (this.source !== 1) this.routes.kaltura = this.source;  // H=72: Blu-ray never reaches capture
+    // H=72: Blu-ray never reaches capture. In a two-projector room the recorder takes what goes
+    // to the LEFT projector (owner, 2026-10-01), so PROJECT RIGHT leaves the recording alone.
+    if (this.source !== 1 && side !== "R") this.routes.kaltura = this.source;
     this.routes.audio = this.source === 0 ? 0 : this.source + 5;   // H=69/70 via project press
     this.routeChanged();
   }
