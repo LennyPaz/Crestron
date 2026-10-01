@@ -151,6 +151,19 @@ html, body { height: 100%; background: #0b0f14; color: #dfe3e8; font-family: Ari
   /* owner 2026-10-01: when its content is taller than the window it scrolls, and its parts keep their
      size instead of being squashed (the explore panel's buttons used to fall off the bottom) */
   overflow-y: auto; overscroll-behavior: contain;
+  /* owner 2026-10-01: never a sideways scroll, and a scrollbar of our own. The gutter is kept even
+     when nothing scrolls, so the content does not jump sideways when the scrollbar appears; the
+     IN THE ROOM picture below is sized to fit beside it. */
+  overflow-x: hidden; scrollbar-gutter: stable;
+}
+/* Chrome, Edge and Safari draw these; Firefox, which has no such selectors, takes the two
+   standard properties below instead. Legacy Blue on the panel's own dark, gold under the pointer. */
+#task-bar::-webkit-scrollbar { width: 8px; }
+#task-bar::-webkit-scrollbar-track { background: transparent; }
+#task-bar::-webkit-scrollbar-thumb { background: #425563; border-radius: 4px; }
+#task-bar::-webkit-scrollbar-thumb:hover { background: #CEB888; }
+@supports not selector(::-webkit-scrollbar) {
+  #task-bar { scrollbar-width: thin; scrollbar-color: #425563 transparent; }
 }
 #task-bar > * { flex-shrink: 0; }
 #task-bar[hidden] { display: none; }
@@ -180,12 +193,12 @@ html, body { height: 100%; background: #0b0f14; color: #dfe3e8; font-family: Ari
 .tb-room { margin-top: 22px; }
 .tb-room-q { font-size: 12px; color: #CEB888; font-weight: bold; letter-spacing: .04em; margin-bottom: 6px; }
 .tb-room-screens { display: flex; gap: 8px; }
-.tb-room-screen { position: relative; width: 260px; height: 146px; overflow: hidden; flex: none;
+.tb-room-screen { position: relative; width: 256px; height: 144px; overflow: hidden; flex: none;
   border: 6px solid #2a2f35; border-radius: 3px; background: #000; box-sizing: content-box;
   box-shadow: 0 6px 18px rgba(0,0,0,.5); }
 .tb-room-screen.half { width: 122px; height: 69px; border-width: 4px; }
 .tb-room-inner { position: absolute; left: 0; top: 0; width: 928px; height: 522px;
-  transform: scale(0.2802); transform-origin: 0 0; }
+  transform: scale(0.27586); transform-origin: 0 0; }   /* 256 / 928, so it fits beside the scrollbar */
 .tb-room-screen.half .tb-room-inner { transform: scale(0.1315); }
 .tb-room-cap { font-size: 12px; color: #8892a0; margin-top: 6px; text-align: center; }
 .tb-title { font-size: 13px; color: #CEB888; font-weight: bold; letter-spacing: .04em; }
