@@ -45,6 +45,7 @@ class Program {
     this.micReachable = true;
     this.micLevel = 0;         // 0..1, what A8 carries
     this.hideGuardMs = 0;      // Rev 56 H=299 VIDEO MUTE 0.5 s window
+    this.hideGuardSideMs = { L: 0, R: 0 };   // the same window on each side's own button
     this.micTarget = 0;
     this.micHoldMs = 0;
     // PER SIDE. A two-projector room has VIDEO MUTE LEFT and RIGHT (d87/d88) with
@@ -359,15 +360,24 @@ class Program {
     // rev34 H=238: a mute press with the power off flashes POWER (it lands nowhere)
     if (!this.powerOn) { this.flashSrcMs = 0; this.flashPwr(); return; }
     if (side === "L" || side === "R") {
-      // d87 / d88: "HIDE LEFT press, absolute on" and its right-hand twin
-      // (allocation 5.3). Absolute, not a toggle, and it moves ONE side.
-      if (side === "L") this.hiddenL = true; else this.hiddenR = true;
+      // d87 / d88, VIDEO MUTE LEFT / RIGHT: each moves ONE screen and shows its own state (its red
+      // UNMUTE face), and a second press brings that screen back. The real program has no
+      // two-projector logic yet and nothing on the glass presses the allocation's d89/d97 SHOW
+      // pair, so without this a side muted on its own had no way back but the combined button
+      // (owner 1A, 2026-10-01; stand-in tester). The same 0.5 s window as VIDEO MUTE keeps the
+      // panel's double-fire from undoing a press.
+      if (this.hideGuardSideMs[side] > 0) return;
+      this.hideGuardSideMs[side] = 500;
+      if (side === "L") this.hiddenL = !this.hiddenL; else this.hiddenR = !this.hiddenR;
     } else {
       // Rev 56 H=299: a 0.5 s One Shot on VIDEO MUTE, so a second press (or the panel's
       // double-fire) inside the window does nothing, rather than un-blanking again
       if (this.hideGuardMs > 0) return;
       this.hideGuardMs = 500;
-      this.hidden = !this.hidden;                // d31, the combined toggle
+      // d31, the combined button: shows both when both are hidden, otherwise hides both. With one
+      // side hidden it used to SHOW that side, the opposite of what it says. In a one-projector
+      // room the two flags always move together, so this is the old toggle there.
+      this.hidden = !(this.hiddenL && this.hiddenR);
     }
     if (this.opts.onHide) this.opts.onHide(this.hidden, side);
     this.refreshAll();
@@ -452,6 +462,7 @@ class Program {
   // ---------------------------------------------------------------- tick
   tick(ms) {
     if (this.hideGuardMs > 0) this.hideGuardMs -= ms;
+    for (const s of ["L", "R"]) if (this.hideGuardSideMs[s] > 0) this.hideGuardSideMs[s] -= ms;
     // warm-up one-shot
     if (this.warmMs > 0) {
       this.warmMs -= ms;
@@ -558,7 +569,11 @@ class Program {
     // 2026-09-14 shows MUTE MIC and MUTE MAIN under the meter and the slider.
     B.setD(36, this.muteMic ? 0 : 1);
     B.setD(38, this.muteMain ? 0 : 1);
-    B.setD(31, this.hidden ? 1 : 0);
+    // each mute button lights for what it controls: LEFT and RIGHT for their own screen, the
+    // combined one (and the one-projector room's single button) only when every screen is hidden
+    B.setD(31, this.hiddenL && this.hiddenR ? 1 : 0);
+    B.setD(87, this.hiddenL ? 1 : 0);
+    B.setD(88, this.hiddenR ? 1 : 0);
     B.setA(2, this.volMain); B.setA(3, this.volMic);
     B.setD(167, this.micReachable ? 1 : 0);      // segmented meter, while the mic answers
     B.setD(168, this.micReachable ? 0 : 1);      // the grey dead bar, while it does not

@@ -146,7 +146,7 @@ const HELP_TOPICS = [
       { art: { faces: [F.project] },
         t: "Press {PROJECT}." },
       { art: { faces: [F.hide, F.hideRed] },
-        t: "Under SCREEN CONTROLS, a button reading {UNMUTE} means the picture is hidden. Press {UNMUTE}." },
+        t: "Under SCREEN CONTROLS, a button reading {UNMUTE_ANY} means that picture is hidden. Press it." },
     ],
     exit: true,
   },
@@ -203,8 +203,8 @@ const HELP_TOPICS = [
     id: "dark", tile: "The projector went black",
     title: "THE PROJECTOR WENT BLACK",
     hot: p => p.hidden,
-    // NOT a pulse on join 31. d31 is the hide TOGGLE (program.js hidePress,
-    // "this.hidden = !this.hidden"), and this hardware double-fires taps: one tap
+    // NOT a pulse on join 31. d31 is a hide TOGGLE (program.js hidePress: it hides both
+    // screens unless both are hidden), and this hardware double-fires taps: one tap
     // would unhide and immediately re-hide, close the popup, and leave the screen
     // black with no sign anything happened. Same failure that already bit the LC
     // pause button and the END popup, and this file guards its own HELP press for
@@ -220,11 +220,11 @@ const HELP_TOPICS = [
     act: { label: "SHOW PICTURE NOW", join: 26, when: p => p.hidden },
     steps: [
       { art: { faces: [F.hideRed] },
-        t: "Under SCREEN CONTROLS, a button reading {UNMUTE} means the picture is hidden. Press {UNMUTE}." },
+        t: "Under SCREEN CONTROLS, a button reading {UNMUTE_ANY} means that picture is hidden. Press it." },
       { art: { faces: [F.powerOn] },
         t: "{Projector} not on? Press POWER ON. Warm-up takes about half a minute." },
       { art: { faces: [F.project] },
-        t: "Still black and no button reads {UNMUTE}? Wake the laptop or room PC by pressing a key, check its button is still selected under INPUT SOURCES, then press {PROJECT} again." },
+        t: "Still black and no button reads {UNMUTE_ANY}? Wake the laptop or room PC by pressing a key, check its button is still selected under INPUT SOURCES, then press {PROJECT} again." },
       { art: { faces: [F.lc] },
         t: "Hiding the picture does not stop a recording." },
     ],
@@ -292,10 +292,12 @@ const HELP_TOPICS = [
 // for the same reason the faces are: the caption on the glass is what the person
 // is hunting for, and it differs between the two families.
 const NAMES = {
-  one: { PROJECT: "PROJECT", VIDEOMUTE: "VIDEO MUTE", UNMUTE: "UNMUTE VIDEO",
+  one: { PROJECT: "PROJECT", VIDEOMUTE: "VIDEO MUTE", UNMUTE: "UNMUTE VIDEO", UNMUTE_ANY: "UNMUTE VIDEO",
          PROJECTOR: "projector", Projector: "Projector" },
   two: { PROJECT: "PROJECT LEFT + RIGHT", VIDEOMUTE: "VIDEO MUTE LEFT + RIGHT",
-         UNMUTE: "UNMUTE LEFT + RIGHT", PROJECTOR: "projectors", Projector: "Projectors" },
+         UNMUTE: "UNMUTE LEFT + RIGHT", PROJECTOR: "projectors", Projector: "Projectors",
+         // each side's button lights for its own screen (owner, 2026-10-01)
+         UNMUTE_ANY: "UNMUTE LEFT, UNMUTE RIGHT or UNMUTE LEFT + RIGHT" },
 };
 let HELP_TWO = false;                       // set from the room variant on open
 // LISTEN is gated by its OWN flag, d56 "one room only" (program.js), NOT by the
@@ -427,6 +429,8 @@ function drawLaptopVol(parent, x, y, w, h) {
 function homeDiagnosis(p) {
   if (!p.powerOn) return "The room is off. Press POWER ON to start it.";
   if (p.warmMs > 0) return "Still warming up. Give it about half a minute.";
+  if (p.hidden && HELP_TWO && p.hiddenL !== p.hiddenR)
+    return "The " + (p.hiddenL ? "left" : "right") + " picture is hidden. Press UNMUTE " + (p.hiddenL ? "LEFT" : "RIGHT") + " to bring it back.";
   if (p.hidden) return say("The picture is hidden. Press {UNMUTE} to bring it back.");
   if (!p.source) return "Nothing is selected under INPUT SOURCES. Press the button for what you want to show.";
   if (!p.routes.projL && !p.routes.projR) return say("Nothing is on the {PROJECTOR} yet. Press {PROJECT}.");
@@ -778,8 +782,9 @@ class HelpOverlay {
         // because that is the contract, but the consequence I claimed was not.
         app.bus.press(26); app.bus.release(26);       // d26, absolute SHOW
         // Verified against the join the GLASS reads, which refreshAll writes from
-        // the program's own state. d31 low means the picture is showing.
-        if (!app.bus.getD(31)) this.hide();
+        // the program's own state. Every mute lamp dark (d31, and d87/d88 for a two-projector
+        // room's own sides) means every picture is showing.
+        if (!app.bus.getD(31) && !app.bus.getD(87) && !app.bus.getD(88)) this.hide();
       };
       hbox(wrap, HG.x + 326, top + 14, HG.w - 326, null, {
         color: H_DIM, font: "400 22px/28px Arial",

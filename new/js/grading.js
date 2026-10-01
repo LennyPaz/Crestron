@@ -31,6 +31,7 @@ function gradeReset(app, opts) {
   p.muteMain = false; p.muteMic = false;
   p.volMain = 32768; p.volMic = 32768;
   p.flashStepMs = 0; p.flashSrcMs = 0; p.flashPwrMs = 0; p.flashStep = -1; p.hideGuardMs = 0;
+  p.hideGuardSideMs = { L: 0, R: 0 };
   k.extendGuard = 0; k.verifyTicks = 0; k.verAge = 0;
   p.lcOpen = false; p.pop = { stop: false, next: false, help: false }; p.walkup = false;
   p.closeKeyboard();                            // its keys would type into a form no longer shown
