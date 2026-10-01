@@ -152,10 +152,12 @@ class Renderer {
 
   box(o) {
     const g = o.geo;
-    return el("div", {
+    const e = el("div", {
       position: "absolute", left: px(g.left), top: px(g.top),
       width: px(g.width), height: px(g.height), zIndex: g.z,
     });
+    if (o.name) e.dataset.obj = o.name;          // the panel object's name, for the checks
+    return e;
   }
 
   bindVis(o, e) {

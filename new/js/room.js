@@ -131,12 +131,18 @@ class Room {
     if (route === 4) return "<div class='scene scene-air'><div class='air-head'>Share your screen</div><div class='air-code'>Code <b>4821</b></div><div class='air-sub'>practice copy, not a real room</div></div>";
     // the laptop on HDMI is presenting (a full-screen lecture slide); the one on USB-C shows its
     // desktop with a video in a browser, so the two laptops never look alike
+    // A laptop with no cable is plain black, as the panel's preview window is with nothing on it
+    // (InactiveState black, no text). Nothing in the room can tell which cable is missing, so the
+    // mockup does not say either (owner, 2026-10-01; the old "Connect the USB-C cable" gave the
+    // laptop task's answer away). The recorder's content view uses this too, where a real Pearl
+    // shows its own per-input No-signal picture (DEVICE_FACTS.md, the slate row of 2026-10-01);
+    // that picture is not modelled.
     if (route === 5) return this.laptopConnected.hdmi
       ? "<div class='scene scene-laptop'>" + SCENE_SVG.slide + "</div>"
-      : "<div class='scene scene-nosig'>NO SIGNAL<br><span>Connect the HDMI cable</span></div>";
+      : "<div class='scene scene-nosig'></div>";
     if (route === 6) return this.laptopConnected.usbc
       ? "<div class='scene scene-laptop usbc'>" + SCENE_SVG.browser + "</div>"
-      : "<div class='scene scene-nosig'>NO SIGNAL<br><span>Connect the USB-C cable</span></div>";
+      : "<div class='scene scene-nosig'></div>";
     return null;
   }
 
@@ -194,8 +200,9 @@ class Room {
     const art = layoutN === 2 ? students : layoutN === 3 ? both : instructor;
     return "<div class='scene scene-cam'>" +
       '<svg class="cam-scene" viewBox="0 0 360 202" preserveAspectRatio="none" aria-hidden="true">' +
-      '<rect x="0" y="0" width="360" height="202" fill="#10161c"/>' + art + "</svg>" +
-      "<div class='cam-tag'>" + (label || "CAMERA") + "</div></div>";
+      '<rect x="0" y="0" width="360" height="202" fill="#10161c"/>' + art + "</svg></div>";
+    // no caption: the recorder's camera stream carries none, as the content pictures carry no source
+    // name (owner 2026-10-01; audit 2026-10-01). `label` is kept for callers.
   }
 
   // register a pane; getContent returns {html} or null -> inactive black

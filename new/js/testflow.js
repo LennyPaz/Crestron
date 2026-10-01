@@ -52,6 +52,8 @@ const TF_RATINGS = [
 const TF_FREE_KINDS = [["needsOk", "A class needs your OK"], ["confirmed", "A class is confirmed"],
                        ["recording", "A class is recording"], ["none", "Nothing booked"]];
 const TF_FREE_MINS = [5, 20, 45];
+// A class can only be confirmed inside its 30 minute confirm window, so "confirmed" offers no 45
+const tfFreeMins = kind => kind === "confirmed" ? TF_FREE_MINS.filter(m => m <= 30) : TF_FREE_MINS;
 // Room layouts the CURRENT panel (round 29b) actually has: both are pages of the same compiled
 // panel, switched by d58/d59. Blu-ray and a second doc cam are not on the current glass, so they
 // are not offered (owner asked 2026-09-18/21; see docs/panel_ux_test_pickup_2026-09-17.md).
@@ -89,7 +91,10 @@ function tfStudyRev(tasks, app, grading, simulator) {
   const src = tasks.map(t => [t.id, t.name, t.prompt, t.hint, String(t.setup), String(t.grade),
                               String(t.watch || "")].join("\u0001")).join("\u0002") + JSON.stringify(TF_RATINGS) +
               helpers.join("\u0003") + JSON.stringify(G.G_SRC || null) + String((app && app.specSource) || "") +
-              String((app && app.specText) || "") + (simulator === undefined ? tfSimulatorSource() : simulator);
+              String((app && app.specText) || "") +
+              // panel fixes shown ahead of the spec change what is on screen, so they are part of the version
+              (typeof SPEC_AHEAD !== "undefined" ? JSON.stringify(SPEC_AHEAD) : "") +
+              (simulator === undefined ? tfSimulatorSource() : simulator);
   let h = 0x811c9dc5;                                       // FNV-1a, 32 bit
   for (let i = 0; i < src.length; i++) { h ^= src.charCodeAt(i); h = Math.imul(h, 0x01000193) >>> 0; }
   return h.toString(16).padStart(8, "0");
@@ -443,18 +448,21 @@ class TestFlow {
   // projector off, both laptop cables in. A later class is on the list so the schedule has depth.
   freeScenario() {
     const s = this.st.freeScenario || {};
-    return { kind: TF_FREE_KINDS.some(k => k[0] === s.kind) ? s.kind : "needsOk",
-             mins: TF_FREE_MINS.includes(s.mins) ? s.mins : 20,
+    const kind = TF_FREE_KINDS.some(k => k[0] === s.kind) ? s.kind : "needsOk";
+    return { kind, mins: tfFreeMins(kind).includes(s.mins) ? s.mins : 20,
              room: TF_FREE_ROOMS.some(r => r[0] === s.room) ? s.room : "one" };
   }
   setUpFreeRoom() {
     const G = window.GRADING, app = this.app, sc = this.freeScenario();
-    const later = G.gradeEvent(app, "free-2", "CHM 1045-0001 - Doe, John", 180, 75, false, true);
+    // The room runs with opt-in on, and Confirm opens only 30 minutes ahead (DEVICE_FACTS.md section 2),
+    // so the class three hours out is waiting, not confirmed (audit 2026-10-01: it lit NEXT RECORDING
+    // CONFIRMED in "A class is recording", a state no opt-in room can reach)
+    const later = G.gradeEvent(app, "free-2", "CHM 1045-0001 - Doe, John", 180, 75, true, false);
     const opts = { hdmi: true, usbc: true, schedule: [later], twoProj: sc.room === "two" };
     if (sc.kind === "needsOk" || sc.kind === "confirmed")
       opts.schedule = [G.gradeEvent(app, "free-1", "BSC 2085-0003 - Smith, Jane", sc.mins, 50, true, sc.kind === "confirmed"), later];
     if (sc.kind === "recording") {
-      opts.schedule = [G.gradeEvent(app, "free-1", "BSC 2085-0003 - Smith, Jane", -10, 60, false, true), later];
+      opts.schedule = [G.gradeEvent(app, "free-1", "BSC 2085-0003 - Smith, Jane", -10, 60, true, true), later];
       opts.recordingId = "free-1";
     }
     if (sc.kind === "none") opts.schedule = [];
@@ -478,7 +486,7 @@ class TestFlow {
       '<div class="tb-setup-q">Room</div><div class="tb-pick-row tb-pick-row2">' + pick("room", TF_FREE_ROOMS, sc.room) + '</div>' +
       '<div class="tb-setup-q">Lecture capture</div>' + pick("kind", TF_FREE_KINDS, sc.kind) +
       (timed ? '<div class="tb-setup-q">Class starts in</div><div class="tb-pick-row">' +
-               pick("mins", TF_FREE_MINS.map(m => [m, m + " min"]), sc.mins) + '</div>' : '') +
+               pick("mins", tfFreeMins(sc.kind).map(m => [m, m + " min"]), sc.mins) + '</div>' : '') +
       '<div class="tb-setup-note">Changing these resets the room.</div>' +
       '<button type="button" class="tb-pick tb-room-reset">Reset the room</button>';
     this.markPicked(box);

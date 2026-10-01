@@ -11,12 +11,40 @@ const VARIANTS = {
 
 let app = null;
 
+// Panel fixes the owner has agreed and handed to the panel side, shown here BEFORE a round carries
+// them. The spec files stay exactly what the compiled panel says (their hashes are pinned in
+// source_manifest.json); these are applied on top at load. Take an entry out the day a round that
+// carries it is regenerated into the spec: the "ahead" check in verify_tasks.js fails until you do.
+const SPEC_AHEAD = [
+  // LISTEN TO's source name sat on the button's baked caption (rows 70 to 83 of the face, layout
+  // 78 to 91). Owner 2026-10-01 (1B, then A): move it down, no font change. Sent to the touch-panel
+  // session for its next round.
+  { spec: "spec_standard.json", name: "P1_126_listenSrc", was: 82, top: 87 },
+];
+function applySpecAhead(file, spec) {
+  const want = SPEC_AHEAD.filter(a => a.spec === file);
+  const walk = o => {
+    if (Array.isArray(o)) { o.forEach(walk); return; }
+    if (!o || typeof o !== "object") return;
+    for (const a of want) {
+      // only move it from where the panel had it: a round that already moved it is left alone
+      if (o.name === a.name && o.geo && o.geo.top === a.was) {
+        o.geo.top = a.top;
+        if (o.props) o.props["PositionAndSize/Top"] = String(a.top);
+      }
+    }
+    for (const k in o) if (o[k] && typeof o[k] === "object") walk(o[k]);
+  };
+  walk(spec);
+}
+
 async function boot(variantKey) {
   const v = VARIANTS[variantKey];
   const res = await fetch(v.spec + (window.CACHEBUST || ""));
   if (!res.ok) throw new Error("the panel data answered " + res.status);   // shown as plain words by showLoadFailure
   const specText = await res.text();
   const spec = JSON.parse(specText);
+  applySpecAhead(v.spec, spec);
   document.getElementById("stage").innerHTML = "";
 
   const bus = new JoinBus();
@@ -59,14 +87,13 @@ async function boot(variantKey) {
   function bindVideo(o, el, urlSerial) {
     const n = o.name;
     const R = () => program ? program.routes : { prevL: 0, prevR: 0, kaltura: 0 };
-    const camLabel = () => ({ 1: "INSTRUCTOR CAM", 2: "STUDENT CAM", 3: "BOTH CAMS" }[pearl.layoutN] || "CAMERA");
     // the recorder views follow their URL SERIALS, as the glass does: an empty
     // s60/s61 tears the session down whatever the module state says
     const s60 = () => bus.getS(60) !== "", s61 = () => bus.getS(61) !== "";
     // On hold the recorder's two channels switch to their privacy slates (PearlRest.usp:1392,
     // Content_Splash$ / Camera_Splash$), so that is what the recorder previews show
     const recContent = () => pearl.paused ? room.slateScene() : (room.sceneFor(R().kaltura) || room.noContentScene());
-    const recCam = () => pearl.paused ? room.slateScene() : room.cameraScene(camLabel(), pearl.layoutN);
+    const recCam = () => pearl.paused ? room.slateScene() : room.cameraScene(null, pearl.layoutN);
     // The recorder's two streams are told apart by the URL serial a window is bound to, as on the
     // glass: s60 is the content channel, s61 the camera. Round 30 (09-28) moved those serials
     // between two windows without renaming them, and binding by NAME showed them the wrong way

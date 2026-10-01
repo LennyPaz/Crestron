@@ -49,7 +49,10 @@ function gradeReset(app, opts) {
     k.startEvent(e, true);
     // a class already recording has been recording since its start, so ELAPSED counts from there and
     // agrees with "Today in this room" (stand-in pre-test 2026-10-01: it read 0:04 for a 7:51 class)
-    if (k.recording && e.start < k.now()) k.recStartEp = e.start;
+    // It also started long before the tester arrived, so the status line is the baseline "Online ·
+    // Recording until ...", not the 20 s "Recording started" PearlRest posts only on the recorder's
+    // rising edge (PearlRest.usp:4047, 4321; audit 2026-10-01)
+    if (k.recording && e.start < k.now()) { k.recStartEp = e.start; k.statusTransient = ""; k.statusTtl = 0; }
   }
   // Publish the new state and let the formatter see it NOW, inside the reset. Otherwise the panel
   // shows the last task's RECORDING until the next tick, and a START pressed before that tick
@@ -118,7 +121,7 @@ const TASK_DEFS = [
     // projector OFF, as a room is before class. The warm-up a tester then sees is cut to 5 s in the
     // test (js/testflow.js TF_WARM_MS) and the side panel says the real one is about 30 s; on the
     // real panel PROJECT and VIDEO MUTE are covered for it (spec covers on join 4).
-    // HDMI is connected, USB-C is not: choosing the wrong input shows NO SIGNAL and must not pass
+    // HDMI is connected, USB-C is not: choosing the wrong input shows a black picture and must not pass
     setup: app => gradeReset(app, { power: false, hdmi: true, usbc: false }),
     grade: app => ({ worked: onScreenOrComing(app, G_SRC.HDMI),
                      detail: { warming: app.program.warmMs > 0,

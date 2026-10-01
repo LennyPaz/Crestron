@@ -60,8 +60,7 @@ html, body { height: 100%; background: #0b0f14; color: #dfe3e8; font-family: Ari
 
 
 /* no signal */
-.scene-nosig { background: #05070a; color: #97a2ae; font-size: 20px; text-align: center; font-weight: bold; flex-direction: column; }
-.scene-nosig span { font-size: 13px; font-weight: normal; color: #5b6770; }
+.scene-nosig { background: #000; }
 
 /* blu-ray */
 .scene-bd { background: #06080c; }
@@ -82,7 +81,6 @@ html, body { height: 100%; background: #0b0f14; color: #dfe3e8; font-family: Ari
   align-items: center; justify-content: center; gap: 10px; background: #0d1216; }
 .scene-splash .splash-glyph { font-size: 44px; color: #CEB888; line-height: 1; }
 .scene-splash .splash-text { font-size: 15px; letter-spacing: 2px; color: #dfe3e8; }
-.scene-cam .cam-tag { position: absolute; right: 3%; top: 4%; color: #fff9; font-size: 12px; letter-spacing: 1px; background: #0008; padding: 2px 8px; border-radius: 3px; }
 
 /* ---------------- guided tasks (dev lane; never on the glass) ---------------- */
 #task-picker {
