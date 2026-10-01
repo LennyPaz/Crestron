@@ -1,5 +1,8 @@
 // Page1Formatter v1.10, ported line-for-line from panel-project/Page1Formatter.usp,
 // PLUS one v1.16 change: the s20 LC-page countdown line (2026-09-17, mockup phase 1).
+// v1.17's card, v1.18's PAUSED, v1.19's ONE MOMENT card and v1.20 (2026-09-30: PAUSING and RESUMING on
+// RecorderHealth bits 16 and 32, each also needing RecordingTruth, and PAUSED in Legacy Blue on the band
+// word) are ported too.
 // The rest of v1.11..v1.16 (elapsed-time fault debounce, queued preview commands) is NOT
 // ported yet; the current source is pearl-api-reference/simplplus/Page1Formatter.usp.
 // Composes the main-page status card (s15 body, s19 top), the preview countdown
@@ -97,6 +100,12 @@ class Page1Formatter {
     } else if (I.EndedPulse) {
       top = "RECORDING ENDED"; title = this.gEndedTitle;
       dim = "Uploads to My Media on its own";
+    } else if ((I.RecorderHealth & 16) && I.RecordingTruth) {
+      top = "PAUSING"; title = this.clean(I.NowTitle, 54);   // v1.20: the cover's word, sent by PearlRest v10.59
+      dim = "One moment";
+    } else if ((I.RecorderHealth & 32) && I.RecordingTruth) {
+      top = "RESUMING"; title = this.clean(I.NowTitle, 54);   // v1.20
+      dim = "One moment";
     } else if (I.RecorderHealth & 8) {
       top = "ONE MOMENT"; title = this.clean(I.NowTitle, 54);   // v1.19: between states
       dim = "Checking the recorder";
@@ -163,8 +172,10 @@ class Page1Formatter {
     this.shBody = body;
 
     if (!recValid) this.shTruth = '<FONT size="13" color="#5A6068"><B>STATUS UNKNOWN</B></FONT>';
+    else if ((I.RecorderHealth & 16) && I.RecordingTruth) this.shTruth = '<FONT size="13" color="#5A6068"><B>PAUSING</B></FONT>';    // v1.20
+    else if ((I.RecorderHealth & 32) && I.RecordingTruth) this.shTruth = '<FONT size="13" color="#5A6068"><B>RESUMING</B></FONT>';   // v1.20
     else if (I.RecorderHealth & 8) this.shTruth = '<FONT size="13" color="#5A6068"><B>ONE MOMENT</B></FONT>';   // v1.19
-    else if (I.RecordingTruth && I.StatePaused) this.shTruth = '<FONT size="13" color="#101820"><B>PAUSED</B></FONT>';
+    else if (I.RecordingTruth && I.StatePaused) this.shTruth = '<FONT size="13" color="#425563"><B>PAUSED</B></FONT>';   // v1.20: Legacy Blue
     else if (I.RecordingTruth) this.shTruth = '<FONT size="13" color="#A6192E"><B>RECORDING</B></FONT>';
     else this.shTruth = '<FONT size="13" color="#101820"><B>NOT RECORDING</B></FONT>';
   }

@@ -476,14 +476,21 @@ class PearlSim {
 
     // ---- strings ----
     const nowTitle = run ? run.title : "";
-    const nowUntil = run ? "Recording until " + fmtClockFull(run.end) : "";
+    // On the bench the trigger is the schedule poll no longer listing the class as running: PearlRest
+    // then clears the end clock and the countdown (PearlRest.usp:3110, OutNowUntil("") and
+    // gRunFinEp = 0) while the title and RECORDING hold until the recording falls. The owner saw it
+    // on Rev 63 (2026-09-30): END shows RECORDING over the source alone, then RECORDING ENDED. Here
+    // the stop teardown stands in for that window. The simulation has no refused END; on the bench a
+    // refused END leaves the class listed, so the clock would stay (Astra 2026-09-30).
+    const listed = run && this.teardown === 0 ? run : null;
+    const nowUntil = listed ? "Recording until " + fmtClockFull(listed.end) : "";
     // the confirm-card subject: confirmed head, else the confirm binding (v10.44/45)
     const cardEvent = (head && head.confirmed && !head.ended) ? head : cBind;
     const confirmTitle = cardEvent ? cardEvent.title : "";
     const confirmSub = cardEvent
       ? (now >= cardEvent.start ? "Starts recording now" : "Starts recording at " + fmtClockFull(cardEvent.start)) : "";
     let remaining = 0;
-    if (run && this.recording) remaining = Math.min(65000, Math.max(0, run.end - now));
+    if (listed && this.recording) remaining = Math.min(65000, Math.max(0, listed.end - now));
 
     // status line s1
     let status;
@@ -611,7 +618,11 @@ class PearlSim {
       PreviewOn: this.previewOn ? 1 : 0,
       PreviewSeconds: this.previewSec,
       RemainingSeconds: remaining,
-      RecorderHealth: health,
+      // v10.59 (Rev 64): beside bit 3, the cover's word for the main page, read off the page shown
+      // this tick as the cover's is (PearlRest.usp:4633-4636, holdWay): 16 PAUSING while the RECORDING
+      // page is up, 32 RESUMING while the PAUSED page is up. No exception for END, no time limit. The
+      // device-row gate is always open here, as the mockup models no pause at the device.
+      RecorderHealth: health | (between ? (stPau ? 32 : 16) : 0),
       AudioLevel: this.recording || this.previewOn ? 20000 + Math.floor(Math.random() * 25000) : 8000,
       NowTitle: nowTitle, UpNextTitle: nx ? nx.title : "",
       UpNextTime: nx ? (fmtClockFull(nx.start) + " - " + fmtClockFull(nx.end)) : "",
