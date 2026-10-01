@@ -6,6 +6,79 @@
 //   1 Blu-ray, 2 Document Camera, 3 Desktop PC, 4 Wireless, 5 Laptop HDMI, 6 Laptop USB-C
 "use strict";
 
+// What a source's own picture looks like, drawn as SVG so it stays sharp at every pane size (the
+// panel previews, the recorder's content window, IN THE ROOM). No source names on them: the real
+// preview is the source's video and nothing else (owner 2026-10-01).
+const SCENE_SVG = (() => {
+  const svg = body => '<svg class="scene-svg" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMid slice" aria-hidden="true">' + body + "</svg>";
+  const t = (x, y, size, fill, weight, text) =>
+    '<text x="' + x + '" y="' + y + '" font-family="Arial, Helvetica, sans-serif" font-size="' + size + '" fill="' + fill +
+    '" font-weight="' + (weight || "normal") + '">' + text + "</text>";
+  // a hand-written line on paper: a gentle wave, so it reads as writing rather than a bar
+  const ink = (x, y, w, col) => {
+    let d = "M" + x + " " + y;
+    for (let i = 1; i <= Math.floor(w / 18); i++) d += " q 9 " + (i % 2 ? -7 : 7) + " 18 0";
+    return '<path d="' + d + '" fill="none" stroke="' + (col || "#24324a") + '" stroke-width="4" stroke-linecap="round"/>';
+  };
+  // a lecture slide, full screen: what a laptop that is presenting sends
+  const slide = svg(
+    '<rect width="1600" height="900" fill="#ffffff"/>' +
+    '<rect width="1600" height="150" fill="#782F40"/>' +
+    t(80, 100, 64, "#ffffff", "bold", "Week 6: Supply and Demand") +
+    '<circle cx="104" cy="262" r="10" fill="#782F40"/>' + t(132, 276, 44, "#1d2733", "", "Demand falls as price rises") +
+    '<circle cx="104" cy="362" r="10" fill="#782F40"/>' + t(132, 376, 44, "#1d2733", "", "Supply rises as price rises") +
+    '<circle cx="104" cy="462" r="10" fill="#782F40"/>' + t(132, 476, 44, "#1d2733", "", "Equilibrium: where they meet") +
+    '<circle cx="104" cy="562" r="10" fill="#782F40"/>' + t(132, 576, 44, "#1d2733", "", "Shifts move the equilibrium") +
+    // the chart: two axes, a falling demand line, a rising supply line, the point where they cross
+    '<path d="M960 220 V760 H1500" fill="none" stroke="#1d2733" stroke-width="6"/>' +
+    '<path d="M1000 280 L1450 720" stroke="#2b6cb0" stroke-width="10" stroke-linecap="round"/>' +
+    '<path d="M1000 720 L1450 280" stroke="#c05621" stroke-width="10" stroke-linecap="round"/>' +
+    '<circle cx="1225" cy="500" r="18" fill="#1d2733"/>' +
+    t(1460, 300, 40, "#c05621", "bold", "S") + t(1460, 730, 40, "#2b6cb0", "bold", "D") +
+    t(920, 230, 34, "#1d2733", "", "P") + t(1480, 810, 34, "#1d2733", "", "Q") +
+    t(1520, 870, 30, "#8a94a0", "", "6"));
+  // the laptop's own desktop with a browser playing a video
+  const browser = svg(
+    // plain fills, no gradient ids: the same drawing sits in several panes at once, some hidden, and
+    // an id shared between them resolves to the first copy, which paints nothing if it is hidden
+    '<rect width="1600" height="900" fill="#2c6b52"/><circle cx="1500" cy="880" r="760" fill="#5d8f4e" opacity="0.45"/>' +
+    '<circle cx="0" cy="0" r="700" fill="#1f4d43" opacity="0.6"/>' +
+    '<rect x="170" y="80" width="1260" height="700" rx="14" fill="#f3f4f6"/>' +
+    '<rect x="170" y="80" width="1260" height="64" rx="14" fill="#dfe3e8"/>' +
+    '<circle cx="214" cy="112" r="11" fill="#e0605a"/><circle cx="250" cy="112" r="11" fill="#e8b84a"/><circle cx="286" cy="112" r="11" fill="#5cb85c"/>' +
+    '<rect x="340" y="94" width="600" height="36" rx="18" fill="#ffffff"/>' + t(366, 122, 24, "#6b7480", "", "lecture-video.example.edu") +
+    '<rect x="210" y="170" width="1180" height="520" fill="#0d1117"/>' +
+    '<circle cx="800" cy="430" r="78" fill="rgba(255,255,255,0.18)"/>' +
+    '<path d="M774 386 L774 474 L850 430 Z" fill="#ffffff"/>' +
+    '<rect x="230" y="660" width="1140" height="8" rx="4" fill="#3a4250"/><rect x="230" y="660" width="380" height="8" rx="4" fill="#e0605a"/>' +
+    t(210, 735, 30, "#1d2733", "bold", "Lab demonstration, part 2") +
+    '<rect x="560" y="820" width="480" height="58" rx="18" fill="rgba(255,255,255,0.22)"/>' +
+    '<rect x="590" y="832" width="34" height="34" rx="8" fill="#e8b84a"/><rect x="644" y="832" width="34" height="34" rx="8" fill="#5b9bd5"/>' +
+    '<rect x="698" y="832" width="34" height="34" rx="8" fill="#e0605a"/><rect x="752" y="832" width="34" height="34" rx="8" fill="#ffffff"/>');
+  // the document camera looking straight down at a worksheet on a desk, with a pen
+  const desk = '<rect width="1600" height="900" fill="#5d432c"/><circle cx="200" cy="120" r="700" fill="#6f5137" opacity="0.7"/>';
+  const pen = '<g transform="rotate(-28 1330 700)"><rect x="1150" y="690" width="360" height="22" rx="10" fill="#1f3c88"/>' +
+    '<path d="M1510 690 l40 11 l-40 11 z" fill="#d8c9a3"/></g>';
+  const doccam = svg(desk +
+    '<g transform="rotate(-3 800 450)"><rect x="330" y="40" width="940" height="840" fill="#fbf8f1"/>' +
+    t(400, 130, 40, "#1d2733", "bold", "Problem Set 4") + '<rect x="400" y="150" width="800" height="3" fill="#b9b2a4"/>' +
+    t(400, 220, 30, "#1d2733", "", "1. Solve for x:   3x + 7 = 22") +
+    ink(440, 285, 300) + ink(440, 345, 220) + ink(440, 405, 260, "#a12b2b") +
+    t(400, 500, 30, "#1d2733", "", "2. Sketch y = x² for -3 ≤ x ≤ 3") +
+    '<path d="M560 580 Q 760 1020 960 580" fill="none" stroke="#24324a" stroke-width="5"/>' +   // y = x squared: opens upward, lowest on the axis
+    '<path d="M520 800 H1000 M760 560 V820" stroke="#8f867a" stroke-width="3"/></g>' + pen);
+  const doccam2 = svg(desk +
+    '<g transform="rotate(2 800 450)"><rect x="300" y="50" width="1000" height="800" fill="#f7f4ec"/>' +
+    t(370, 140, 38, "#1d2733", "bold", "Chapter 7  Cell Structure") +
+    '<rect x="370" y="180" width="380" height="16" rx="3" fill="#b9b2a4"/><rect x="370" y="220" width="420" height="16" rx="3" fill="#b9b2a4"/>' +
+    '<rect x="370" y="260" width="360" height="16" rx="3" fill="#b9b2a4"/><rect x="370" y="300" width="400" height="16" rx="3" fill="#b9b2a4"/>' +
+    '<ellipse cx="1040" cy="420" rx="200" ry="150" fill="#e7f0d8" stroke="#6b8f4e" stroke-width="6"/>' +
+    '<circle cx="1000" cy="400" r="52" fill="#c9b3d9" stroke="#7a5a96" stroke-width="5"/>' +
+    '<rect x="370" y="520" width="860" height="16" rx="3" fill="#b9b2a4"/><rect x="370" y="560" width="800" height="16" rx="3" fill="#b9b2a4"/>' +
+    '<rect x="370" y="600" width="840" height="16" rx="3" fill="#b9b2a4"/><rect x="370" y="640" width="600" height="16" rx="3" fill="#b9b2a4"/></g>' + pen);
+  return { slide, browser, doccam, doccam2 };
+})();
+
 class BlurayDeck {
   constructor(onChange) {
     this.state = "menu";       // menu | playing | paused | stopped | ejected
@@ -46,19 +119,23 @@ class Room {
       }[st];
       return "<div class='scene scene-bd'>" + body + "</div>";
     }
-    if (route === 2) return "<div class='scene scene-doccam'><div class='dc-paper'><div class='dc-line w80'></div><div class='dc-line w60'></div><div class='dc-line w70'></div><div class='dc-fig'></div><div class='dc-line w50'></div></div><div class='dc-tag'>DOC CAM</div></div>";
-    // DMPS input 7: the second doc cam in the two-doc-cam room. Same art, its own tag.
-    if (route === 7) return "<div class='scene scene-doccam'><div class='dc-paper'><div class='dc-line w80'></div><div class='dc-line w60'></div><div class='dc-line w70'></div><div class='dc-fig'></div><div class='dc-line w50'></div></div><div class='dc-tag'>DOC CAM 2</div></div>";
+    // Owner 2026-10-01: a preview window shows the source's own picture and nothing else. The real
+    // system puts no source name on it, so these scenes carry none (they used to, bottom right).
+    if (route === 2) return "<div class='scene scene-doccam'>" + SCENE_SVG.doccam + "</div>";
+    // DMPS input 7: the second doc cam in the two-doc-cam room: a different page under it
+    if (route === 7) return "<div class='scene scene-doccam'>" + SCENE_SVG.doccam2 + "</div>";
     // The desktop preview is the same lock-screen wallpaper the first HTML mockup used
     // (panel-ui/dif/Wallpapers/DesktopLockScreen.png, cover-cropped to the 928x522 pane).
     // The drawn slide it replaced read as fake; owner 2026-09-14.
     if (route === 3) return "<div class='scene scene-pc'><img src='" + imgUrl("images/wall_desktop_928x522.png") + "' style='position:absolute;inset:0;width:100%;height:100%;object-fit:cover' draggable='false'></div>";
-    if (route === 4) return "<div class='scene scene-air'><div class='air-logo'>WIRELESS</div><div class='air-code'>Share code: <b>4821</b></div><div class='air-sub'>practice copy, not a real room</div></div>";
+    if (route === 4) return "<div class='scene scene-air'><div class='air-head'>Share your screen</div><div class='air-code'>Code <b>4821</b></div><div class='air-sub'>practice copy, not a real room</div></div>";
+    // the laptop on HDMI is presenting (a full-screen lecture slide); the one on USB-C shows its
+    // desktop with a video in a browser, so the two laptops never look alike
     if (route === 5) return this.laptopConnected.hdmi
-      ? "<div class='scene scene-laptop'><div class='lt-desktop'><div class='lt-dock'></div><div class='lt-window'>My Presentation</div></div><div class='lt-tag'>LAPTOP HDMI</div></div>"
+      ? "<div class='scene scene-laptop'>" + SCENE_SVG.slide + "</div>"
       : "<div class='scene scene-nosig'>NO SIGNAL<br><span>Connect the HDMI cable</span></div>";
     if (route === 6) return this.laptopConnected.usbc
-      ? "<div class='scene scene-laptop usbc'><div class='lt-desktop'><div class='lt-dock'></div><div class='lt-window'>Music Player ▶</div></div><div class='lt-tag'>LAPTOP USB-C</div></div>"
+      ? "<div class='scene scene-laptop usbc'>" + SCENE_SVG.browser + "</div>"
       : "<div class='scene scene-nosig'>NO SIGNAL<br><span>Connect the USB-C cable</span></div>";
     return null;
   }

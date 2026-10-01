@@ -33,6 +33,8 @@ const TF_VERSION = "tf1";
 // the other way: v2 when 0-10 became 1-5 (2026-09-17), v3 when confidence flipped, v4 when the
 // three numbered scales became two worded ones (both 2026-09-18).
 const TF_KEY = "panelUxTest.v4";
+// the warm-up in the test, shortened from the real 30 s (owner 2026-10-01)
+const TF_WARM_MS = 5000;
 // Owner 2026-09-18: two questions, not three ("lost" and "confident" were nearly opposites of one
 // thing), and WORDS on the buttons, so nobody has to work out which end of a number is good.
 // Each button still stores 1 to 5, and the number measures what the question names: easy is
@@ -160,6 +162,9 @@ class TestFlow {
   constructor(app, opts) {
     this.app = app;
     this.opts = opts || {};
+    // Owner 2026-10-01: tasks start with the projector off, so testers see a warm-up, but a short
+    // one: 5 s here, and the side panel says the real one is about 30 s
+    if (app.program) app.program.warmLenMs = TF_WARM_MS;
     this.tasks = window.GRADING.TASK_DEFS;
     this.tasksKey = this.tasks.map(t => t.id).join(",");
     // one storage key per task list AND study version, so a newer page version opened beside an
@@ -525,9 +530,11 @@ class TestFlow {
 
   setBar(show) { this.bar.hidden = !show; if (window.scaleStage) window.scaleStage(); }
 
-  // The projector's 30 s warm-up covers the panel's own buttons, so a tester who turns it on has
-  // nothing to press and no idea why. Say what is happening and that they need not wait for it.
-  // (Owner 2026-09-17.) Driven off the program's own warm-up clock, not a timer of its own.
+  // The projector's warm-up covers the panel's own buttons, so a tester who turns it on has nothing
+  // to press and no idea why. Say what is happening, how long it lasts here, and how long it lasts on
+  // a real panel (owner 2026-09-17, 2026-10-01). Driven off the program's own warm-up clock, not a
+  // timer of its own. (On a phone the line makes the top bar taller; the glass already follows it,
+  // measured 2026-10-01 at 500x1400: bar 394 to 447 px, glass top with it.)
   showWarmUp() {
     const el = this.bar && this.bar.querySelector(".tb-warm");
     if (!el) return;
@@ -536,8 +543,11 @@ class TestFlow {
       el.hidden = false;
       // Astra 2026-09-29: the old "You do not need to wait for it" was wrong for a display task,
       // whose PROJECT button stays covered until the projector is warm
-      el.textContent = "Projector warming up: " + Math.ceil(ms / 1000) +
-        " seconds left. Its buttons come back when it is warm.";
+      // Owner 2026-10-01: the test's warm-up is cut to TF_WARM_MS, and the line says the real one is
+      // about 30 s (the program's H=86 timer)
+      const secs = Math.ceil(ms / 1000);
+      el.textContent = "Projector warming up: " + secs + (secs === 1 ? " second left." : " seconds left.") +
+        " On a real panel this takes about 30 seconds. Its buttons come back when it is warm.";
     } else if (!el.hidden) {
       el.hidden = true;
       el.textContent = "";

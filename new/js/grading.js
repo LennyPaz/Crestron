@@ -46,6 +46,9 @@ function gradeReset(app, opts) {
     const e = k.schedule.find(x => x.id === opts.recordingId);
     e.confirmed = true;
     k.startEvent(e, true);
+    // a class already recording has been recording since its start, so ELAPSED counts from there and
+    // agrees with "Today in this room" (stand-in pre-test 2026-10-01: it read 0:04 for a 7:51 class)
+    if (k.recording && e.start < k.now()) k.recStartEp = e.start;
   }
   // Publish the new state and let the formatter see it NOW, inside the reset. Otherwise the panel
   // shows the last task's RECORDING until the next tick, and a START pressed before that tick
@@ -101,20 +104,21 @@ function onScreenOrComing(app, src) {
   return (r.projL === src && !p.hiddenL) || (r.projR === src && !p.hiddenR);
 }
 
-// Owner 2026-09-28: the room-computer task was dropped. Every task starts with the room on, so it
-// was the laptop task's two presses with a different source. Its grading cases moved to the
-// laptop task in verify_tasks.js.
+// Owner 2026-09-28: the room-computer task was dropped (it was the laptop task's presses with a
+// different source); its grading cases moved to the laptop task in verify_tasks.js. Since
+// 2026-10-01 every task starts with the projector off.
 const TASK_DEFS = [
   {
     id: "laptop",
     name: "Show your laptop",
-    hint: "Press LAPTOP HDMI, then PROJECT.",
+    hint: "Press POWER ON, then LAPTOP HDMI, then PROJECT.",
     prompt: "You just plugged your own laptop in at the front of the room with the HDMI cable. Show your laptop on the projector screen.",
-    // Owner 2026-09-17: nobody should sit through a warm-up. On the real panel the source and
-    // PROJECT buttons are COVERED for its 30 s (spec covers on join 4), so a task that starts
-    // cold is 30 s of a tester staring at a blocked screen. These start warm.
+    // Owner 2026-10-01 (reversing 2026-09-17's "these start warm"): every task starts with the
+    // projector OFF, as a room is before class. The warm-up a tester then sees is cut to 5 s in the
+    // test (js/testflow.js TF_WARM_MS) and the side panel says the real one is about 30 s; on the
+    // real panel PROJECT and VIDEO MUTE are covered for it (spec covers on join 4).
     // HDMI is connected, USB-C is not: choosing the wrong input shows NO SIGNAL and must not pass
-    setup: app => gradeReset(app, { power: true, hdmi: true, usbc: false }),
+    setup: app => gradeReset(app, { power: false, hdmi: true, usbc: false }),
     grade: app => ({ worked: onScreenOrComing(app, G_SRC.HDMI),
                      detail: { warming: app.program.warmMs > 0,
                                wrongInput: onScreenOrComing(app, G_SRC.USBC) } }),
@@ -124,7 +128,7 @@ const TASK_DEFS = [
     name: "Check your laptop before the room sees it",
     hint: "Press LAPTOP HDMI, then LEFT PREVIEW or RIGHT PREVIEW, and leave PROJECT alone.",
     prompt: "Your laptop is plugged in with the HDMI cable. See what your laptop is showing here on the touch panel, and keep it off the projector screen the whole time.",
-    setup: app => gradeReset(app, { power: true, hdmi: true, usbc: false }),
+    setup: app => gradeReset(app, { power: false, hdmi: true, usbc: false }),
     // tracked on every state change, not polled: a brief flash on the screen still counts
     watch: (app, st) => { if (visibleToRoom(app, G_SRC.HDMI)) st.laptopShown = true; },
     grade: (app, st) => {
@@ -136,8 +140,11 @@ const TASK_DEFS = [
       const viaRecorder = !!(k.out && k.out.PreviewOn) && !k.paused && r.kaltura === G_SRC.HDMI &&
                           app.bus.getS(60) !== "";
       const previewing = r.prevL === G_SRC.HDMI || r.prevR === G_SRC.HDMI || viaRecorder;
-      // also not about to be shown: projected during a warm-up appears when it ends
-      const coming = onScreenOrComing(app, G_SRC.HDMI);
+      // also not about to be shown: projected during a warm-up appears when it ends, and since every
+      // task starts with the projector OFF (2026-10-01), a laptop routed to it while it is off appears
+      // at the next POWER ON (powering on clears a blank). Cold review 2026-10-01: that path passed.
+      const coming = onScreenOrComing(app, G_SRC.HDMI) ||
+                     (!app.program.powerOn && (r.projL === G_SRC.HDMI || r.projR === G_SRC.HDMI));
       return { worked: previewing && !st.laptopShown && !coming,
                detail: { previewing, viaRecorder, laptopShownToRoom: !!st.laptopShown, laptopAboutToShow: coming } };
     },
@@ -148,7 +155,7 @@ const TASK_DEFS = [
     hint: "Open LECTURE CAPTURE and press CONFIRM. A class that needs your OK will not record without it.",
     // owner 2026-09-29: the scheduled start has to be clear, and starting early no longer passes
     prompt: "Your class starts in 20 minutes and you want it recorded. Make sure the recording will start on its own at the class's scheduled start time.",
-    setup: app => gradeReset(app, { power: true, schedule: [
+    setup: app => gradeReset(app, { power: false, schedule: [
       gradeEvent(app, "task-confirm", "BSC 2085-0003 - Smith, Jane", 20, 50, true, false)] }),
     // Looking at the schedule is NOT success. The class has to be confirmed and not ended.
     // Expiry is read on the simulator clock (terminal), not only the ended flag, so a class whose
@@ -176,7 +183,7 @@ const TASK_DEFS = [
     name: "Start a class recording early",
     hint: "Open LECTURE CAPTURE and press START NOW.",
     prompt: "Your class starts in 15 minutes and its recording is already approved. Everyone is here early and you want to begin. Have the recording running from this point, not from the scheduled time.",
-    setup: app => gradeReset(app, { power: true, schedule: [
+    setup: app => gradeReset(app, { power: false, schedule: [
       gradeEvent(app, "task-early", "CHM 1045-0001 - Doe, John", 15, 50, true, true)] }),
     // Waiting for the scheduled auto-start must NOT pass. "Early" is when the class was STARTED,
     // caught by the watcher the moment it happens, not when the recorder rose: the recorder lags
@@ -199,7 +206,7 @@ const TASK_DEFS = [
     hint: "Open LECTURE CAPTURE, press NEW RECORDING, enter the FSUID, press VERIFY, choose a length, then START RECORDING.",
     // the practice ID (owner 2026-09-29), so nobody types their own FSUID into a test
     prompt: "You're holding a review session in this room right now. It isn't on the schedule, so nothing will record it unless you do. Create a new recording. When it asks for your FSUID, use the practice ID " + window.PRACTICE_FSUID + ".",
-    setup: app => gradeReset(app, { power: true }),
+    setup: app => gradeReset(app, { power: false }),
     // how far a tester got, so a miss says where it stopped (Astra 2026-09-29); flags only, never
     // what was typed
     watch: (app, st) => {
@@ -224,7 +231,7 @@ const TASK_DEFS = [
     name: "Keep a private moment out of a recording",
     hint: "Press PAUSE for the conversation, then RESUME. The same recording carries on.",
     prompt: "Your class is being recorded when a student comes up with a private question. Keep that conversation, and the student, out of the recording without ending it. By the end of this task, the class should be recording again.",
-    setup: app => gradeReset(app, { power: true, recordingId: "task-privacy", schedule: [
+    setup: app => gradeReset(app, { power: false, recordingId: "task-privacy", schedule: [
       gradeEvent(app, "task-privacy", "PSY 3810-0002 - Smith, Jane", -10, 60, false, true)] }),
     // Both halves, on the SAME recording: it was held at some point, and at the moment they say
     // done it is capturing again or its resume is going through (same rule as the other recording

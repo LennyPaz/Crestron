@@ -48,26 +48,16 @@ html, body { height: 100%; background: #0b0f14; color: #dfe3e8; font-family: Ari
 .scene-pc .pc-slide { height: 82%; display: flex; align-items: center; justify-content: center; color: #1a2b45; font-size: 22px; font-weight: bold; }
 .scene-pc .pc-taskbar { position: absolute; bottom: 0; width: 100%; height: 7%; background: #10141aee; }
 
-/* doc cam */
-.scene-doccam { background: #3c3a36; }
-.scene-doccam .dc-paper { width: 70%; height: 84%; background: #f7f4ec; border-radius: 2px; box-shadow: 0 4px 18px rgba(0,0,0,.5); padding: 5% 6%; box-sizing: border-box; }
-.scene-doccam .dc-line { height: 7%; background: #b9b2a4; margin-bottom: 5%; border-radius: 2px; }
-.scene-doccam .dc-line.w80 { width: 80%; } .dc-line.w70 { width: 70%; } .dc-line.w60 { width: 60%; } .dc-line.w50 { width: 50%; }
-.scene-doccam .dc-fig { width: 40%; height: 26%; border: 3px solid #8f867a; border-radius: 4px; margin: 4% 0; }
-.scene-doccam .dc-tag, .dc-tag { position: absolute; right: 3%; bottom: 3%; color: #fffb; font-size: 12px; letter-spacing: 1px; }
+/* doc cam and laptops: drawn as SVG in js/room.js (SCENE_SVG), no source name on them */
+.scene-svg { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.scene-doccam { background: #4c3726; }
 
 /* wireless */
 .scene-air { background: #101820; flex-direction: column; gap: 10px; }
-.scene-air .air-logo { color: #CEB888; font-size: 26px; letter-spacing: 4px; font-weight: bold; }
+.scene-air .air-head { color: #dfe3e8; font-size: 22px; }
 .scene-air .air-code { color: #fff; font-size: 20px; }
 .scene-air .air-sub { color: #8892a0; font-size: 13px; }
 
-/* laptop */
-.scene-laptop .lt-desktop { position: absolute; inset: 0; background: linear-gradient(150deg, #402a56, #7a3560 70%, #a0475c); }
-.scene-laptop.usbc .lt-desktop { background: linear-gradient(150deg, #1f4d43, #2c6b52 70%, #5d8f4e); }
-.scene-laptop .lt-window { position: absolute; left: 22%; top: 22%; width: 54%; height: 46%; background: #f2f2f5; border-radius: 6px; display: flex; align-items: center; justify-content: center; color: #333; font-size: 18px; font-weight: bold; box-shadow: 0 6px 24px rgba(0,0,0,.4); }
-.scene-laptop .lt-dock { position: absolute; bottom: 3%; left: 25%; width: 50%; height: 6%; background: #ffffff33; border-radius: 8px; }
-.scene-laptop .lt-tag { position: absolute; right: 3%; bottom: 3%; color: #fffb; font-size: 12px; letter-spacing: 1px; }
 
 /* no signal */
 .scene-nosig { background: #05070a; color: #97a2ae; font-size: 20px; text-align: center; font-weight: bold; flex-direction: column; }
@@ -160,7 +150,11 @@ html, body { height: 100%; background: #0b0f14; color: #dfe3e8; font-family: Ari
   display: flex; flex-direction: column; justify-content: space-between; gap: 18px;
   background: #141a21; border-right: 2px solid #CEB888;
   padding: 18px 20px; color: #dfe3e8; box-sizing: border-box;
+  /* owner 2026-10-01: when its content is taller than the window it scrolls, and its parts keep their
+     size instead of being squashed (the explore panel's buttons used to fall off the bottom) */
+  overflow-y: auto; overscroll-behavior: contain;
 }
+#task-bar > * { flex-shrink: 0; }
 #task-bar[hidden] { display: none; }
 #task-bar.done { border-right-color: #6fcf97; }
 .tb-right { flex-direction: column; align-items: stretch; gap: 10px; }
@@ -272,7 +266,9 @@ html, body { height: 100%; background: #0b0f14; color: #dfe3e8; font-family: Ari
 @media (max-width: 700px) {
   /* a phone: the task panel becomes a top bar and scaleStage reserves its height instead */
   #task-bar { right: 0; bottom: auto; width: auto; border-right: 0; border-bottom: 2px solid #CEB888;
-              padding: 12px 16px; gap: 10px; }
+              padding: 12px 16px; gap: 10px;
+              /* never more than about half the screen, so the panel below stays usable; the rest scrolls */
+              max-height: 55vh; }
   #task-bar .tb-prompt { font-size: 15px; }
   #task-bar .tb-right { flex-direction: row; justify-content: flex-start; gap: 8px; }
   #task-bar .tf-primary, #task-bar .tb-skip { padding: 9px 12px; font-size: 14px; }

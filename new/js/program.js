@@ -59,7 +59,6 @@ class Program {
     this.lcOpen = false;           // Pearl_Controls_il latch H=136
     this.pop = { stop: false, next: false, help: false };  // SR latches H=133..135
     this.walkup = false;           // SR latch H=141
-    this.customArm = false;        // SR latch H=157
     this.handoff = false;          // H=170 preview handoff latch
     // flash machinery
     this.flashSrcMs = 0; this.flashPwrMs = 0;    // retriggerable 1 s windows H=210/211
@@ -182,15 +181,19 @@ class Program {
     B.onPress(86, e => { if (e) this.popupClose(); });        // scrim/cancel family
     B.onPress(77, e => { if (e) { this.pearl.recordStop(); this.pop.stop = false; this.refreshAll(); } });
     B.onPress(90, e => { if (e) { this.pearl.confirm(); this.pop.next = false; this.refreshAll(); } });
-    B.onPress(175, e => { if (e) { this.walkup = true; this.customArm = true; this.pearl.walkupOpen(); this.refreshAll(); } });
+    // Opening the form arms nothing: Rev 64's CustomArm latch (H=157) is set only by the CUSTOM press
+    // and reset by the presets and the form reset (H=151), so the form opens with CUSTOM unselected and
+    // its minutes box hidden (both on PearlCustomActive_Fb, H=156). The sim keeps that latch as
+    // pearl.adhoc.custom (js/pearl.js walkupOpen, customArm, adhocDur), which drives d137/d138.
+    B.onPress(175, e => { if (e) { this.walkup = true; this.pearl.walkupOpen(); this.refreshAll(); } });
     B.onPress(176, e => { if (e) { this.walkup = false; this.closeKeyboard(); this.refreshAll(); } });
 
     // walk-up form
     B.onPress(130, e => { if (e) this.pearl.adhocVerify(); });
     B.onPress(132, e => { if (e) this.pearl.adhocCreate(); });
-    B.onPress(134, e => { if (e) { this.customArm = false; this.pearl.adhocDur(30); } });
-    B.onPress(135, e => { if (e) { this.customArm = false; this.pearl.adhocDur(60); } });
-    B.onPress(136, e => { if (e) { this.customArm = false; this.pearl.adhocDur(90); } });
+    B.onPress(134, e => { if (e) { this.pearl.adhocDur(30); } });
+    B.onPress(135, e => { if (e) { this.pearl.adhocDur(60); } });
+    B.onPress(136, e => { if (e) { this.pearl.adhocDur(90); } });
     B.onPress(138, e => { if (e) { this.pearl.customArm(); this.refreshAll(); } });   // H=157 CustomArm latch
     B.onSendS(40, v => this.pearl.setAdhocFsuid(v));
     B.onSendS(42, v => this.pearl.setAdhocTitle(v));
@@ -240,7 +243,9 @@ class Program {
     // edges DURING the active 30 s window are ignored, never extended.
     if (via === "start" && (this.powerOn || this.spPending)) return;
     this.powerOn = true;                         // Epson ACKs; Power_On_Fb rises
-    if (this.warmMs <= 0) this.warmMs = 30000;   // H=86 one-shot, P1=30s, non-retriggerable
+    // H=86 one-shot, P1=30s, non-retriggerable. warmLenMs is 30 s as on the real panel; the
+    // self-guided test shortens it to 5 s and says so (owner 2026-10-01, js/testflow.js).
+    if (this.warmMs <= 0) this.warmMs = this.warmLenMs || 30000;
     if (this.opts.onPower) this.opts.onPower(true);
     this.refreshAll();
   }

@@ -241,7 +241,7 @@ class PearlSim {
     // the second (Astra, 2026-09-18, after this line was wrongly removed as redundant). With the
     // edit-cancel in setAdhocFsuid, these two are the only ways an answer can go stale.
     this.verifyTicks = 0; this._verifyId = "";
-    this.adhoc = { fsuid: "", title: "", durMin: 0, custom: true, verified: false, verifiedId: "", name: "", error: "" };
+    this.adhoc = { fsuid: "", title: "", durMin: 0, custom: false, verified: false, verifiedId: "", name: "", error: "" };
     this.bus.setS(41, "", true); this.bus.setS(43, "", true); this.bus.setS(45, "", true);
   }
   _sanId(v) { return String(v || "").replace(/[^a-zA-Z0-9]/g, "").slice(0, 20); }
@@ -352,7 +352,7 @@ class PearlSim {
     this.schedule.push(ev);
     this.setSchedule(this.schedule);
     this.startEvent(ev, true);                     // create 200 = recording now
-    this.adhoc = { fsuid: "", title: "", durMin: 0, custom: true, verified: false, verifiedId: "", name: "", error: "" };
+    this.adhoc = { fsuid: "", title: "", durMin: 0, custom: false, verified: false, verifiedId: "", name: "", error: "" };
     this.bus.setS(41, "", true); this.bus.setS(43, "", true); this.bus.setS(45, "", true);
   }
   _adhocReady() {
