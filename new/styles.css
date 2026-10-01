@@ -155,6 +155,7 @@ html, body { height: 100%; background: #0b0f14; color: #dfe3e8; font-family: Ari
      when nothing scrolls, so the content does not jump sideways when the scrollbar appears; the
      IN THE ROOM picture below is sized to fit beside it. */
   overflow-x: hidden; scrollbar-gutter: stable;
+  scroll-padding-bottom: 210px;   /* focus scrolls a control clear of the pinned buttons below */
 }
 /* Chrome, Edge and Safari draw these; Firefox, which has no such selectors, takes the two
    standard properties below instead. Legacy Blue on the panel's own dark, gold under the pointer. */
@@ -169,6 +170,11 @@ html, body { height: 100%; background: #0b0f14; color: #dfe3e8; font-family: Ari
 #task-bar[hidden] { display: none; }
 #task-bar.done { border-right-color: #6fcf97; }
 .tb-right { flex-direction: column; align-items: stretch; gap: 10px; }
+/* The buttons are pinned to the bottom of the side panel, so on a short window it is the prompt
+   and the room picture that scroll, never Stop and send (cold review 2026-10-01: with the warm-up
+   line the walk-up and privacy panels outgrow a maximised laptop window). */
+#task-bar .tb-right { position: sticky; bottom: -18px; margin: 0 -20px -18px; padding: 12px 20px 18px;
+  background: #141a21; z-index: 1; }
 .tb-state { text-align: center; }
 .tb-hide {
   background: transparent; color: #9fa9b4; border: 1px solid #37424e;
@@ -211,6 +217,10 @@ html, body { height: 100%; background: #0b0f14; color: #dfe3e8; font-family: Ari
   border-radius: 6px; padding: 8px 14px; font-size: 13px; cursor: pointer;
 }
 .tb-skip:hover { border-color: #CEB888; color: #dfe3e8; }
+/* the three small buttons side by side, each word kept, wrapping to two short lines (owner 4A) */
+.tb-minor { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+.tb-minor[hidden] { display: none; }
+.tb-minor .tb-skip { padding: 6px 4px; font-size: 12px; line-height: 1.25; }
 
 /* ---------------- the self-guided test (js/testflow.js) ----------------
    Welcome, about you, ratings and finish use the #task-picker overlay, shown only BETWEEN tasks.
@@ -283,6 +293,10 @@ html, body { height: 100%; background: #0b0f14; color: #dfe3e8; font-family: Ari
   #task-bar .tb-prompt { font-size: 15px; }
   #task-bar .tb-right { flex-direction: row; justify-content: flex-start; gap: 8px; }
   #task-bar .tf-primary, #task-bar .tb-skip { padding: 9px 12px; font-size: 14px; }
+  #task-bar .tb-right { flex-wrap: wrap; bottom: -12px; margin: 0 -16px -12px; padding: 12px 16px 12px; }
+  #task-bar { scroll-padding-bottom: 130px; }
+  #task-bar .tb-minor { flex: 1 1 100%; }
+  #task-bar .tb-minor .tb-skip { padding: 6px 4px; font-size: 12px; }
   .tp-card { padding: 22px 18px; }
   /* five points fit a phone comfortably; they were shrunk when the scale had eleven */
   .tf-scale { gap: 8px; }

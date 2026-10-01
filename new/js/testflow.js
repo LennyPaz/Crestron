@@ -90,7 +90,7 @@ function tfStudyRev(tasks, app, grading, simulator) {
   const helpers = Object.keys(G).sort().filter(k => typeof G[k] === "function").map(k => k + String(G[k]));
   const src = tasks.map(t => [t.id, t.name, t.prompt, t.hint, String(t.setup), String(t.grade),
                               String(t.watch || "")].join("\u0001")).join("\u0002") + JSON.stringify(TF_RATINGS) +
-              helpers.join("\u0003") + JSON.stringify(G.G_SRC || null) + String((app && app.specSource) || "") +
+              helpers.join("\u0003") + JSON.stringify(G.G_SRC || null) + JSON.stringify(G.G_LEAD_MIN ?? null) + String((app && app.specSource) || "") +
               String((app && app.specText) || "") +
               // panel fixes shown ahead of the spec change what is on screen, so they are part of the version
               (typeof SPEC_AHEAD !== "undefined" ? JSON.stringify(SPEC_AHEAD) : "") +
@@ -345,9 +345,12 @@ class TestFlow {
         '<div class="tb-right">' +
           '<button class="tf-primary tb-done">I think I am done</button>' +
           '<button class="tb-skip tb-stuck">I am stuck, skip this</button>' +
+          // one compact row (owner 4A, 2026-10-01): stacked, these pushed Stop and send below the fold
+          '<div class="tb-minor">' +
           '<button class="tb-skip tb-reset">Start this task over</button>' +
           '<button class="tb-skip tb-free">Explore on my own</button>' +
           '<button class="tb-skip tb-stopsend">Stop and send what I have</button>' +
+          '</div>' +
           '<button class="tf-primary tb-tasks" hidden>Start the tasks</button>' +
           '<button class="tf-primary tb-send" hidden>Send feedback</button>' +
           '<button class="tb-skip tb-newtest" hidden>Start a new test</button>' +
@@ -398,6 +401,9 @@ class TestFlow {
       el.hidden = !show.includes(sel);
       if (!el.hidden) el.disabled = false;
     }
+    // the compact row goes with its buttons, so an empty row leaves no gap behind
+    const minor = this.bar.querySelector(".tb-minor");
+    if (minor) minor.hidden = [...minor.children].every(c => c.hidden);
     const setup = this.bar.querySelector(".tb-setup");
     if (setup) setup.hidden = mode !== "free";
   }
@@ -460,7 +466,8 @@ class TestFlow {
     const later = G.gradeEvent(app, "free-2", "CHM 1045-0001 - Doe, John", 180, 75, true, false);
     const opts = { hdmi: true, usbc: true, schedule: [later], twoProj: sc.room === "two" };
     if (sc.kind === "needsOk" || sc.kind === "confirmed")
-      opts.schedule = [G.gradeEvent(app, "free-1", "BSC 2085-0003 - Smith, Jane", sc.mins, 50, true, sc.kind === "confirmed"), later];
+      // "Class starts in 20 min" reads 20 on the panel too (G_LEAD_MIN)
+      opts.schedule = [G.gradeEvent(app, "free-1", "BSC 2085-0003 - Smith, Jane", sc.mins + (G.G_LEAD_MIN || 0), 50, true, sc.kind === "confirmed"), later];
     if (sc.kind === "recording") {
       opts.schedule = [G.gradeEvent(app, "free-1", "BSC 2085-0003 - Smith, Jane", -10, 60, true, true), later];
       opts.recordingId = "free-1";

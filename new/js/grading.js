@@ -83,9 +83,15 @@ function capturing(app, id) {
 
 // A class for a fixture, on the SIMULATOR's clock (the page can offset it), with a fixed id so
 // grading can insist on THIS class and not any recording.
+// The panel rounds its countdown DOWN (js/pearl.js _countdown), so a class exactly 20 minutes out
+// reads "19 min" a moment later while the prompt says 20. Classes a prompt times start this much
+// later, so the panel agrees with the prompt for the first 50 s (stand-in tester, owner 3A, 2026-10-01).
+const G_LEAD_MIN = 50 / 60;
 function gradeEvent(app, id, title, startsInMin, lenMin, optIn, confirmed) {
   const n = app.pearl.now();
-  return { id, title, start: n + startsInMin * 60, end: n + (startsInMin + lenMin) * 60,
+  // whole seconds: a fractional lead would print as 9:59.999... in a class's last ten minutes
+  const start = n + Math.round(startsInMin * 60);
+  return { id, title, start, end: start + Math.round(lenMin * 60),
            optIn: !!optIn, confirmed: !!confirmed, started: false, ended: false };
 }
 
@@ -160,7 +166,7 @@ const TASK_DEFS = [
     // owner 2026-09-29: the scheduled start has to be clear, and starting early no longer passes
     prompt: "Your class starts in 20 minutes and you want it recorded. Make sure the recording will start on its own at the class's scheduled start time.",
     setup: app => gradeReset(app, { power: false, schedule: [
-      gradeEvent(app, "task-confirm", "BSC 2085-0003 - Smith, Jane", 20, 50, true, false)] }),
+      gradeEvent(app, "task-confirm", "BSC 2085-0003 - Smith, Jane", 20 + G_LEAD_MIN, 50, true, false)] }),
     // Looking at the schedule is NOT success. The class has to be confirmed and not ended.
     // Expiry is read on the simulator clock (terminal), not only the ended flag, so a class whose
     // time passed without recording fails. Owner 2026-09-29: starting it NOW (START NOW, or the
@@ -180,28 +186,6 @@ const TASK_DEFS = [
       const worked = alive && !!e.confirmed && inTime && !st.startedEarly;
       return { worked, detail: { confirmed: !!(e && e.confirmed), started: !!(e && e.started),
                                  startedEarly: !!st.startedEarly, confirmedInTime: inTime } };
-    },
-  },
-  {
-    id: "startearly",
-    name: "Start a class recording early",
-    hint: "Open LECTURE CAPTURE and press START NOW.",
-    prompt: "Your class starts in 15 minutes and its recording is already approved. Everyone is here early and you want to begin. Have the recording running from this point, not from the scheduled time.",
-    setup: app => gradeReset(app, { power: false, schedule: [
-      gradeEvent(app, "task-early", "CHM 1045-0001 - Doe, John", 15, 50, true, true)] }),
-    // Waiting for the scheduled auto-start must NOT pass. "Early" is when the class was STARTED,
-    // caught by the watcher the moment it happens, not when the recorder rose: the recorder lags
-    // about 2 s, so a START NOW just before the boundary would otherwise flip from worked to not
-    // worked depending on when Done was pressed.
-    watch: (app, st) => {
-      const k = app.pearl, e = k.schedule.find(x => x.id === "task-early");
-      if (e && e.started && st.startedEarly === undefined) st.startedEarly = k.now() < e.start;
-    },
-    grade: (app, st) => {
-      const ours = capturing(app, "task-early");
-      return { worked: !!(ours && st.startedEarly),
-               detail: { capturing: ours, startedEarly: !!st.startedEarly,
-                         startingNotYetRecording: ours && !app.pearl.recording } };
     },
   },
   {
@@ -228,6 +212,32 @@ const TASK_DEFS = [
                                  verified: !!st.verified, idNotFound: !!st.idNotFound,
                                  // a started walk-up always had a length, even picked in the same instant
                                  lengthPicked: !!(st.lengthPicked || st.started), started: !!st.started } };
+    },
+  },
+  {
+    id: "startearly",
+    name: "Start a class recording early",
+    hint: "Open LECTURE CAPTURE and press START NOW.",
+    prompt: "Your class starts in 15 minutes and its recording is already approved. Everyone is here early and you want to begin. Have the recording running from this point, not from the scheduled time.",
+    setup: app => gradeReset(app, { power: false, schedule: [
+      gradeEvent(app, "task-early", "CHM 1045-0001 - Doe, John", 15 + G_LEAD_MIN, 50, true, true)] }),
+    // Waiting for the scheduled auto-start must NOT pass. "Early" is when the class was STARTED,
+    // caught by the watcher the moment it happens, not when the recorder rose: the recorder lags
+    // about 2 s, so a START NOW just before the boundary would otherwise flip from worked to not
+    // worked depending on when Done was pressed.
+    watch: (app, st) => {
+      const k = app.pearl, e = k.schedule.find(x => x.id === "task-early");
+      if (e && e.started && st.startedEarly === undefined) st.startedEarly = k.now() < e.start;
+      // fresh from the walk-up task, a tester may reach for NEW RECORDING instead. With the class 15
+      // minutes out the device refuses anything longer, so what is flagged is OPENING the form, the
+      // attempt the results need to see (cold review 2026-10-01)
+      if (app.program.walkup) st.walkupInstead = true;
+    },
+    grade: (app, st) => {
+      const ours = capturing(app, "task-early");
+      return { worked: !!(ours && st.startedEarly),
+               detail: { capturing: ours, startedEarly: !!st.startedEarly, walkupInstead: !!st.walkupInstead,
+                         startingNotYetRecording: ours && !app.pearl.recording } };
     },
   },
   {
@@ -281,4 +291,4 @@ function gradeUnwatch(app) { app.program.__gradeTask = null; app.program.__grade
 // every helper the grades call is listed here: testflow's study version hashes these, so a helper
 // left out could change how tasks are graded without changing the version
 window.GRADING = { TASK_DEFS, gradeReset, gradeEvent, gradeWatch, gradeUnwatch, visibleToRoom, onScreenOrComing,
-                   capturing, G_SRC };
+                   capturing, G_SRC, G_LEAD_MIN };
