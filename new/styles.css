@@ -207,7 +207,10 @@ html, body { height: 100%; background: #0b0f14; color: #dfe3e8; font-family: Ari
   transform: scale(0.27586); transform-origin: 0 0; }   /* 256 / 928, so it fits beside the scrollbar */
 .tb-room-screen.half .tb-room-inner { transform: scale(0.1315); }
 .tb-room-cap { font-size: 12px; color: #8892a0; margin-top: 6px; text-align: center; }
-.tb-title { font-size: 13px; color: #CEB888; font-weight: bold; letter-spacing: .04em; }
+.tb-title { font-size: 13px; color: #CEB888; font-weight: bold; letter-spacing: .04em; margin: 0; }
+.tb-title:focus { outline: none; }   /* focused only to be announced, like .tp-card h1 */
+/* the explore panel's "Lecture capture" choices, grouped for screen readers; same spacing as before */
+.tb-pick-col { display: flex; flex-direction: column; gap: 6px; }
 .tb-prompt { font-size: 17px; line-height: 1.35; margin-top: 2px; }
 .tb-right { display: flex; align-items: center; gap: 14px; flex-shrink: 0; }
 .tb-state { font-size: 13px; color: #8892a0; }
@@ -264,11 +267,11 @@ html, body { height: 100%; background: #0b0f14; color: #dfe3e8; font-family: Ari
 }
 .tf-pt:hover { border-color: #CEB888; }
 .tf-ends { display: flex; justify-content: space-between; gap: 12px; margin-top: 6px; font-size: 13px; color: #9fa9b4; }
-.tf-comment {
+.tf-comment, .tf-stopwhy {
   width: 100%; box-sizing: border-box; background: #1c242d; color: #dfe3e8;
   border: 1px solid #37424e; border-radius: 8px; padding: 10px 12px; font: 14px/1.4 Arial, sans-serif; resize: vertical;
 }
-.tf-comment:focus { outline: none; border-color: #CEB888; }
+.tf-comment:focus, .tf-stopwhy:focus { outline: none; border-color: #CEB888; }
 .tf-row { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 12px; }
 .tf-need { flex: 1; font-size: 13px; color: #9fa9b4; }
 /* how you did, shown only after sending */

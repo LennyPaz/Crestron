@@ -309,7 +309,7 @@ class TestFlow {
   // Progress that cannot be kept must not look kept: say so on every screen from then on.
   storageNote() {
     return this.storageOk ? "" :
-      '<p class="tf-error tf-storage-warn">This browser cannot save your progress. Please send your feedback before closing or reloading this page.</p>';
+      '<p class="tf-error tf-storage-warn" role="alert">This browser cannot save your progress. Please send your feedback before closing or reloading this page.</p>';
   }
   showStorageWarning() {
     // the screen already showing was drawn before the failure: add the warning to it now
@@ -335,9 +335,13 @@ class TestFlow {
     wrap = document.createElement("div");
     wrap.id = "taskui";
     wrap.innerHTML =
-      '<div id="task-picker"><div class="tp-card" role="dialog" aria-live="polite"></div></div>' +
-      '<div id="task-bar" hidden>' +
-        '<div class="tb-left"><div class="tb-title"></div><div class="tb-prompt"></div>' +
+      // a card is a modal dialog named by its heading; focus moving to that heading announces it,
+      // so it is not also a live region (read twice), and the panel behind is inert while it is up
+      '<div id="task-picker"><div class="tp-card" role="dialog" aria-modal="true" aria-labelledby="tp-card-h"></div></div>' +
+      // the side panel is a named region with a heading a screen reader can jump to, and that
+      // heading takes focus when a task or exploring starts (accessibility audit 2026-10-01)
+      '<aside id="task-bar" hidden aria-label="Test instructions">' +
+        '<div class="tb-left"><h2 class="tb-title" tabindex="-1"></h2><div class="tb-prompt"></div>' +
           '<div class="tb-warm" hidden></div>' +
           '<div class="tb-warn tf-error" hidden></div>' +
           '<div class="tb-room"><div class="tb-room-q">IN THE ROOM</div>' +
@@ -355,7 +359,7 @@ class TestFlow {
           '<button class="tf-primary tb-send" hidden>Send feedback</button>' +
           '<button class="tb-skip tb-newtest" hidden>Start a new test</button>' +
         '</div>' +
-      '</div>';
+      '</aside>';
     document.body.appendChild(wrap);
     this.overlay = wrap.querySelector("#task-picker");
     this.card = wrap.querySelector(".tp-card");
@@ -447,6 +451,7 @@ class TestFlow {
     if (setup) setup.hidden = false;
     this.bar.querySelectorAll("button").forEach(b => { b.disabled = false; });
     this.setBar(true);
+    this.focusBarTitle();
     this.showWarmUp();
   }
   // Owner 2026-09-18: while exploring, the tester picks the situation (which recorder state, and
@@ -490,9 +495,10 @@ class TestFlow {
       label + '</button>').join("");
     const timed = sc.kind === "needsOk" || sc.kind === "confirmed";
     box.innerHTML =
-      '<div class="tb-setup-q">Room</div><div class="tb-pick-row tb-pick-row2">' + pick("room", TF_FREE_ROOMS, sc.room) + '</div>' +
-      '<div class="tb-setup-q">Lecture capture</div>' + pick("kind", TF_FREE_KINDS, sc.kind) +
-      (timed ? '<div class="tb-setup-q">Class starts in</div><div class="tb-pick-row">' +
+      // each set of choices is a group named by its question, so "5 min" is not read on its own
+      '<div class="tb-setup-q" id="tbq-room">Room</div><div class="tb-pick-row tb-pick-row2" role="group" aria-labelledby="tbq-room">' + pick("room", TF_FREE_ROOMS, sc.room) + '</div>' +
+      '<div class="tb-setup-q" id="tbq-kind">Lecture capture</div><div class="tb-pick-col" role="group" aria-labelledby="tbq-kind">' + pick("kind", TF_FREE_KINDS, sc.kind) + '</div>' +
+      (timed ? '<div class="tb-setup-q" id="tbq-mins">Class starts in</div><div class="tb-pick-row" role="group" aria-labelledby="tbq-mins">' +
                pick("mins", tfFreeMins(sc.kind).map(m => [m, m + " min"]), sc.mins) + '</div>' : '') +
       '<div class="tb-setup-note">Changing these resets the room.</div>' +
       '<button type="button" class="tb-pick tb-room-reset">Reset the room</button>';
@@ -508,6 +514,10 @@ class TestFlow {
         if (this.storageOk && !this.save() && this.stale) return;
         this.setUpFreeRoom();
         this.drawFreeSetup();
+        // the redraw replaced the buttons: put focus back on the same choice (or its group's first)
+        const sel = '.tb-pick[data-g="' + b.dataset.g + '"]';
+        const again = this.bar.querySelector(sel + '[data-v="' + b.dataset.v + '"]') || this.bar.querySelector(sel);
+        if (again) { try { again.focus({ preventScroll: true }); } catch (e) { /* not focusable */ } }
       };
     });
   }
@@ -574,13 +584,29 @@ class TestFlow {
     // choice button says whether it is picked, not by colour alone
     this.markPicked();
     const h = this.card.querySelector("h1");
-    if (h) { h.tabIndex = -1; try { h.focus({ preventScroll: true }); } catch (e) { /* not focusable */ } }
+    if (h) { h.id = "tp-card-h"; h.tabIndex = -1; try { h.focus({ preventScroll: true }); } catch (e) { /* not focusable */ } }
+    // errors are announced when they appear, not the whole card. Not .tf-need: the rating screen
+    // fills it as it opens, so it spoke over the heading every time, and the disabled Next button
+    // already says the answers are missing (review 2026-10-01)
+    this.card.querySelectorAll(".tf-error").forEach(el => el.setAttribute("role", "alert"));
+    this.setPanelInert(true);
+  }
+  // the panel behind a card cannot be reached by keyboard or screen reader while the card is up
+  setPanelInert(on) {
+    const vp = document.getElementById("viewport");
+    if (vp) vp.inert = !!on;
+  }
+  // a task or exploring starts: focus goes to the side panel's heading, so it is announced and the
+  // next Tab lands in the panel, not back at the top of the page (accessibility audit 2026-10-01)
+  focusBarTitle() {
+    const t = this.bar.querySelector(".tb-title");
+    if (t) { try { t.focus({ preventScroll: true }); } catch (e) { /* not focusable */ } }
   }
   markPicked(root) {
     (root || this.card).querySelectorAll(".tf-pt, .tf-choice, .tb-pick[data-g]").forEach(b =>
       b.setAttribute("aria-pressed", b.classList.contains("on") ? "true" : "false"));
   }
-  hideOverlay() { this.overlay.style.display = "none"; }
+  hideOverlay() { this.overlay.style.display = "none"; this.setPanelInert(false); }
 
   // fromLoad: the page was (re)loaded onto this step, as opposed to arriving from the step before
   route(fromLoad) {
@@ -608,7 +634,10 @@ class TestFlow {
 
   // below this width the panel's buttons are too small to press reliably (390 px wide makes a mute
   // button about 17 by 10 px), which would show up as hard tasks rather than as a small screen
-  isSmall() { return window.innerWidth < 900; }
+  // Small means the SCREEN is small, not just the page: browser zoom halves a laptop's page width
+  // at 200%, and a laptop user zooming to read was being told to use a laptop (accessibility audit,
+  // owner 1A, 2026-10-01). A phone is small on both counts. This can only ask fewer people.
+  isSmall() { return window.innerWidth < 900 && (window.screen ? window.screen.width < 900 : true); }
 
   // Owner 2026-09-29: on a small screen, ask for a laptop or desktop first. Continuing anyway is
   // allowed and remembered; the screen size is sent with the answers either way.
@@ -687,6 +716,7 @@ class TestFlow {
     this.barMode("task");
     this.bar.querySelectorAll("button").forEach(b => { b.disabled = false; });
     this.setBar(true);
+    this.focusBarTitle();
     this.showWarmUp();
     this.gradeState = {};
     t.setup(this.app);
@@ -705,6 +735,7 @@ class TestFlow {
     this.barMode("task");
     this.bar.querySelectorAll("button").forEach(b => { b.disabled = false; });
     this.setBar(true);
+    this.focusBarTitle();
     this.showWarmUp();
     window.GRADING.gradeWatch(this.app, t, this.gradeState || (this.gradeState = {}));
   }
@@ -815,7 +846,7 @@ class TestFlow {
                ' tasks, and what you did so far is worth sending.' : '') + '</p>' +
       (early
         ? '<fieldset class="tf-q"><legend>What made you stop? (Optional)</legend>' +
-          '<textarea class="tf-stopwhy" maxlength="300" rows="2" placeholder="Please do not include names or other personal details.">' +
+          '<textarea class="tf-stopwhy" aria-label="What made you stop? (Optional)" maxlength="300" rows="2" placeholder="Please do not include names or other personal details.">' +
           tfEsc(this.st.stopReason || "") + '</textarea></fieldset>'
         : '') +
       // "kept" is said only when it is true; without storage the warning below says the opposite
@@ -934,7 +965,7 @@ class TestFlow {
         ? '<div class="tf-older"><p class="tf-error">The test has been updated since you last started it, so it begins again ' +
           'from the start. Sorry about that.</p></div>'
         : "";
-    return '<div class="tf-older"><p class="tf-error">' +
+    return '<div class="tf-older"><p class="tf-error" role="alert">' +
       (where === "welcome" ? 'The test has been updated since you last started it, so it begins again from the start. ' : '') +
       'You have answers from an earlier version of this test that were not sent.' +
       (this.oldVerdict === "failed" ? ' They could not be sent just now. Please try again.' : '') + '</p>' +
@@ -1018,6 +1049,7 @@ class TestFlow {
       : "";
     this.barMode("unsent");
     this.setBar(unsent);
+    if (unsent) this.focusBarTitle();
     if (!unsent) this.app.renderer.flipTo("SCREENSAVER");
   }
 }
