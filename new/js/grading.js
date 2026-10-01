@@ -233,7 +233,7 @@ const TASK_DEFS = [
   {
     id: "privacy",
     name: "Keep a private moment out of a recording",
-    hint: "Press PAUSE for the conversation, then RESUME. The same recording carries on.",
+    hint: "Open LECTURE CAPTURE, press PAUSE for the conversation, then RESUME. The same recording carries on.",
     prompt: "Your class is being recorded when a student comes up with a private question. Keep that conversation, and the student, out of the recording without ending it. By the end of this task, the class should be recording again.",
     setup: app => gradeReset(app, { power: false, recordingId: "task-privacy", schedule: [
       gradeEvent(app, "task-privacy", "PSY 3810-0002 - Smith, Jane", -10, 60, false, true)] }),

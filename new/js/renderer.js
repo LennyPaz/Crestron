@@ -333,8 +333,11 @@ class Renderer {
     inner.style.textAlign = (p.HorizontalAlignment || "center").toLowerCase();
     if (p.FontSizeChoice) inner.style.fontSize = p.FontSizeChoice + "px";
     if (p.FontColor) inner.style.color = crestColor(p.FontColor, "#fff");
-    // the glass never auto-wraps single-line labels, and TruncateText clips
-    if (p.MultilineSupport === "false") inner.style.whiteSpace = "nowrap";
+    // the glass never auto-wraps single-line labels, and TruncateText clips. "pre", not "nowrap": the
+    // glass also keeps every space, and the paused heading's "   Recording paused" leans on three of
+    // them to clear its icon (nowrap collapsed them and glued the text to the icon; stand-in tester
+    // 2026-10-01). No label or joined text carries a raw line break, which "pre" would show.
+    if (p.MultilineSupport === "false") inner.style.whiteSpace = "pre";
     if (p.TruncateText === "true") { e.style.overflow = "hidden"; }
     e.appendChild(inner);
     // A label's design-time markup is the object's DEFAULT TEXT FORMAT, not just its

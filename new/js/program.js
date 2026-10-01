@@ -602,6 +602,12 @@ class Program {
     B.setD(111, gUpNext ? 1 : 0);
     B.setD(112, gConfirm ? 1 : 0);
     B.setD(113, gConfirmed ? 1 : 0);
+    // The confirm help lines read the GATED confirm state too (H=140 ConfirmPreStart = AND(d112,
+    // NotStarted), H=144 ConfirmStartedHelp = AND(d112, NextStarted)), so with the walk-up form up
+    // both are off. Built from the raw state they printed over the walk-up's own help line (audit
+    // 2026-10-01). NotStarted/NextStarted (d100/d98) come from the module.
+    B.setD(101, gConfirm && B.getD(100) ? 1 : 0);
+    B.setD(99, gConfirm && B.getD(98) ? 1 : 0);
     B.setD(114, P.StateRec ? 1 : 0);
     B.setD(115, P.StatePaused ? 1 : 0);
     B.setD(116, P.EndedPulse ? 1 : 0);
@@ -627,8 +633,9 @@ class Program {
     const heard = Math.round(this.micLevel * 45000);
     B.setA(6, P.PreviewOn && !P.StatePaused ? Math.min(65535, heard) : 0);
 
-    // Needs_Confirm (H=164/165): confirm window open and not yet confirmed
-    B.setD(118, P.StateConfirmRaw && !P.Confirmed ? 1 : 0);
+    // Needs_Confirm (H=164/165): confirm window open and not yet confirmed, from the GATED confirm
+    // state (H=165 reads PearlStateConfirm_Fb, the H=137 output), like d99/d101 above
+    B.setD(118, gConfirm && !P.Confirmed ? 1 : 0);
   }
 }
 

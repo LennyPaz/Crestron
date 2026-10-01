@@ -265,7 +265,7 @@ const HELP_TOPICS = [
     // START NOW, NEW RECORDING, PAUSE, ADD 5 MINUTES and END RECORDING.
     steps: [
       { art: { faces: [F.lc] },
-        t: "The LECTURE CAPTURE card at the bottom left says what the recorder is doing. If it says RECORDING, you are being recorded. Press the card to open Lecture Capture." },
+        t: "The LECTURE CAPTURE card at the bottom left says what the recorder is doing. If it says RECORDING, you are being recorded. Press LECTURE CAPTURE to open it." },
       { art: { faces: [F.confirm] },
         // Codex, 2026-09-01: the first wording said a scheduled class starts ONLY
         // after CONFIRM, which is too absolute. pearl.js pumpTick starts an event
@@ -274,15 +274,15 @@ const HELP_TOPICS = [
         // word and an instructor has no idea whether their room has it. Wording it
         // off what the card actually shows is true either way: a room without
         // opt-in never asks, so the sentence never applies there.
-        t: "If the card says NEEDS YOUR OK, press the card, then press CONFIRM on the page that opens. Until someone does, that class is not recorded." },
+        t: "If the card says NEEDS YOUR OK, press LECTURE CAPTURE, then press CONFIRM on the page that opens. Until someone does, that class is not recorded." },
       { art: { faces: [F.powerOff, F.lc] },
-        t: "Turning the room off does not stop a recording. To end one early, press the card, press END RECORDING, then press END RECORDING again when it asks." },
+        t: "Turning the room off does not stop a recording. To end one early, press LECTURE CAPTURE, press END RECORDING, then press END RECORDING again when it asks." },
       { art: { faces: [F.done] },
         t: "Once a recording ends it uploads to My Media in Canvas on its own." },
     ],
     // no phone here: the card's states are finite and the Lecture Capture page
     // explains every one of them (Codex, 2026-09-02)
-    exit: "Card says something not covered here? Press the card. Lecture Capture explains what it means.",
+    exit: "Card says something not covered here? Press LECTURE CAPTURE. Lecture Capture explains what it means.",
   },
 ];
 

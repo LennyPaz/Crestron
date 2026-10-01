@@ -581,8 +581,8 @@ class PearlSim {
     const nextStarted = cBind && now >= cBind.start;
     B.setD(98, nextStarted ? 1 : 0);                     // NextStarted
     B.setD(100, nextStarted ? 0 : 1);                    // NotStarted
-    B.setD(99, stConf && nextStarted ? 1 : 0);           // ConfirmStartedHelp
-    B.setD(101, stConf && !nextStarted ? 1 : 0);         // ConfirmPreStart
+    // d99 ConfirmStartedHelp and d101 ConfirmPreStart are PROGRAM logic (H=144, H=140) on the
+    // walk-up-gated confirm state: js/program.js sets them, not the module
     B.setD(169, schedOk && nx && nx.confirmed && stopOk ? 1 : 0);   // ChipVis
     // walk-up form lamps. d130 and d138 are press AND feedback joins (the VERIFY
     // and CUSTOM buttons carry their own selected faces); d139/d140 are the
