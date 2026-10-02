@@ -182,10 +182,10 @@ class Program {
     B.onPress(86, e => { if (e) this.popupClose(); });        // scrim/cancel family
     B.onPress(77, e => { if (e) { this.pearl.recordStop(); this.pop.stop = false; this.refreshAll(); } });
     B.onPress(90, e => { if (e) { this.pearl.confirm(); this.pop.next = false; this.refreshAll(); } });
-    // Opening the form arms nothing: Rev 64's CustomArm latch (H=157) is set only by the CUSTOM press
-    // and reset by the presets and the form reset (H=151), so the form opens with CUSTOM unselected and
-    // its minutes box hidden (both on PearlCustomActive_Fb, H=156). The sim keeps that latch as
-    // pearl.adhoc.custom (js/pearl.js walkupOpen, customArm, adhocDur), which drives d137/d138.
+    // Opening the form leaves Rev 64's CustomArm latch (H=157) alone, but the module itself chooses
+    // CUSTOM on every open (PearlRest v10.59:3418) and H=156 ORs the module's CUSTOM lamp with the
+    // latch, so the form opens with CUSTOM lit and its minutes box showing (d137/d138). The sim keeps
+    // both as pearl.adhoc.custom (js/pearl.js walkupOpen, customArm, adhocDur).
     B.onPress(175, e => { if (e) { this.walkup = true; this.pearl.walkupOpen(); this.refreshAll(); } });
     B.onPress(176, e => { if (e) { this.walkup = false; this.closeKeyboard(); this.refreshAll(); } });
 

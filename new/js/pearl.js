@@ -171,6 +171,11 @@ class PearlSim {
   startEvent(e, immediate) {
     if (this.runEvent()) return;               // one event records at a time
     e.started = true;
+    // Started early, the device rewrites the event's start to the actual moment (crestron_control_
+    // catalog.md D15, measured), so TODAY and the running class's times show when it really began.
+    // The scheduled start stays in e.start: the tasks grade "early" against it. (Audit, Astra and
+    // Sol 6.1, 2026-10-02.)
+    if (this.now() < e.start) e.actualStart = this.now();
     this.endedTicks = 0;                       // a new recording cancels the ended story
     if (immediate) { this._recorderRose(); this.startLag = 0; }
     else this.startLag = START_LAG_TICKS;      // STARTING window: StateRec without truth
@@ -241,7 +246,11 @@ class PearlSim {
     // the second (Astra, 2026-09-18, after this line was wrongly removed as redundant). With the
     // edit-cancel in setAdhocFsuid, these two are the only ways an answer can go stale.
     this.verifyTicks = 0; this._verifyId = "";
-    this.adhoc = { fsuid: "", title: "", durMin: 0, custom: false, verified: false, verifiedId: "", name: "", error: "" };
+    // Every open starts with CUSTOM chosen and no length (PearlRest v10.59:3418, "CUSTOM the entry
+    // default"), and the program passes the module's CUSTOM lamp straight to the glass (Rev 64
+    // H=156 ORs it with the CustomArm latch). Set to false on 2026-10-01 from the latch alone, which
+    // was wrong; Sol 6.1's review caught it on 2026-10-02.
+    this.adhoc = { fsuid: "", title: "", durMin: 0, custom: true, verified: false, verifiedId: "", name: "", error: "" };
     this.bus.setS(41, "", true); this.bus.setS(43, "", true); this.bus.setS(45, "", true);
   }
   _sanId(v) { return String(v || "").replace(/[^a-zA-Z0-9]/g, "").slice(0, 20); }
@@ -530,7 +539,7 @@ class PearlSim {
       B.setD(157 + i, e && run === e && !suppressed ? 1 : 0);
       let txt = "";
       if (e) {
-        const t = fmtClockPad(e.start);
+        const t = fmtClockPad(e.actualStart || e.start);   // the device's rewritten start (D15)
         const title = e.title.length > 35 ? e.title.slice(0, 33) + ".." : e.title;
         const timeColor = run === e ? "#FFFFFF" : "#DFD1A7";
         txt = '<FONT color="' + timeColor + '">' + t + '</FONT>  <FONT color="#FFFFFF">' + title + "</FONT>";
@@ -547,7 +556,7 @@ class PearlSim {
     } else {
       const headTitle = head ? head.title : "No more recordings today";
       B.setS(3, headTitle);
-      B.setS(4, head ? (fmtClockFull(head.start) + " - " + fmtClockFull(head.end)) : "");
+      B.setS(4, head ? (fmtClockFull(head.actualStart || head.start) + " - " + fmtClockFull(head.end)) : "");
       B.setS(5, head ? this._countdown(head.start, !!(head.started && !head.ended)) : "");
       // s6 belongs to the CONFIRM BINDING alone (PearlRest:2559-2576)
       const clTitle = cBind ? (cBind.title.length > 42 ? cBind.title.slice(0, 40) + ".." : cBind.title) : "";
@@ -566,6 +575,9 @@ class PearlSim {
     B.setS(14, this.extendTtl > 0 ? this.extendNote
       : (run && !this._extendOk() && nx ? "Next class at " + fmtClockFull(nx.start) : ""));
     B.setS(46, this.adhoc.name);
+    // the loaded module's ModuleVer on analog 7 (Rev 64 H=132 O86 to DGE I195), which Technical
+    // Setup prints: the bench runs PearlRest v10.59, ModuleVer 1059 (PearlRest.usp:5410)
+    B.setA(7, 1059);
     const url = this.previewOn ? "rtsp://pearl.sim:554/stream.sdp" : "";
     const urlCam = this.previewOn ? "rtsp://pearl.sim:555/stream.sdp" : "";
     B.setS(60, url); B.setS(61, urlCam); B.setS(62, url);

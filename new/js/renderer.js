@@ -174,6 +174,11 @@ class Renderer {
       const j = parseInt(sp.dataset.cips, 10);
       this.bus.onS(j, v => { sp.innerHTML = crestronLabelToHtml(v); });
     });
+    // inline analog joins print their number (Sol 6.1's audit, 2026-10-02)
+    e.querySelectorAll("[data-cipa]").forEach(sp => {
+      const j = parseInt(sp.dataset.cipa, 10);
+      this.bus.onA(j, v => { sp.textContent = String(v); });
+    });
   }
 
   subpageRef(o) {
@@ -349,7 +354,7 @@ class Renderer {
     // Text that arrives WITH markup (Page1Formatter emits its own <FONT>/<B>) still wins outright,
     // which is also what the panel does.
     const dflt = defaultTextFormat(o.label || "");
-    const hasMarkup = v => /<(P|FONT|B|BR|cips)\b/i.test(v);
+    const hasMarkup = v => /<(P|FONT|B|BR|cips|cipa)\b/i.test(v);
     const setContent = mk => { inner.innerHTML = crestronLabelToHtml(mk); this.bindCips(inner); };
     const setText = v => {
       if (v === "" || hasMarkup(v)) { setContent(v); return; }
@@ -606,6 +611,7 @@ class Renderer {
     draw();
     this.root.appendChild(wrap);
     this.kbd = wrap;
+    this.kbdInput = input;                        // the field it types into; only that is blurred on close
     // A tap anywhere outside the keyboard closes it (owner, 2026-09-28), and still does its own
     // job: VERIFY verifies, a button presses. Capture phase, so this runs before the tapped
     // control and never swallows it. The field that opened the keyboard is excluded, because its
@@ -649,7 +655,10 @@ class Renderer {
     if (!this.kbd) return;
     this.kbd.remove();
     this.kbd = null;
-    if (document.activeElement && document.activeElement.blur) document.activeElement.blur();
+    // blur only the field the keyboard typed into: blurring whatever had focus took it from the task
+    // heading that startTask had just focused (Sol 6.1's review, 2026-10-02)
+    if (this.kbdInput && document.activeElement === this.kbdInput) this.kbdInput.blur();
+    this.kbdInput = null;
   }
 
   // Layout read off the glass (owner photo 2026-08-31), top to bottom:

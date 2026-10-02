@@ -10,6 +10,9 @@ function crestronLabelToHtml(markup) {
   let s = markup;
   // inline serial joins first, before tag conversion
   s = s.replace(/<cips>(\d+)\?<\/cips>/g, '<span data-cips="$1"></span>');
+  // <cipa>N?FMT</cipa> is the ANALOG twin: the glass prints analog join N's number there (Technical
+  // Setup's module version is <cipa>7?%r</cipa>). FMT is not modelled: the number is shown as is.
+  s = s.replace(/<cipa>(\d+)\?[^<]*<\/cipa>/g, '<span data-cipa="$1"></span>');
   s = s.replace(/<P\s+align="?(\w+)"?\s*>/gi, '<div style="text-align:$1">');
   s = s.replace(/<P>/gi, "<div>");
   s = s.replace(/<\/P>/gi, "</div>");
