@@ -81,6 +81,11 @@ html, body { height: 100%; background: #0b0f14; color: #dfe3e8; font-family: Ari
   align-items: center; justify-content: center; gap: 10px; background: #0d1216; }
 .scene-splash .splash-glyph { font-size: 44px; color: #CEB888; line-height: 1; }
 .scene-splash .splash-text { font-size: 15px; letter-spacing: 2px; color: #dfe3e8; }
+/* the Pearl's own pause picture, measured off a frame of it: blue, lighter at the middle, bold white words */
+.scene-evpaused { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+  background: radial-gradient(ellipse at center, #44579a 0%, #34437c 45%, #232f5c 100%); }
+.scene-evpaused span { font-weight: 700; font-size: 26px; letter-spacing: 1px; color: #fff;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.35); }
 
 /* ---------------- guided tasks (dev lane; never on the glass) ---------------- */
 #task-picker {

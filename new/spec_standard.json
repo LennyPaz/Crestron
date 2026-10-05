@@ -1,5 +1,5 @@
 {
- "source": "_nl_next31.vtz",
+ "source": "_nl_next32.vtz",
  "pages": [
   {
    "idx": 1,
@@ -1608,13 +1608,13 @@
      "target": "Simple_Label",
      "geo": {
       "left": 336,
-      "top": 82,
+      "top": 87,
       "width": 146,
       "height": 26,
       "z": 14
      },
      "props": {
-      "PositionAndSize/Top": "82",
+      "PositionAndSize/Top": "87",
       "PositionAndSize/Left": "336",
       "PositionAndSize/Width": "146",
       "PositionAndSize/Height": "26",
@@ -10131,7 +10131,7 @@
       "MultilineSupport": "true",
       "TruncateText": "false"
      },
-     "label": "<P align=\"center\"><FONT size=\"22\" face=\"Arial\" color=\"#DFD1A7\">It records when you confirm it, or right away with START NOW. You can also start your own recording, as long as it ends before this one begins.</FONT></P>"
+     "label": "<P align=\"center\"><FONT size=\"22\" face=\"Arial\" color=\"#DFD1A7\">Press CONFIRM and it records at the class start time, or START NOW to record right away. You can also start your own recording, as long as it ends before this one begins.</FONT></P>"
     },
     {
      "kind": "child",
@@ -10933,7 +10933,7 @@
       "MultilineSupport": "true",
       "TruncateText": "false"
      },
-     "label": "<P align=\"center\"><FONT size=\"22\" face=\"Arial\" color=\"#DFD1A7\">Recording what's being sent to the projector and the selected camera view.</FONT></P>"
+     "label": "<P align=\"center\"><FONT size=\"22\" face=\"Arial\" color=\"#DFD1A7\">Recording the source sent to the projector and the selected camera view.<BR>Even when the projector is off.</FONT></P>"
     },
     {
      "kind": "child",
@@ -11786,7 +11786,7 @@
       "MultilineSupport": "true",
       "TruncateText": "false"
      },
-     "label": "<P align=\"center\"><FONT size=\"22\" face=\"Arial\" color=\"#DFD1A7\">While paused, viewers see a pause screen and hear no audio.<BR>The cameras still work with the room computer.</FONT></P>"
+     "label": "<P align=\"center\"><FONT size=\"22\" face=\"Arial\" color=\"#DFD1A7\">Nothing is recorded while paused.<BR>The cameras still feed the room computer.</FONT></P>"
     },
     {
      "kind": "child",
@@ -13970,7 +13970,7 @@
       "MultilineSupport": "false",
       "TruncateText": "false"
      },
-     "label": "<P align=\"center\"><FONT size=\"22\" face=\"Arial\" color=\"#DFD1A7\">Verify your FSUID and choose a duration first.</FONT></P>"
+     "label": "<P align=\"center\"><FONT size=\"22\" face=\"Arial\" color=\"#DFD1A7\">Enter your FSUID, press VERIFY, then choose a duration.</FONT></P>"
     },
     {
      "kind": "child",
@@ -15194,7 +15194,7 @@
       "MultilineSupport": "true",
       "TruncateText": "false"
      },
-     "label": "<P><FONT size=\"26\" face=\"Arial\" color=\"#FFFFFF\">PAUSE shows viewers a pause screen. ADD 5 MINUTES extends the end time. END RECORDING stops and uploads.</FONT></P>"
+     "label": "<P><FONT size=\"26\" face=\"Arial\" color=\"#FFFFFF\">PAUSE stops the recording until you press RESUME. ADD 5 MINUTES extends the end time. END RECORDING stops and uploads.</FONT></P>"
     },
     {
      "kind": "child",
@@ -15260,7 +15260,7 @@
       "MultilineSupport": "true",
       "TruncateText": "false"
      },
-     "label": "<P><FONT size=\"26\" face=\"Arial\" color=\"#FFFFFF\">Viewers see a pause screen while the recording continues. ADD 5 MINUTES extends it. END RECORDING uploads it.</FONT></P>"
+     "label": "<P><FONT size=\"26\" face=\"Arial\" color=\"#FFFFFF\">Nothing is recorded while paused. ADD 5 MINUTES extends the end time. END RECORDING stops and uploads.</FONT></P>"
     },
     {
      "kind": "child",
@@ -16073,7 +16073,7 @@
       "MultilineSupport": "true",
       "TruncateText": "true"
      },
-     "label": "<P align=\"left\"><FONT size=\"22\" face=\"Arial\" color=\"#FFFFFF\">Viewers see a pause screen and hear no audio.</FONT><BR><FONT size=\"20\" face=\"Arial\" color=\"#D9C5CA\">It does not end your recording.</FONT></P>"
+     "label": "<P align=\"left\"><FONT size=\"22\" face=\"Arial\" color=\"#FFFFFF\">Stops recording until you press RESUME.</FONT><BR><FONT size=\"20\" face=\"Arial\" color=\"#D9C5CA\">It does not end your recording.</FONT></P>"
     },
     {
      "kind": "child",

@@ -16,10 +16,7 @@ let app = null;
 // source_manifest.json); these are applied on top at load. Take an entry out the day a round that
 // carries it is regenerated into the spec: the "ahead" check in verify_tasks.js fails until you do.
 const SPEC_AHEAD = [
-  // LISTEN TO's source name sat on the button's baked caption (rows 70 to 83 of the face, layout
-  // 78 to 91). Owner 2026-10-01 (1B, then A): move it down, no font change. Sent to the touch-panel
-  // session for its next round.
-  { spec: "spec_standard.json", name: "P1_126_listenSrc", was: 82, top: 87 },
+  // empty: round 32 (sent 2026-10-05) carries the LISTEN TO label's move to 87, the only entry so far
 ];
 function applySpecAhead(file, spec) {
   const want = SPEC_AHEAD.filter(a => a.spec === file);
@@ -90,10 +87,11 @@ async function boot(variantKey) {
     // the recorder views follow their URL SERIALS, as the glass does: an empty
     // s60/s61 tears the session down whatever the module state says
     const s60 = () => bus.getS(60) !== "", s61 = () => bus.getS(61) !== "";
-    // On hold the recorder's two channels switch to their privacy slates (PearlRest.usp:1392,
-    // Content_Splash$ / Camera_Splash$), so that is what the recorder previews show
-    const recContent = () => pearl.paused ? room.slateScene() : (room.sceneFor(R().kaltura) || room.noContentScene());
-    const recCam = () => pearl.paused ? room.slateScene() : room.cameraScene(null, pearl.layoutN);
+    // While the class is paused at the Pearl, both recorded channels put out the device's own "EVENT
+    // PAUSED" picture, from the moment the event pauses, before the recorders follow, and a layout
+    // change does not alter it (DEVICE_FACTS, pause measurements)
+    const recContent = () => pearl.devPaused ? room.slateScene() : (room.sceneFor(R().kaltura) || room.noContentScene());
+    const recCam = () => pearl.devPaused ? room.slateScene() : room.cameraScene(null, pearl.layoutN);
     // The recorder's two streams are told apart by the URL serial a window is bound to, as on the
     // glass: s60 is the content channel, s61 the camera. Round 30 (09-28) moved those serials
     // between two windows without renaming them, and binding by NAME showed them the wrong way

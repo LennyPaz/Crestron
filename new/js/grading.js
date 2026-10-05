@@ -36,7 +36,7 @@ function gradeReset(app, opts) {
   p.lcOpen = false; p.pop = { stop: false, next: false, help: false }; p.walkup = false;
   p.closeKeyboard();                            // its keys would type into a form no longer shown
   k.recording = false; k.recStartEp = 0; k.startLag = 0; k.teardown = 0; k.teardownEvent = null;
-  k.paused = false; k.pausePending = 0; k.pauseDirection = 0;
+  k.resetPause();                               // the pause, the press guards, the preview's owner
   k.previewOn = false; k.previewSec = 0; k.endedTicks = 0;
   k.statusTransient = ""; k.statusTtl = 0; k.extendNote = ""; k.extendTtl = 0;
   k.layoutN = 1;
@@ -54,6 +54,8 @@ function gradeReset(app, opts) {
     // Recording until ...", not the 20 s "Recording started" PearlRest posts only on the recorder's
     // rising edge (PearlRest.usp:4047, 4321; audit 2026-10-01)
     if (k.recording && e.start < k.now()) { k.recStartEp = e.start; k.statusTransient = ""; k.statusTtl = 0; }
+    // ...and was bound long ago: the task does not begin inside the second after a change of class
+    k.settle();
   }
   // Publish the new state and let the formatter see it NOW, inside the reset. Otherwise the panel
   // shows the last task's RECORDING until the next tick, and a START pressed before that tick
@@ -72,13 +74,15 @@ function gradeReset(app, opts) {
   app.renderer.flipTo("main");
 }
 
-// THIS class is capturing, or is in a transition that gets there with nothing more from the
-// tester (the few-second STARTING window, or a resume going through). Not while held, not while
-// a hold is going on, not while it is being stopped.
+// THIS class is capturing, or is on its way there with nothing more from the tester: the few-second
+// STARTING window, or RESUMING (the event is live again and the recorders are catching up; in this
+// simulation a resume always takes, so the wait measures nothing; owner 2026-10-05, "A"). Not while
+// the event is paused (PAUSING and PAUSED), not while it is being stopped. A paused recorder is still
+// an active recording, so `recording` alone is not capture.
 function capturing(app, id) {
   const k = app.pearl, run = k.runEvent();
   if (!run || run.id !== id || k.teardown) return false;
-  if (k.paused ? k.pauseDirection !== 2 : k.pauseDirection === 1) return false;
+  if (k.devPaused) return false;
   return !!(k.recording || k.startLag > 0);
 }
 
@@ -148,7 +152,7 @@ const TASK_DEFS = [
       // PROJECT, then CHECK RECORDER shows the laptop on the panel with the projector blanked. It
       // follows whatever the program sends to the recorder, so if VIDEO MUTE ever cuts that feed,
       // this path stops passing on its own.
-      const viaRecorder = !!(k.out && k.out.PreviewOn) && !k.paused && r.kaltura === G_SRC.HDMI &&
+      const viaRecorder = !!(k.out && k.out.PreviewOn) && !k.devPaused && r.kaltura === G_SRC.HDMI &&
                           app.bus.getS(60) !== "";
       const previewing = r.prevL === G_SRC.HDMI || r.prevR === G_SRC.HDMI || viaRecorder;
       // also not about to be shown: projected during a warm-up appears when it ends, and since every
@@ -244,19 +248,19 @@ const TASK_DEFS = [
   {
     id: "privacy",
     name: "Keep a private moment out of a recording",
-    hint: "Open LECTURE CAPTURE, press PAUSE for the conversation, then RESUME. The same recording carries on.",
+    hint: "Open LECTURE CAPTURE, press PAUSE and wait for PAUSED before the conversation, then RESUME.",
     prompt: "Your class is being recorded when a student comes up with a private question. Keep that conversation, and the student, out of the recording without ending it. By the end of this task, the class should be recording again.",
     setup: app => gradeReset(app, { power: false, recordingId: "task-privacy", schedule: [
       gradeEvent(app, "task-privacy", "PSY 3810-0002 - Smith, Jane", -10, 60, false, true)] }),
-    // Both halves, on the SAME recording: it was held at some point, and at the moment they say
-    // done it is capturing again or its resume is going through (same rule as the other recording
-    // tasks: nothing more is needed from the tester), not held, not being stopped.
+    // Both halves, on the SAME recording: every recorder read paused at some point (the module's
+    // only proof, PearlRest v10.60; a PAUSED page alone is not), and at the moment they say done it is
+    // capturing again or its resume is going through, not paused, not being stopped.
     // Muting the mic is NOT the task (owner 2026-09-28): the camera still films the student at the
     // lectern, and a forgotten mute silently loses the rest of the lecture's sound. It is recorded
     // as its own flag, so the results show how many testers reach for mute first.
     watch: (app, st) => {
       const k = app.pearl, run = k.runEvent();
-      if (k.paused && run && run.id === "task-privacy") st.heldPrivacy = true;
+      if (k.recPaused && run && run.id === "task-privacy") st.heldPrivacy = true;
       if (app.program.muteMic) st.mutedMic = true;
     },
     grade: (app, st) => {
@@ -267,7 +271,8 @@ const TASK_DEFS = [
       // the failure this system exists to prevent (Astra 2026-09-29, owner's 09-28 reasoning)
       const micOn = !app.program.muteMic;
       return { worked: !!(st.heldPrivacy && live && micOn),
-               detail: { held: !!st.heldPrivacy, recordingAgain: !!live, stillPaused: same && k.paused,
+               detail: { held: !!st.heldPrivacy, recordingAgain: !!live, stillPaused: same && k.recPaused,
+                         resumeUnproven: same && k.opDir === 2,
                          mutedMic: !!st.mutedMic, micStillMuted: !micOn } };
     },
   },

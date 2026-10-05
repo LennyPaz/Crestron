@@ -146,11 +146,11 @@ class Room {
     return null;
   }
 
-  // The Pearl's privacy slate while a recording is held. Owner's own design, ported from the
-  // earlier mock (panel-ui/dif/dif.html, .lc-preview-splash): the pause glyph over the words.
+  // What a recorded channel puts out while its class is paused at the Pearl: the device's built-in
+  // slate, "EVENT PAUSED" in white on blue (C:\vtlab\pearl_pause_slate_ch2_2026-09-29.png). It cannot be
+  // changed on a Kaltura Pearl (DEVICE_FACTS), so this replaces the old soft hold's own slate.
   slateScene() {
-    return "<div class='scene scene-splash'><span class='splash-glyph'>&#9208;</span>" +
-           "<span class='splash-text'>RECORDING PAUSED</span></div>";
+    return "<div class='scene scene-evpaused'><span>EVENT PAUSED</span></div>";
   }
 
   // Nothing routed to the recorder. Owner 2026-09-17: the CONTENT artwork was fine as it was, so

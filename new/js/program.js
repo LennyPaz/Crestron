@@ -420,7 +420,9 @@ class Program {
     // H=192/193/174: the page-transition presses (LC open, BACK) close the one preview.
     // The reopen-blocking handoff latch (H=169..173) is a DEAD branch in Rev 34:
     // Preview_Open_Gated has no consumer, so no blocking is modeled here.
-    if (this.pearl.out.PreviewOn) { this.pearl.previewCmd(2); }
+    // Sent whether or not a preview is open (Rev 65 H=192 to H=174 on every press), so it also restarts
+    // the module's half second in which our pause's proof may not reopen the preview (cold review 10-05)
+    this.pearl.previewCmd(2);
     this.lcOpen = v;
     if (!v || v) {
       // EdgePageOff (H=153/147..150): popups and walkup die on the page leaving
@@ -590,7 +592,9 @@ class Program {
     B.setD(146, this.flashSrcMs > 0 ? 1 : 0);        // sources glow frames visible
 
     // LC latch, band, deck (H=136, 175, 177, 178)
-    const bandPreview = P.PreviewOn && !this.lcOpen;   // H=175 Band_Preview_Visible
+    // Rev 65: a preview our pause opened by itself stays off the main page (H=315 equates O91, H=316
+    // inverts it, H=175 takes it as I3). One somebody asked for still shows there.
+    const bandPreview = P.PreviewOn && !this.lcOpen && !P.PreviewHoldOnly;   // H=175 Band_Preview_Visible
     B.setD(68, bandPreview ? 1 : 0);
     B.setD(66, bandPreview ? 0 : 1);                   // H=177 Band_Not_Visible
     B.setD(57, this.source === 1 && !bandPreview ? 1 : 0);  // H=178 deck shows when Blu-ray latched
@@ -635,7 +639,9 @@ class Program {
     // audio meter (H=194..199): enabled while the preview is open and no modal covers it
     const anyModal = this.pop.stop || this.pop.next || this.pop.help || walkupSafe ||
                      this.bus.getD(2) || warming;
-    B.setD(141, P.PreviewOn && !anyModal ? 1 : 0);
+    // Rev 65 H=198 I3 (H=317, Preview_Not_Hold_Only OR the LC page): the pause's own preview lights the
+    // meter on the LC page only
+    B.setD(141, P.PreviewOn && !anyModal && (!P.PreviewHoldOnly || this.lcOpen) ? 1 : 0);
     // Owner 2026-09-17: while the recording is held the RECORDER's meter sits at zero. The mic
     // still hears the room, but nothing is reaching the recording, and the meter belongs to it.
     // What the recorder hears (Rev 60): the two Aux mixes that feed it carry the mic, muted by MIC
@@ -646,7 +652,11 @@ class Program {
     // a tester in the privacy task that a muted mic was still recording). 0, not a floor: PearlRest
     // v10.56 maps -60 dBFS or quieter to 0 (PearlRest.usp:4163), and a muted mix is silence.
     const heard = Math.round(this.micLevel * 45000);
-    B.setA(6, P.PreviewOn && !P.StatePaused ? Math.min(65535, heard) : 0);
+    // Since the real pause (Rev 65), "nothing is reaching the recording" is the EVENT being paused, which
+    // is also when the recorded channels show EVENT PAUSED; keyed on the page it moved under PAUSING and
+    // sat flat under RESUMING (cold review 2026-10-05). PearlRest itself never zeroes it on a pause and
+    // what the Pearl's own level does while paused is still to be measured at the bench.
+    B.setA(6, P.PreviewOn && !this.pearl.devPaused ? Math.min(65535, heard) : 0);
 
     // Needs_Confirm (H=164/165): confirm window open and not yet confirmed, from the GATED confirm
     // state (H=165 reads PearlStateConfirm_Fb, the H=137 output), like d99/d101 above

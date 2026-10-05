@@ -1,7 +1,8 @@
 // PearlRest module simulation: the user-visible state machine of
-// panel-project/PearlRest.usp (v10.45), driven by a simulated schedule and
+// pearl-api-reference/simplplus/PearlRest.usp (v10.65 cut 7, what the room and the bench run; ported
+// from v10.45 up, the real pause from v10.60), driven by a simulated schedule and
 // recorder instead of HTTP. The kiosk state compute mirrors
-// PearlRest.usp:3747-3779; string formats follow the module's own formatters
+// PearlRest.usp:4995-5020 (v10.65); string formats follow the module's own formatters
 // (FmtClockFull "2:35 PM" user-facing, FmtClockPad "02:35p" TODAY rail,
 // FmtDurMin "1 hr 5 min", CountdownText pure durations). Bindings are
 // INDEPENDENT the way the parser's are (PearlRest.usp:2432-2438): the confirm
@@ -67,6 +68,16 @@ function displayTitle(t) {
 
 const START_LAG_TICKS = 20;   // recorder truth follows the event plane by ~2 s
 const STOP_TEARDOWN_TICKS = 15;
+// The real pause (PearlRest v10.60 to v10.65). The event pauses or resumes at once and the recorders
+// follow 1 to 3 s later (DEVICE_FACTS, pause measurements); the module believes only the recorders.
+const REC_FOLLOW_TICKS = 20;
+// A walk-up is bound the moment it is created, before a schedule reading lists its capabilities
+// (PearlRest.usp:4477). Until that reading, HOLD has to ask: "One moment".
+const CAP_READ_TICKS = 20;
+// ComposeDevice's rows (PearlRest.usp:1019-1026). The simulated readings are the recorders' own truth,
+// read every tick, so the rows for recorders that disagree or cannot be read never arise here.
+const ROW_PLAIN = 0, ROW_ENDING = 2, ROW_PAUSING = 3, ROW_UNPROVEN = 5, ROW_PAUSED = 8;
+const OP_PAUSE = 1, OP_RESUME = 2;
 
 class PearlSim {
   constructor(bus, opts) {
@@ -84,9 +95,7 @@ class PearlSim {
     this.startLag = 0;            // ticks until recorder truth follows a started event
     this.teardown = 0;            // ticks the stop dispatch is in flight
     this.teardownEvent = null;
-    this.paused = false;
-    this.pausePending = 0;
-    this.pauseDirection = 0;      // 1 engaging, 2 resuming
+    this.resetPause();
     this.layoutN = 1;             // View1 Instructor / View2 Students / View3 Both
 
     // preview: ONE timer (v10.12)
@@ -112,7 +121,35 @@ class PearlSim {
     this.publish();
   }
 
-  postStatus(msg) { this.statusTransient = msg; this.statusTtl = 200; }   // ~20 s
+  // PearlRest.usp:1878: a posted sentence stands 20 s (5 s when a change of class posts it). kind 0 is
+  // the answer to a press and stays; kind 2 is progress, and the next change of row releases it (:1783).
+  postStatus(msg, kind, short) {
+    this.statusTransient = msg; this.statusTtl = short ? 50 : 200; this.statusKind = kind || 0;
+  }
+
+  // Everything the real pause, the press guards and the preview's owner keep. Also the task reset's.
+  resetPause() {
+    this.devPaused = false;       // the event at the device: what the recorded channels put out
+    this.recPaused = false;       // every recorder paused: the only proof of a pause (gCap PAUSED)
+    this.recFollow = 0;           // ticks until the recorders follow the event
+    this.pauseInPlay = false;     // a reading has had a recorder paused (gPauseInPlay)
+    this.opDir = 0;               // our pause or resume, sent and not yet proven
+    this.coverAge = 0;            // ticks the cover has been up; it comes down at ten seconds
+    this.holdPark = 0;            // a HOLD waiting for the class's capabilities
+    this.capWait = 0;             // ticks until a reading lists the bound class's capabilities
+    this.devRow = ROW_PLAIN; this.statusKind = 0;
+    this.boundId = "";            // the class the module has bound (gRunEvId$)
+    this.classWin = 0; this.endBlock = 0; this.endBlockSc = 0; this.holdBlock = 0; this.resumeBlock = 0;
+    this.pvByHold = false;        // the open preview was opened by our proven pause alone
+    this.pvCloseAge = 30000;      // ticks since the instructor's last CLOSE
+  }
+  // A class already recording when a task begins was bound long ago: no change-of-class window, and its
+  // capabilities are known (a task does not start inside the second after a class changes).
+  settle() {
+    const run = this.runEvent();
+    this.boundId = run ? run.id : ""; this.capWait = 0;
+    this.classWin = 0; this.endBlock = 0; this.endBlockSc = 0; this.holdBlock = 0; this.resumeBlock = 0;
+  }
 
   // ------------------------------------------------------------ schedule + bindings
   setSchedule(evts) { this.schedule = evts.slice().sort((a, b) => a.start - b.start); }
@@ -177,6 +214,10 @@ class PearlSim {
     // Sol 6.1, 2026-10-02.)
     if (this.now() < e.start) e.actualStart = this.now();
     this.endedTicks = 0;                       // a new recording cancels the ended story
+    // A walk-up is bound, and records, before any reading lists what it can do. A class START NOW
+    // starts is bound early too (PearlRest.usp:4379), but its recorders take the ~2 s STARTING window to
+    // rise and no HOLD is taken before they do; the sim lets the reading land inside that window.
+    this.capWait = immediate ? CAP_READ_TICKS : 0;
     if (immediate) { this._recorderRose(); this.startLag = 0; }
     else this.startLag = START_LAG_TICKS;      // STARTING window: StateRec without truth
   }
@@ -184,24 +225,56 @@ class PearlSim {
   // plane (PearlRest.usp:3567): during the STARTING window nothing is recording yet
   _recorderRose() {
     this.recording = true; this.recStartEp = this.now();
-    this.postStatus("Recording started");
+    this.postStatus("Recording started", 2);
+  }
+  // A change of the class the module has bound (PearlRest.usp:1990 ClassCleared, :1999 SessionChanged).
+  // The press guards of cut 7: no END, HOLD or RESUME is taken for one second, so a tap made on the old
+  // class's glass cannot reach the new class. Called every tick and ahead of every press.
+  _syncBinding() {
+    const run = this.runEvent(), id = run ? run.id : "";
+    if (id === this.boundId) return;
+    const old = this.boundId;
+    this.boundId = id;
+    // an answer about the class that is going does not stand over the next one
+    const dropAnswer = () => { if (this.statusTtl > 0 && this.statusKind === 0) { this.statusTtl = 0; this.statusTransient = ""; } };
+    if (id === "") { dropAnswer(); this.endBlockSc = 1; }
+    else {
+      if (old !== "") dropAnswer();
+      this.opDir = 0; this.pauseInPlay = false;
+      if (old !== "") { this.holdPark = 0; this.endBlockSc = 1; }   // a pause belongs to the class it was pressed for
+      else if (this.endBlock === 0) this.endBlockSc = 0;
+    }
+    this.classWin = 11; this.endBlock = 11; this.holdBlock = 11; this.resumeBlock = 11;
   }
   recordStop() {
+    this._syncBinding();
+    // the panel delivers one tap twice: the first delivery arms half a second in which the next is
+    // dropped, and inside a change of class the window's drop also takes the tap's second delivery,
+    // answered when the class went (PearlRest.usp:3836-3851)
+    if (this.endBlock > 0) {
+      if (this.classWin > 0 && this.endBlock < 4) this.endBlock = 4;
+      if (this.endBlockSc) this.postStatus("That class has already ended", 0, true);
+      return;
+    }
+    this.endBlock = 5; this.endBlockSc = 0;
     if (this.teardown > 0) return;               // a stop is already in flight
     const run = this.runEvent();
     if (!run && !this.recording) return;
-    this.postStatus("Ending the recording");
+    this.postStatus("Ending the recording", 2);
     this.teardown = STOP_TEARDOWN_TICKS;       // REC story holds while the stop lands
     this.teardownEvent = run;
+    // the stop's answer ends any pause or resume of ours and a HOLD still waiting (PearlRest.usp:4390, 5486)
+    this.opDir = 0; this.coverAge = 0; this.holdPark = 0;
   }
   _finishStop(run) {
     if (run) run.ended = true;
     this.recording = false; this.startLag = 0;
-    this.paused = false; this.pausePending = 0; this.pauseDirection = 0;
+    this.devPaused = false; this.recPaused = false; this.recFollow = 0;
+    this.pauseInPlay = false; this.opDir = 0; this.holdPark = 0;
     this.previewOn = false; this.previewSec = 0;   // recorder falling closes preview
     this.endedTicks = 300;
     this.endedTitle = run ? run.title : this.endedTitle;
-    this.postStatus("Recording ended");
+    this.postStatus("Recording ended", 2);
   }
   extend5() {
     if (this.extendGuard > 0) return;            // a second press inside ~500 ms is dropped
@@ -219,26 +292,81 @@ class PearlSim {
     const nx = this.nextEvent();
     return !nx || nx.start > run.end + 300;
   }
+  // HOLD (PearlRest.usp:3897-3916): taken while a recording runs, not ending, with the cover down as the
+  // glass had it and no earlier HOLD still waiting. It pauses the class at the Pearl; it never changes a
+  // layout.
   holdOn() {
-    if (!this.recording || this.paused || this.pauseDirection === 1) return;
-    this.pauseDirection = 1; this.pausePending = 15;
+    this._syncBinding();
+    if (this.holdBlock > 0) { if (this.classWin > 0 && this.holdBlock < 4) this.holdBlock = 4; return; }
+    this.holdBlock = 5;
+    const coverWas = this._cover(this._row());   // as the glass shows it at the press
+    if (this.recording && this.teardown === 0 && !coverWas && this.holdPark === 0) this._holdDecide(false);
   }
+  // HoldDecide (PearlRest.usp:2196): on the room's firmware (4.24.6) a running class that is not paused
+  // lists pause Enabled once a reading has listed it at all (a paused one lists it Disabled, and HOLD is
+  // not reached then). Before that reading the press waits for it, saying "One moment".
+  _holdDecide(finalTry) {
+    this.holdPark = 0;
+    if (this.recPaused) return;                     // already paused at the recorders: nothing to send
+    if (this.runEvent() && this.capWait === 0) { this.coverAge = 0; this._firePause(); }
+    else if (!finalTry) { this.holdPark = 50; this.postStatus("One moment", 2); }
+    else this.postStatus("Could not pause - still recording");
+  }
+  // FireDevPause (PearlRest.usp:2170): re-judged at the send
+  _firePause() {
+    if (!this.runEvent() || this.teardown > 0 || !this.recording) { this.postStatus("Could not pause - still recording"); return; }
+    this.opDir = OP_PAUSE;
+    this.devPaused = true;                          // the event pauses at once...
+    this.recFollow = REC_FOLLOW_TICKS;              // ...and the recorders follow
+    this.postStatus("Pausing the recording", 2);
+  }
+  // RESUME (PearlRest.usp:3852-3895): resumes a recording paused at the recorders, or our pause whose cover
+  // is down, with the cover down as the glass had it and nothing ending.
   holdOff() {
-    if (!this.paused && this.pauseDirection !== 1) return;
-    this.pauseDirection = 2; this.pausePending = 20;   // RESUMING (v10.36)
+    this._syncBinding();
+    if (this.resumeBlock > 0) { if (this.classWin > 0 && this.resumeBlock < 4) this.resumeBlock = 4; return; }
+    this.resumeBlock = 5;
+    const coverWas = this._cover(this._row());   // as the glass shows it at the press
+    if (!this.recording || this.teardown > 0 || coverWas) return;
+    if (!(this.recPaused || this.opDir === OP_PAUSE)) return;
+    this.holdPark = 0;
+    if (!this.runEvent()) { this.postStatus("Could not resume - press RESUME again"); return; }
+    this.opDir = OP_RESUME; this.coverAge = 0;     // its own ten seconds on the glass
+    this.devPaused = false; this.recFollow = REC_FOLLOW_TICKS;
+    this.postStatus("Resuming the recording", 2);
   }
   setLayout(n) { this.layoutN = n; }
   layout(n) { this.setLayout(n); }
 
+  // Either preview press says who opened the preview: a person, so it is no longer the pause's alone
+  // (PreviewHoldOnly_Fb, PearlRest.usp:5049). A CLOSE also starts the clock that keeps our pause's proof
+  // from reopening it in the same half second (:4208).
   previewCmd(c) {
-    if (c === 1) { this.previewOn = true; this.previewSec = 60; }
-    else if (c === 2) { this.previewOn = false; this.previewSec = 0; }
+    if (c === 1) { this.previewOn = true; this.previewSec = 60; this.pvByHold = false; }
+    else if (c === 2) { this.previewOn = false; this.previewSec = 0; this.pvByHold = false; this.pvCloseAge = 0; }
   }
   // the legacy PreviewShow pin (module I20, panel d150): pressing the LIT button
   // always CLOSES; one timer either way (PearlRest.usp:4532-4538)
   previewToggle() {
-    if (this.previewOn) { this.previewOn = false; this.previewSec = 0; }
-    else { this.previewOn = true; this.previewSec = 60; }
+    if (this.previewOn) this.previewCmd(2);
+    else this.previewCmd(1);
+  }
+  // The device side's row, cover and page (PearlRest.usp:1731-1776, ComposeDevice)
+  _row() {
+    if (!this.recording) return ROW_PLAIN;
+    let row = this.recPaused ? ROW_PAUSED : ROW_PLAIN;
+    if (this.opDir === OP_RESUME) row = ROW_UNPROVEN;
+    if (this.opDir === OP_PAUSE) row = ROW_PAUSING;
+    if (this.teardown > 0 && this.pauseInPlay) row = ROW_ENDING;
+    return row;
+  }
+  _covered(row) { return row > ROW_PLAIN && row < ROW_PAUSED; }
+  _cover(row) { return this._covered(row) && this.coverAge < 100; }
+  // our pause stays on the RECORDING page under its cover for ten seconds, then shows PAUSED so that
+  // RESUME can be reached; PAUSED, a resume of ours and an END while paused show the PAUSED page
+  _devPage(row) {
+    if (row === ROW_PAUSED || row === ROW_UNPROVEN || row === ROW_ENDING) return true;
+    return row === ROW_PAUSING && this.coverAge >= 100;
   }
   previewYield() { this.previewCmd(2); }
   walkupOpen() {
@@ -373,6 +501,11 @@ class PearlSim {
   pumpTick(ms) {
     this._msAcc += ms;
     if (this.extendGuard > 0) this.extendGuard -= 1;
+    if (this.endBlock > 0) this.endBlock -= 1;
+    if (this.holdBlock > 0) this.holdBlock -= 1;
+    if (this.resumeBlock > 0) this.resumeBlock -= 1;
+    if (this.classWin > 0) this.classWin -= 1;
+    if (this.pvCloseAge < 30000) this.pvCloseAge += 1;
     if (this.verifyTicks > 0) { this.verifyTicks -= 1; if (this.verifyTicks === 0) this._verifyReply(); }
     // v10.15: a verification with no walk-up touch for ~3 min clears, fields and all
     if (this.adhoc.verified) {
@@ -407,15 +540,27 @@ class PearlSim {
       if (this.teardown <= 0) { this._finishStop(this.teardownEvent); this.teardownEvent = null; }
     }
 
-    if (this.pausePending > 0) {
-      this.pausePending -= 1;
-      if (this.pausePending <= 0) {
-        if (this.pauseDirection === 1) {
-          this.paused = true;
-          this.previewOn = true; this.previewSec = 60;   // hold-confirmed auto-preview (v10.10)
+    this._syncBinding();
+    // a HOLD waiting for the class's capabilities is decided once the reading it asked for lists them
+    if (this.capWait > 0) this.capWait -= 1;
+    if (this.holdPark > 0) {
+      if (this.capWait === 0) this._holdDecide(true);
+      else if (--this.holdPark === 0) this.postStatus("Could not pause - still recording");
+    }
+    // the recorders follow the event, and their reading is what proves a pause or a resume
+    // (PearlRest.usp:4158-4224)
+    if (this.recFollow > 0 && --this.recFollow === 0 && this.recording) {
+      this.recPaused = this.devPaused;
+      this.pauseInPlay = this.recPaused;
+      if (this.opDir === OP_RESUME && !this.recPaused) this.opDir = 0;
+      if (this.opDir === OP_PAUSE && this.recPaused) {
+        this.opDir = 0;
+        // the proof opens the previews, as the hold did, but never over a CLOSE made this tick or in the
+        // half second before; a preview it opens from closed belongs to the pause alone (v10.65 cut 2)
+        if (this.pvCloseAge >= 5) {
+          if (!this.previewOn) this.pvByHold = true;
+          this.previewOn = true; this.previewSec = 60;
         }
-        if (this.pauseDirection === 2) this.paused = false;
-        this.pauseDirection = 0;
       }
     }
 
@@ -430,6 +575,16 @@ class PearlSim {
     if (this.endedTicks > 0 && !this.recording) this.endedTicks -= 1;   // output is gated, not the counter
     if (this.extendTtl > 0) this.extendTtl -= 1;
     if (this.statusTtl > 0) { this.statusTtl -= 1; if (this.statusTtl === 0) this.statusTransient = ""; }
+
+    // ComposeDevice's bookkeeping, once a tick: the cover's clock, and a change of row releasing a
+    // progress sentence posted before this pass (PearlRest.usp:1749-1792)
+    const row = this._row();
+    if (this._covered(row)) { if (this.coverAge < 30000) this.coverAge += 1; } else this.coverAge = 0;
+    if (row !== this.devRow) {
+      if (this.statusTtl > 0 && this.statusKind === 1) { this.statusTtl = 0; this.statusTransient = ""; }
+      this.devRow = row;
+    }
+    if (this.statusKind === 2) this.statusKind = 1;
 
     this.publish();
   }
@@ -455,16 +610,14 @@ class PearlSim {
     const nx = this.nextEvent();
     const H = this.health;
     const schedOk = H.scheduleValid;
-    // bit 3: the main card says ONE MOMENT rather than RECORDING or PAUSED (PearlRest.usp 4588-4594).
-    // Ported: v10.57 (Rev 63), while a recording runs and the hold's own cover is up, asked for and
-    // not yet confirmed or released and not yet restored, which here is pausePending. That covers
-    // END pressed while a hold engages or is being released; END during a confirmed hold stays
-    // PAUSED. NOT ported, because the mockup models no pause at the device: v10.56's ENDING row
-    // (PearlRest.usp:1507, only when gPauseInPlay, which only a recorder reporting itself paused
-    // raises, :3731) and the device-pause rows 4 to 7. So an END on a plain recording raises nothing
-    // here, as on the bench: RECORDING until the stop lands, then RECORDING ENDED. (First cut raised
-    // it on every END; the touch-panel session caught it against :1507, 2026-09-29.)
-    const between = this.recording && this.pausePending > 0;
+    // The device side this tick (PearlRest.usp:1731-1776): its row, whether the cover is up (d80), and
+    // whether the PAUSED page shows.
+    const row = this._row(), cover = this._cover(row), devPage = this._devPage(row);
+    // bit 3: the main card says ONE MOMENT rather than RECORDING or PAUSED (PearlRest.usp:5078-5091):
+    // our pause not yet proven, a resume not yet proven, an END while a pause is in play, or the cover
+    // up while a recording runs. An END on a plain recording raises nothing: RECORDING until the stop
+    // lands, then RECORDING ENDED (ROW_ENDING needs a pause in play).
+    const between = row === ROW_ENDING || row === ROW_PAUSING || (row > 3 && row < 8) || (this.recording && cover);
     const health = (H.recorderValid ? 1 : 0) | (schedOk ? 2 : 0) | (H.transportDown ? 4 : 0) | (between ? 8 : 0);
 
     // ---- kiosk state machine (PearlRest.usp:3747-3779) ----
@@ -474,7 +627,7 @@ class PearlSim {
     const confirmed = schedOk && head ? (head.confirmed && !head.ended) : false;
     const hasNext = (schedOk && !!head) || !schedOk;
     let stRec = 0, stPau = 0, stConf = 0, stConfd = 0, stUp = 0, stIdle = 0;
-    if (stopOk) { if (this.paused) stPau = 1; else stRec = 1; }
+    if (stopOk) { if (devPage) stPau = 1; else stRec = 1; }
     else if (this.endedTicks === 0) {
       if (confirmReady && !confirmed) stConf = 1;
       else if (confirmed) stConfd = 1;
@@ -504,8 +657,14 @@ class PearlSim {
     // status line s1
     let status;
     if (H.transportDown || !H.recorderValid) status = "Offline";
-    else if (this.recording && nowUntil) status = "Online · " + nowUntil;
-    else if (this.recording) status = "Online · Recording";
+    else if (this.recording) {
+      status = nowUntil ? "Online · " + nowUntil : "Online · Recording";
+      // v10.56 and v10.60: the line at rest follows the row (PearlRest.usp:4861-4872)
+      if (row === ROW_PAUSED) status = "Online · Paused at the recorder";
+      if (row === ROW_UNPROVEN) status = "Online · Resuming the recording";
+      if (row === ROW_ENDING) status = "Online · Ending the recording";
+      if (row === ROW_PAUSING) status = "Online · Pausing the recording";
+    }
     else if (!schedOk) status = "Online · Schedule unavailable";
     // A held run id reads as RECORDING even before recorder truth arrives
     // (PearlRest.usp:3640-3660 sets blRec from gRunEvId$), so the STARTING window
@@ -518,7 +677,12 @@ class PearlSim {
         ? "Online · Booked until " + fmtClockFull(this.bookedUntil()) + " · Not recording"
         : "Online · Booked · Not recording";
     }
-    else if (nx) status = "Online · Next recording at " + fmtClockFull(nx.start);
+    // v10.61: the next class's line says whether it records (PearlRest.usp:4898-4906). Confirmed: it
+    // records on its own. Not confirmed with its CONFIRM offered (the window is open, cBind): it needs
+    // somebody. Anything else promises nothing, because outside the window the module cannot tell.
+    else if (nx && nx.confirmed) status = "Online · Next recording at " + fmtClockFull(nx.start);
+    else if (nx && cBind === nx) status = "Online · Needs CONFIRM · class at " + fmtClockFull(nx.start);
+    else if (nx) status = "Online · Next class at " + fmtClockFull(nx.start);
     else status = "Online · Ready";
     if (this.statusTtl > 0 && this.statusTransient) status = this.statusTransient;
 
@@ -575,15 +739,15 @@ class PearlSim {
     B.setS(14, this.extendTtl > 0 ? this.extendNote
       : (run && !this._extendOk() && nx ? "Next class at " + fmtClockFull(nx.start) : ""));
     B.setS(46, this.adhoc.name);
-    // the loaded module's ModuleVer on analog 7 (Rev 64 H=132 O86 to DGE I195), which Technical
-    // Setup prints: the bench runs PearlRest v10.59, ModuleVer 1059 (PearlRest.usp:5410)
-    B.setA(7, 1059);
+    // the loaded module's ModuleVer on analog 7 (Rev 65 H=132 O86 to DGE I195), which Technical
+    // Setup prints: the room and the bench run PearlRest v10.65 cut 7, ModuleVer 1065
+    B.setA(7, 1065);
     const url = this.previewOn ? "rtsp://pearl.sim:554/stream.sdp" : "";
     const urlCam = this.previewOn ? "rtsp://pearl.sim:555/stream.sdp" : "";
     B.setS(60, url); B.setS(61, urlCam); B.setS(62, url);
 
     // ---- digitals the glass consumes directly ----
-    B.setD(80, this.pausePending > 0 ? 1 : 0);           // engaging / RESUMING cover
+    B.setD(80, cover ? 1 : 0);                           // PAUSING / RESUMING / ending cover
     const extReady = this._extendOk();
     B.setD(83, extReady ? 1 : 0);
     B.setD(152, extReady ? 0 : 1);
@@ -617,8 +781,8 @@ class PearlSim {
 
     this.out = {
       Recording: this.recording ? 1 : 0,
-      Paused: this.paused ? 1 : 0,
-      PausePending: this.pausePending > 0 ? 1 : 0,
+      Paused: this.recPaused ? 1 : 0,
+      PausePending: cover ? 1 : 0,
       ConfirmReady: confirmReady ? 1 : 0,
       Confirmed: confirmed ? 1 : 0,
       EventRun: run ? 1 : 0,
@@ -628,13 +792,15 @@ class PearlSim {
       EndedPulse: endedPulse,
       HasNext: hasNext ? 1 : 0,
       PreviewOn: this.previewOn ? 1 : 0,
+      // v10.60 O91: the open preview was opened by our proven pause alone (Rev 65 keeps it off the main page)
+      PreviewHoldOnly: this.previewOn && this.pvByHold ? 1 : 0,
       PreviewSeconds: this.previewSec,
       RemainingSeconds: remaining,
-      // v10.59 (Rev 64): beside bit 3, the cover's word for the main page, read off the page shown
-      // this tick as the cover's is (PearlRest.usp:4633-4636, holdWay): 16 PAUSING while the RECORDING
-      // page is up, 32 RESUMING while the PAUSED page is up. No exception for END, no time limit. The
-      // device-row gate is always open here, as the mockup models no pause at the device.
-      RecorderHealth: health | (between ? (stPau ? 32 : 16) : 0),
+      // v10.59 and v10.60: beside bit 3, the cover's word for the main page (PearlRest.usp:5092-5098,
+      // holdWay): while the cover is up over our own pause or resume, 16 PAUSING on the RECORDING page
+      // and 32 RESUMING on the PAUSED page. An END while paused has no word of its own: ONE MOMENT.
+      RecorderHealth: health | (this.recording && cover && (row === ROW_PLAIN || row === ROW_PAUSING || row === ROW_UNPROVEN)
+        ? (stPau ? 32 : 16) : 0),
       AudioLevel: this.recording || this.previewOn ? 20000 + Math.floor(Math.random() * 25000) : 8000,
       NowTitle: nowTitle, UpNextTitle: nx ? nx.title : "",
       UpNextTime: nx ? (fmtClockFull(nx.start) + " - " + fmtClockFull(nx.end)) : "",
